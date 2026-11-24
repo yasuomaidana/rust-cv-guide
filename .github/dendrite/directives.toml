@@ -51,4 +51,4 @@ preference = ["rust", "python", "typescript", "go", "kotlin", "c", "cpp"]
 
 [git]
 integration_branch = "develop"
-feature_prefix = ""
+feature_prefix = "feature/"

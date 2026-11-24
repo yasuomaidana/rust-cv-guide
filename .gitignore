@@ -5,3 +5,7 @@ target/
 node_modules/
 website/build/
 website/.docusaurus/
+coverage.out
+*.tmp
+bin/
+.venv/

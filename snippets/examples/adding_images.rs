@@ -1,7 +1,7 @@
 //! OpenCV tutorial `tutorial_adding_images` (`cv::addWeighted`) in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example adding_images`.
 
-use cvg_snippets::common::{Figure, sample, save_figures};
+use cvg_snippets::common::{Figure, describe, sample, save_figures};
 use image::{DynamicImage, RgbImage};
 use imageproc::pixelops::weighted_sum;
 
@@ -28,16 +28,7 @@ pub fn figures() -> Vec<Figure> {
 
 /// Describes the centre pixel of each figure.
 pub fn report() -> String {
-    figures()
-        .iter()
-        .map(|(name, picture)| {
-            format!(
-                "{name}(160,120) = {:?}",
-                picture.to_rgb8().get_pixel(160, 120).0
-            )
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
+    describe(&figures(), 160, 120)
 }
 
 pub fn main() {

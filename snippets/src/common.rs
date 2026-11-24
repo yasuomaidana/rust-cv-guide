@@ -33,6 +33,28 @@ pub fn save_figures_to(dir: &Path, figures: &[Figure]) -> std::io::Result<()> {
     Ok(())
 }
 
+/// `name(x,y) = pixel` for every figure, one per line: colour figures print `[r, g, b]`, grey ones the single level.
+pub fn describe(figures: &[Figure], x: u32, y: u32) -> String {
+    let lines = figures.iter().map(|(name, picture)| {
+        let value = if picture.color().has_color() {
+            format!("{:?}", picture.to_rgb8().get_pixel(x, y).0)
+        } else {
+            picture.to_luma8().get_pixel(x, y).0[0].to_string()
+        };
+        format!("{name}({x},{y}) = {value}")
+    });
+    lines.collect::<Vec<_>>().join("\n")
+}
+
+/// The test every example shares: its pictures equal the committed PNGs, then `main` runs (and rewrites the same bytes).
+pub fn check_example(example: &str, figures: &[Figure], main: fn()) {
+    assert!(
+        figures_are_committed(example, figures),
+        "figures of {example} differ from the committed PNGs"
+    );
+    main();
+}
+
 /// Writes the figures of `example` where the site serves them.
 pub fn save_figures(example: &str, figures: &[Figure]) {
     save_figures_to(&figure_dir(example), figures).expect("figures are written");
@@ -103,6 +125,16 @@ mod tests {
         let missing = vec![("b", DynamicImage::ImageRgb8(gradient(8, 8)))];
         assert!(!figures_match(&dir, &missing));
         std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn describe_prints_colour_and_grey_pixels() {
+        let figures = vec![
+            ("c", DynamicImage::ImageRgb8(gradient(64, 64))),
+            ("g", DynamicImage::ImageRgb8(gradient(64, 64)).grayscale()),
+        ];
+        let text = describe(&figures, 8, 0);
+        assert!(text.starts_with("c(8,0) = [31, 0, 0]\ng(8,0) = "));
     }
 
     #[test]

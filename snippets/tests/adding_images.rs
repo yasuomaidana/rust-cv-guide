@@ -3,7 +3,7 @@
 #[path = "../examples/adding_images.rs"]
 mod example;
 
-use cvg_snippets::common::{figures_are_committed, gradient};
+use cvg_snippets::common::{check_example, gradient};
 use rstest::rstest;
 
 #[test]
@@ -22,9 +22,7 @@ fn sizes_must_match(#[case] width: u32, #[case] height: u32, #[case] accepted: b
     assert_eq!(blended.is_some(), accepted);
 }
 
-/// One test, so the check of the committed pictures never races with `main` rewriting them.
 #[test]
 fn the_pictures_on_the_page_are_what_main_produces() {
-    assert!(figures_are_committed("adding_images", &example::figures()));
-    example::main();
+    check_example("adding_images", &example::figures(), example::main);
 }

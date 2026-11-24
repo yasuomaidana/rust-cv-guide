@@ -22,9 +22,9 @@ Planned: `catalog/` (OpenCV tree and coverage status), `tools/` (catalog checks)
 
 ```bash
 cd website
-npm ci
-npm start      # preview on http://localhost:3000/rust-cv-guide/
-npm run build  # fails on broken links
+bun install
+bun start      # preview on http://localhost:3000/rust-cv-guide/
+bun run build  # fails on broken links
 ```
 
 Work is tracked in Plane (`RUSTCVGUID-n`). One pull request per ticket, targeting `main` (or the trunk branch of its section ticket, which targets `main`); merging to `main` deploys the site.

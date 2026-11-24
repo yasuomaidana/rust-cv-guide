@@ -20,7 +20,7 @@ tutorials:
   tutorial_hough_lines: {status: unreviewed, crates: []}
   tutorial_laplace_operator: {status: unreviewed, crates: []}
   tutorial_remap: {status: unreviewed, crates: []}
-  tutorial_sobel_derivatives: {status: unreviewed, crates: []}
+  tutorial_sobel_derivatives: {status: covered, crates: [image, imageproc], snippet: sobel}
   tutorial_warp_affine: {status: unreviewed, crates: []}
   tutorial_motion_deblur_filter: {status: unreviewed, crates: []}
   tutorial_opening_closing_hats: {status: unreviewed, crates: []}

@@ -1,0 +1,19 @@
+//! Tests for `examples/sobel.rs`; the page prints exactly what `report()` returns.
+
+#[path = "../examples/sobel.rs"]
+mod example;
+
+use cvg_snippets::common::check_example;
+
+#[test]
+fn prints_the_numbers_shown_on_the_page() {
+    assert_eq!(
+        example::report(),
+        "grad_x(430,300) = 22\ngrad_y(430,300) = 196\nmagnitude(430,300) = 197\ninput(430,300) = 235"
+    );
+}
+
+#[test]
+fn the_pictures_on_the_page_are_what_main_produces() {
+    check_example("sobel", &example::figures(), example::main);
+}

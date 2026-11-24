@@ -1,6 +1,6 @@
 //! Stub pages and the status dashboard, rendered from the catalog and the coverage file.
 
-use crate::model::{Catalog, Coverage, Entry, Status};
+use crate::model::{Catalog, Coverage, Entry, Sources, Status};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// A file to write, relative to `website/`.
@@ -13,7 +13,7 @@ const BLOB: &str = "https://github.com/opencv/opencv/blob/5.1.0/";
 const TREE: &str = "https://github.com/opencv/opencv/tree/5.1.0/";
 
 /// Every generated page: one per module and tutorial, category labels, and `docs/status.md`.
-pub fn pages(catalog: &Catalog, coverage: &Coverage) -> Vec<Page> {
+pub fn pages(catalog: &Catalog, coverage: &Coverage, sources: &Sources) -> Vec<Page> {
     let mut out = Vec::new();
     for m in &catalog.modules {
         let path = format!("docs/opencv/modules/{}.md", m.name);
@@ -24,18 +24,15 @@ pub fn pages(catalog: &Catalog, coverage: &Coverage) -> Vec<Page> {
             "module",
             &url,
             coverage.modules.get(&m.name),
+            String::new(),
         ));
     }
     for t in &catalog.tutorials {
         let path = format!("docs/opencv/{}/{}.md", t.section, t.id);
         let url = format!("{BLOB}{}", t.source);
-        out.push(item_page(
-            path,
-            &t.title,
-            "tutorial",
-            &url,
-            coverage.tutorials.get(&t.id),
-        ));
+        let entry = coverage.tutorials.get(&t.id);
+        let body = render_body(&format!("{}/{}", t.section, t.id), entry, sources);
+        out.push(item_page(path, &t.title, "tutorial", &url, entry, body));
     }
     out.extend(category_pages(catalog));
     out.push(status_page(catalog, coverage));
@@ -52,7 +49,27 @@ fn yaml_quote(text: &str) -> String {
     format!("\"{}\"", text.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
-fn item_page(path: String, title: &str, kind: &str, url: &str, entry: Option<&Entry>) -> Page {
+/// The hand-written guide body with `{{snippet}}` replaced by the compiled example's source.
+fn render_body(key: &str, entry: Option<&Entry>, sources: &Sources) -> String {
+    let Some(body) = sources.bodies.get(key) else {
+        return String::new();
+    };
+    let code = entry
+        .and_then(|e| e.snippet.as_ref())
+        .and_then(|name| sources.snippets.get(name))
+        .map(|source| format!("```rust\n{}\n```", source.trim_end()))
+        .unwrap_or_default();
+    format!("\n{}\n", body.replace("{{snippet}}", &code).trim_end())
+}
+
+fn item_page(
+    path: String,
+    title: &str,
+    kind: &str,
+    url: &str,
+    entry: Option<&Entry>,
+    body: String,
+) -> Page {
     let (status, crates) = status_of(entry);
     let list = if crates.is_empty() {
         "No crate named yet.".to_string()
@@ -60,8 +77,12 @@ fn item_page(path: String, title: &str, kind: &str, url: &str, entry: Option<&En
         let link = |c: &String| format!("- [{c}](https://crates.io/crates/{c})");
         crates.iter().map(link).collect::<Vec<_>>().join("\n")
     };
+    let reason = entry
+        .and_then(|e| e.reason.as_deref())
+        .map(|r| format!("\n**Reason:** {r}\n"))
+        .unwrap_or_default();
     let content = format!(
-        "---\ntitle: {}\n---\n\n**Status:** {}\n\nOpenCV {kind}: [source at 5.1.0]({url}).\n\n## Rust crates\n\n{list}\n",
+        "---\ntitle: {}\n---\n\n**Status:** {}\n{reason}\nOpenCV {kind}: [source at 5.1.0]({url}).\n\n## Rust crates\n\n{list}\n{body}",
         yaml_quote(title),
         status.label()
     );
@@ -142,7 +163,7 @@ fn status_page(catalog: &Catalog, coverage: &Coverage) -> Page {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::fixtures::{catalog, coverage, entry};
+    use crate::model::fixtures::{catalog, coverage, entry, sources};
     use rstest::rstest;
 
     fn find<'a>(pages: &'a [Page], path: &str) -> &'a str {
@@ -162,10 +183,19 @@ mod tests {
     )]
     #[case("docs/opencv/core/_category_.json", "\"label\": \"core\"")]
     #[case("docs/opencv/modules/_category_.json", "\"label\": \"modules\"")]
+    #[case("docs/opencv/core/tutorial_mat.md", "**Reason:** shown below")]
+    #[case(
+        "docs/opencv/core/tutorial_mat.md",
+        "Body.\n\n```rust\nfn main() {}\n```"
+    )]
     #[case("docs/status.md", "| covered | 1 | 1 |")]
     #[case("docs/status.md", "| core | 1 | 1 | 0 | 0 | 0 | 0 |")]
     fn renders_expected_text(#[case] path: &str, #[case] expected: &str) {
-        let pages = pages(&catalog(), &coverage(Status::Covered, &["ndarray"]));
+        let mut cov = coverage(Status::Covered, &["ndarray"]);
+        let tutorial = cov.tutorials.get_mut("tutorial_mat").unwrap();
+        tutorial.snippet = Some("blend".into());
+        tutorial.reason = Some("shown below".into());
+        let pages = pages(&catalog(), &cov, &sources());
         assert!(
             find(&pages, path).contains(expected),
             "{}",
@@ -178,7 +208,7 @@ mod tests {
         let mut cov = coverage(Status::Gap, &[]);
         cov.tutorials.clear();
         cov.modules.insert("core".into(), entry(Status::Gap, &[]));
-        let pages = pages(&catalog(), &cov);
+        let pages = pages(&catalog(), &cov, &Sources::default());
         let text = find(&pages, "docs/opencv/core/tutorial_mat.md");
         assert!(text.contains("**Status:** unreviewed") && text.contains("No crate named yet."));
     }

@@ -1,0 +1,5 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_gpu_basics_similarity: {status: unreviewed, crates: []}
+  tutorial_gpu_thrust_interop: {status: unreviewed, crates: []}

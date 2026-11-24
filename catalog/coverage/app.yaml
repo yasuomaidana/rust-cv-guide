@@ -1,0 +1,13 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_animations: {status: unreviewed, crates: []}
+  tutorial_wayland_ubuntu: {status: unreviewed, crates: []}
+  tutorial_intelperc: {status: unreviewed, crates: []}
+  tutorial_kinect_openni: {status: unreviewed, crates: []}
+  tutorial_orbbec_astra_openni: {status: unreviewed, crates: []}
+  tutorial_orbbec_uvc: {status: unreviewed, crates: []}
+  tutorial_raster_io_gdal: {status: unreviewed, crates: []}
+  tutorial_trackbar: {status: unreviewed, crates: []}
+  tutorial_video_input_psnr_ssim: {status: unreviewed, crates: []}
+  tutorial_video_write: {status: unreviewed, crates: []}

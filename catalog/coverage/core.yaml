@@ -1,0 +1,14 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_adding_images: {status: unreviewed, crates: []}
+  tutorial_basic_linear_transform: {status: unreviewed, crates: []}
+  tutorial_discrete_fourier_transform: {status: unreviewed, crates: []}
+  tutorial_file_input_output_with_xml_yml: {status: unreviewed, crates: []}
+  tutorial_how_to_scan_images: {status: unreviewed, crates: []}
+  tutorial_how_to_use_OpenCV_parallel_for_: {status: unreviewed, crates: []}
+  tutorial_how_to_use_OpenCV_parallel_for_new: {status: unreviewed, crates: []}
+  tutorial_mat_mask_operations: {status: unreviewed, crates: []}
+  tutorial_mat_operations: {status: unreviewed, crates: []}
+  tutorial_mat_the_basic_image_container: {status: unreviewed, crates: []}
+  tutorial_univ_intrin: {status: unreviewed, crates: []}

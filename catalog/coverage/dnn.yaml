@@ -1,0 +1,10 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_dnn_OCR: {status: unreviewed, crates: []}
+  tutorial_dnn_face: {status: unreviewed, crates: []}
+  tutorial_dnn_googlenet: {status: unreviewed, crates: []}
+  tutorial_dnn_javascript: {status: unreviewed, crates: []}
+  tutorial_dnn_openvino: {status: unreviewed, crates: []}
+  tutorial_dnn_text_spotting: {status: unreviewed, crates: []}
+  tutorial_dnn_yolo: {status: unreviewed, crates: []}

@@ -1,0 +1,10 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_camera_calibration: {status: unreviewed, crates: []}
+  tutorial_camera_calibration_pattern: {status: unreviewed, crates: []}
+  tutorial_camera_calibration_square_chess: {status: unreviewed, crates: []}
+  tutorial_multiview_camera_calibration: {status: unreviewed, crates: []}
+  tutorial_interactive_calibration: {status: unreviewed, crates: []}
+  tutorial_real_time_pose: {status: unreviewed, crates: []}
+  tutorial_usac: {status: unreviewed, crates: []}

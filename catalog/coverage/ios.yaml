@@ -1,0 +1,7 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_hello: {status: unreviewed, crates: []}
+  tutorial_image_manipulation: {status: unreviewed, crates: []}
+  tutorial_ios_install: {status: unreviewed, crates: []}
+  tutorial_video_processing: {status: unreviewed, crates: []}

@@ -63,13 +63,30 @@ pub struct Entry {
     pub status: Status,
     #[serde(default)]
     pub crates: Vec<String>,
+    /// Why an item is a gap or not planned.
+    #[serde(default)]
+    pub reason: Option<String>,
+    /// Name of `snippets/examples/<snippet>.rs`, the compiled example the page shows.
+    #[serde(default)]
+    pub snippet: Option<String>,
 }
 
-/// `catalog/coverage.yaml`.
-#[derive(Debug, Deserialize)]
+/// `catalog/coverage/*.yaml`, merged.
+#[derive(Debug, Default, Deserialize)]
 pub struct Coverage {
+    #[serde(default)]
     pub modules: BTreeMap<String, Entry>,
+    #[serde(default)]
     pub tutorials: BTreeMap<String, Entry>,
+}
+
+/// Hand-written material the generated pages are built from.
+#[derive(Debug, Default)]
+pub struct Sources {
+    /// Guide bodies, keyed `<section>/<id>`.
+    pub bodies: BTreeMap<String, String>,
+    /// Compiled examples, keyed by file stem.
+    pub snippets: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -91,6 +108,27 @@ pub(crate) mod fixtures {
         Entry {
             status,
             crates: crates.iter().map(|c| c.to_string()).collect(),
+            reason: None,
+            snippet: None,
+        }
+    }
+
+    /// An entry that satisfies every rule for its status: a snippet, a reason and a crate.
+    pub fn full_entry(status: Status) -> Entry {
+        Entry {
+            reason: Some("why".into()),
+            snippet: Some("blend".into()),
+            ..entry(status, &["ndarray"])
+        }
+    }
+
+    pub fn sources() -> Sources {
+        Sources {
+            bodies: BTreeMap::from([(
+                "core/tutorial_mat".to_string(),
+                "Body.\n\n{{snippet}}\n".to_string(),
+            )]),
+            snippets: BTreeMap::from([("blend".to_string(), "fn main() {}\n".to_string())]),
         }
     }
 
@@ -114,6 +152,14 @@ pub(crate) mod fixtures {
         Coverage {
             modules: BTreeMap::from([("core".to_string(), entry(status, crates))]),
             tutorials: BTreeMap::from([("tutorial_mat".to_string(), entry(status, crates))]),
+        }
+    }
+
+    /// Coverage whose module is unreviewed and whose tutorial is the given entry.
+    pub fn coverage_for(tutorial: Entry) -> Coverage {
+        Coverage {
+            modules: BTreeMap::from([("core".to_string(), entry(Status::Unreviewed, &[]))]),
+            tutorials: BTreeMap::from([("tutorial_mat".to_string(), tutorial)]),
         }
     }
 

@@ -1,0 +1,12 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_aruco_board_detection: {status: unreviewed, crates: []}
+  tutorial_aruco_calibration: {status: unreviewed, crates: []}
+  tutorial_aruco_detection: {status: unreviewed, crates: []}
+  tutorial_aruco_faq: {status: unreviewed, crates: []}
+  tutorial_barcode_detect_and_decode: {status: unreviewed, crates: []}
+  tutorial_charuco_detection: {status: unreviewed, crates: []}
+  tutorial_charuco_diamond_detection: {status: unreviewed, crates: []}
+  tutorial_mcc_debugging_the_system: {status: unreviewed, crates: []}
+  tutorial_macbeth_chart_detection: {status: unreviewed, crates: []}

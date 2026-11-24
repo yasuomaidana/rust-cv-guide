@@ -22,10 +22,10 @@ Pure Rust uses `image::RgbImage::from_fn` to iterate over every coordinate and e
 
 ## Explanation
 
-1. `gradient(64, 64)` (from the shared `common` module) creates a deterministic test image so output values remain reproducible.
-2. `linear_transform` visits every pixel in the input image and constructs a new `RgbImage` of identical dimensions.
-3. For each channel, `(alpha * f32::from(c) + beta).clamp(0.0, 255.0).round() as u8` computes the linear scale, clamps to the valid intensity interval, rounds to the nearest integer, and casts back to `u8`.
-4. Clamping prevents high brightness or contrast settings from wrapping around, mimicking `cv::saturate_cast<uchar>`.
+1. `sample("coffee.png")` loads a CC0 photograph (see `snippets/assets/ATTRIBUTION.md`).
+2. `linear_transform` visits every pixel and builds a new `RgbImage` of the same size.
+3. For each channel, `(alpha * f32::from(c) + beta).clamp(0.0, 255.0).round() as u8` scales, offsets, saturates to the valid interval and rounds, like `cv::saturate_cast<uchar>`.
+4. `figures()` returns the original and the adjusted picture, which `main` saves for this page.
 
 The `image` crate also has `imageops::brighten` (adds an integer offset, like `β`) and `imageops::contrast` (scales around
 mid-grey by `((100 + c) / 100)²`, which is a different curve from `α`). Use the loop above when you need OpenCV's exact
@@ -33,18 +33,20 @@ mid-grey by `((100 + c) / 100)²`, which is a different curve from `α`). Use th
 
 ## Result
 
-Printed by the code above (a test in `snippets/tests/` asserts this exact text):
+| original | adjusted (α = 1.3, β = 40) |
+|---|---|
+| ![The original photo](/img/examples/basic_linear_transform/original.png) | ![Brighter, higher contrast](/img/examples/basic_linear_transform/adjusted.png) |
+
+These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
+(300, 150), printed by the code and asserted by a test:
 
 ```text
-original(0,0) = [0, 0, 255]
-adjusted(0,0) = [40, 40, 255]
-original(16,32) = [63, 127, 255]
-adjusted(16,32) = [122, 205, 255]
+original(300,150) = [232, 151, 62]
+adjusted(300,150) = [255, 236, 121]
 ```
 
-Check the arithmetic by hand:
-- At `(0, 0)`, the red channel is `1.3 · 0 + 40.0 = 40`, demonstrating the brightness offset on a zero pixel. The blue channel is `1.3 · 255 + 40.0 = 371.5`, which clamps to 255.
-- At `(16, 32)`, the red channel is `1.3 · 63 + 40.0 = 81.9 + 40.0 = 121.9`, which rounds to 122. The green channel is `1.3 · 127 + 40.0 = 165.1 + 40.0 = 205.1`, which rounds to 205.
+Notice the saturation: the bright cup rim, already close to white, clips to 255 and loses detail, which is the price of
+raising `α` and `β` together.
 
 ## OpenCV to Rust
 

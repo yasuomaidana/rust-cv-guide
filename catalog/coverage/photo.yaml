@@ -1,0 +1,6 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_ccm_color_correction_model: {status: unreviewed, crates: []}
+  tutorial_ccm_linearization_transformation: {status: unreviewed, crates: []}
+  tutorial_hdr_imaging: {status: unreviewed, crates: []}

@@ -1,0 +1,20 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+modules:
+  calib: {status: unreviewed, crates: []}
+  core: {status: unreviewed, crates: []}
+  dnn: {status: unreviewed, crates: []}
+  features: {status: unreviewed, crates: []}
+  flann: {status: unreviewed, crates: []}
+  geometry: {status: unreviewed, crates: []}
+  highgui: {status: unreviewed, crates: []}
+  imgcodecs: {status: unreviewed, crates: []}
+  imgproc: {status: unreviewed, crates: []}
+  objdetect: {status: unreviewed, crates: []}
+  photo: {status: unreviewed, crates: []}
+  ptcloud: {status: unreviewed, crates: []}
+  stereo: {status: unreviewed, crates: []}
+  stitching: {status: unreviewed, crates: []}
+  video: {status: unreviewed, crates: []}
+  videoio: {status: unreviewed, crates: []}
+  ml: {status: unreviewed, crates: []}

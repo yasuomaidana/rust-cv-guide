@@ -1,0 +1,12 @@
+[package]
+name = "cvg-snippets"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Compiled examples shown in the Rust CV Guide; every page's code and printed numbers are tested here"
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[dev-dependencies]
+rstest = "0.29"

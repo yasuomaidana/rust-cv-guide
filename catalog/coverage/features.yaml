@@ -1,0 +1,15 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_akaze_matching: {status: unreviewed, crates: []}
+  tutorial_akaze_tracking: {status: unreviewed, crates: []}
+  tutorial_detection_of_planar_objects: {status: unreviewed, crates: []}
+  tutorial_feature_description: {status: unreviewed, crates: []}
+  tutorial_feature_detection: {status: unreviewed, crates: []}
+  tutorial_feature_flann_matcher: {status: unreviewed, crates: []}
+  tutorial_feature_homography: {status: unreviewed, crates: []}
+  tutorial_homography: {status: unreviewed, crates: []}
+  tutorial_corner_subpixels: {status: unreviewed, crates: []}
+  tutorial_generic_corner_detector: {status: unreviewed, crates: []}
+  tutorial_good_features_to_track: {status: unreviewed, crates: []}
+  tutorial_harris_detector: {status: unreviewed, crates: []}

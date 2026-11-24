@@ -1,0 +1,34 @@
+# status: unreviewed | covered | partial | gap | not-planned.
+# covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
+tutorials:
+  tutorial_android_dev_intro: {status: unreviewed, crates: []}
+  tutorial_android_dnn_intro: {status: unreviewed, crates: []}
+  tutorial_android_ocl_intro: {status: unreviewed, crates: []}
+  tutorial_dev_with_OCV_on_Android: {status: unreviewed, crates: []}
+  tutorial_building_fastcv: {status: unreviewed, crates: []}
+  tutorial_building_tegra_cuda: {status: unreviewed, crates: []}
+  tutorial_clojure_dev_intro: {status: unreviewed, crates: []}
+  tutorial_config_reference: {status: unreviewed, crates: []}
+  tutorial_cross_referencing: {status: unreviewed, crates: []}
+  tutorial_arm_crosscompile_with_cmake: {status: unreviewed, crates: []}
+  tutorial_crosscompile_with_multiarch: {status: unreviewed, crates: []}
+  tutorial_java_dev_intro: {status: unreviewed, crates: []}
+  tutorial_display_image: {status: unreviewed, crates: []}
+  tutorial_documentation: {status: unreviewed, crates: []}
+  tutorial_env_reference: {status: unreviewed, crates: []}
+  tutorial_general_install: {status: unreviewed, crates: []}
+  tutorial_java_eclipse: {status: unreviewed, crates: []}
+  tutorial_linux_eclipse: {status: unreviewed, crates: []}
+  tutorial_linux_gcc_cmake: {status: unreviewed, crates: []}
+  tutorial_linux_gdb_pretty_printer: {status: unreviewed, crates: []}
+  tutorial_linux_install: {status: unreviewed, crates: []}
+  tutorial_load_save_image: {status: unreviewed, crates: []}
+  tutorial_macos_install: {status: unreviewed, crates: []}
+  tutorial_oneapi_install: {status: unreviewed, crates: []}
+  tutorial_transition_guide: {status: unreviewed, crates: []}
+  tutorial_using_prebuilt_binaries: {status: unreviewed, crates: []}
+  tutorial_windows_armpl: {status: unreviewed, crates: []}
+  tutorial_windows_install: {status: unreviewed, crates: []}
+  tutorial_windows_msys2_vscode: {status: unreviewed, crates: []}
+  tutorial_windows_visual_studio_image_watch: {status: unreviewed, crates: []}
+  tutorial_windows_visual_studio_opencv: {status: unreviewed, crates: []}

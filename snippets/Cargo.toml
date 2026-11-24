@@ -9,4 +9,5 @@ description = "Compiled examples shown in the Rust CV Guide; every page's code a
 image = { version = "0.25", default-features = false, features = ["png"] }
 
 [dev-dependencies]
+imageproc = { version = "0.27", default-features = false }
 rstest = "0.29"

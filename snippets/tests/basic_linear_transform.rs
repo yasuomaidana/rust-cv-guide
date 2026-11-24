@@ -3,7 +3,7 @@
 #[path = "../examples/basic_linear_transform.rs"]
 mod example;
 
-use cvg_snippets::common::gradient;
+use cvg_snippets::common::{check_example, gradient};
 use image::{Rgb, RgbImage};
 use rstest::rstest;
 
@@ -48,6 +48,6 @@ fn dimensions_are_preserved() {
 }
 
 #[test]
-fn main_prints_the_report() {
-    example::main();
+fn the_pictures_on_the_page_are_what_main_produces() {
+    check_example("basic_linear_transform", &example::figures(), example::main);
 }

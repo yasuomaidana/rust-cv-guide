@@ -12,7 +12,7 @@ tutorials:
   tutorial_histogram_equalization: {status: unreviewed, crates: []}
   tutorial_template_matching: {status: unreviewed, crates: []}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
-  tutorial_canny_detector: {status: unreviewed, crates: []}
+  tutorial_canny_detector: {status: covered, crates: [image, imageproc], snippet: canny}
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}
   tutorial_distance_transform: {status: unreviewed, crates: []}
   tutorial_filter_2d: {status: unreviewed, crates: []}

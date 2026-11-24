@@ -1,0 +1,7 @@
+.dendrite/
+.DS_Store
+.idea/
+target/
+node_modules/
+website/build/
+website/.docusaurus/

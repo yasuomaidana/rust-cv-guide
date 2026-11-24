@@ -3,7 +3,7 @@
 #[path = "../examples/basic_linear_transform.rs"]
 mod example;
 
-use cvg_snippets::common::gradient;
+use cvg_snippets::common::{check_example, gradient};
 use image::{Rgb, RgbImage};
 use rstest::rstest;
 
@@ -11,7 +11,7 @@ use rstest::rstest;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "original(0,0) = [0, 0, 255]\nadjusted(0,0) = [40, 40, 255]\noriginal(16,32) = [63, 127, 255]\nadjusted(16,32) = [122, 205, 255]"
+        "original(300,150) = [232, 151, 62]\nadjusted(300,150) = [255, 236, 121]"
     );
 }
 
@@ -48,6 +48,6 @@ fn dimensions_are_preserved() {
 }
 
 #[test]
-fn main_prints_the_report() {
-    example::main();
+fn the_pictures_on_the_page_are_what_main_produces() {
+    check_example("basic_linear_transform", &example::figures(), example::main);
 }

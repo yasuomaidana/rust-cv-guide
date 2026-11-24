@@ -4,6 +4,7 @@ pub mod check;
 pub mod generate;
 pub mod load;
 pub mod model;
+pub mod roadmap;
 
 use load::at;
 use model::{Catalog, Coverage, Crates, Sources};
@@ -127,9 +128,9 @@ mod tests {
         let stale = dir.path().join("website/docs/opencv/old/gone.md");
         fs::create_dir_all(stale.parent().unwrap()).unwrap();
         fs::write(&stale, "x").unwrap();
-        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 5 pages");
+        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 1 pages");
         assert!(!stale.exists());
-        assert!(dir.path().join("website/docs/status.md").exists());
+        assert!(dir.path().join("website/docs/roadmap.md").exists());
     }
 
     #[rstest]

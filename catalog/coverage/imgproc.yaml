@@ -9,7 +9,7 @@ tutorials:
   tutorial_back_projection: {status: unreviewed, crates: []}
   tutorial_histogram_calculation: {status: unreviewed, crates: []}
   tutorial_histogram_comparison: {status: unreviewed, crates: []}
-  tutorial_histogram_equalization: {status: unreviewed, crates: []}
+  tutorial_histogram_equalization: {status: covered, crates: [image, imageproc], snippet: equalize}
   tutorial_template_matching: {status: unreviewed, crates: []}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
   tutorial_canny_detector: {status: unreviewed, crates: []}

@@ -34,6 +34,7 @@ exclude = []
 [immune]
 approve_max = 20
 hold_max = 50
+scanner_version = ""
 
 [lint]
 strictness = "strict"
@@ -50,5 +51,13 @@ human_review_labels = ["needs-human-review"]
 preference = ["rust", "python", "typescript", "go", "kotlin", "c", "cpp"]
 
 [git]
-integration_branch = "develop"
+integration_branch = "main"
 feature_prefix = "feature/"
+
+[rea]
+labels = ["rea"]
+title_prefixes = ["[REA]"]
+refusal_owner = "agy"
+refusal_model = ""
+engine = "auto"
+sandbox = "container"

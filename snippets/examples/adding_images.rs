@@ -1,8 +1,8 @@
 //! OpenCV tutorial `tutorial_adding_images` (`cv::addWeighted`) in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example adding_images`.
 
-use cvg_snippets::common::gradient;
-use image::{RgbImage, imageops};
+use cvg_snippets::common::{Figure, describe, sample, save_figures};
+use image::{DynamicImage, RgbImage};
 use imageproc::pixelops::weighted_sum;
 
 /// `dst = alpha * a + beta * b` on every channel, clamped to 0..=255. `None` when the sizes differ.
@@ -14,19 +14,24 @@ pub fn add_weighted(a: &RgbImage, b: &RgbImage, alpha: f32, beta: f32) -> Option
     })
 }
 
-/// Blends a test image with a rotated copy of itself and describes the result.
-pub fn report() -> String {
-    let first = gradient(64, 64);
-    let second = imageops::rotate90(&first);
+/// The tutorial's two logos and their 70 % / 30 % blend.
+pub fn figures() -> Vec<Figure> {
+    let first = sample("LinuxLogo.jpg");
+    let second = sample("WindowsLogo.jpg");
     let blended = add_weighted(&first, &second, 0.7, 0.3).expect("same size");
-    format!(
-        "first(0,0) = {:?}\nsecond(0,0) = {:?}\nblended(0,0) = {:?}",
-        first.get_pixel(0, 0).0,
-        second.get_pixel(0, 0).0,
-        blended.get_pixel(0, 0).0
-    )
+    vec![
+        ("first", DynamicImage::ImageRgb8(first)),
+        ("second", DynamicImage::ImageRgb8(second)),
+        ("blended", DynamicImage::ImageRgb8(blended)),
+    ]
+}
+
+/// Describes the centre pixel of each figure.
+pub fn report() -> String {
+    describe(&figures(), 160, 120)
 }
 
 pub fn main() {
+    save_figures("adding_images", &figures());
     println!("{}", report());
 }

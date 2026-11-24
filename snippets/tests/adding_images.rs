@@ -3,14 +3,14 @@
 #[path = "../examples/adding_images.rs"]
 mod example;
 
-use cvg_snippets::common::gradient;
+use cvg_snippets::common::{check_example, gradient};
 use rstest::rstest;
 
 #[test]
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "first(0,0) = [0, 0, 255]\nsecond(0,0) = [0, 251, 0]\nblended(0,0) = [0, 75, 178]"
+        "first(160,120) = [0, 0, 0]\nsecond(160,120) = [91, 135, 20]\nblended(160,120) = [27, 40, 6]"
     );
 }
 
@@ -23,6 +23,6 @@ fn sizes_must_match(#[case] width: u32, #[case] height: u32, #[case] accepted: b
 }
 
 #[test]
-fn main_prints_the_report() {
-    example::main();
+fn the_pictures_on_the_page_are_what_main_produces() {
+    check_example("adding_images", &example::figures(), example::main);
 }

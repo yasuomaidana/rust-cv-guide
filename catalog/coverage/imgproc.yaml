@@ -3,13 +3,8 @@
 tutorials:
   tutorial_anisotropic_image_segmentation_by_a_gst: {status: unreviewed, crates: []}
   tutorial_basic_geometric_drawing: {status: unreviewed, crates: []}
-<<<<<<< HEAD
-  tutorial_erosion_dilatation: {status: unreviewed, crates: []}
   tutorial_gausian_median_blur_bilateral_filter: {status: partial, crates: [image, imageproc], snippet: smoothing}
-=======
   tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc], snippet: erosion}
-  tutorial_gausian_median_blur_bilateral_filter: {status: unreviewed, crates: []}
->>>>>>> origin/RUSTCVGUID-16-imgproc-section-umbrella-35-tutorials/RUSTCVGUID-73-imgproc-eroding-and-dilating
   tutorial_generalized_hough_ballard_guil: {status: unreviewed, crates: []}
   tutorial_back_projection: {status: unreviewed, crates: []}
   tutorial_histogram_calculation: {status: unreviewed, crates: []}

@@ -6,7 +6,7 @@ publish = false
 description = "Compiled examples shown in the Rust CV Guide; every page's code and printed numbers are tested here"
 
 [dependencies]
-image = { version = "0.25", default-features = false, features = ["png"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 
 [dev-dependencies]
 imageproc = { version = "0.27", default-features = false }

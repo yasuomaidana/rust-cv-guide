@@ -3,16 +3,16 @@
 tutorials:
   tutorial_anisotropic_image_segmentation_by_a_gst: {status: unreviewed, crates: []}
   tutorial_basic_geometric_drawing: {status: unreviewed, crates: []}
-  tutorial_erosion_dilatation: {status: unreviewed, crates: []}
-  tutorial_gausian_median_blur_bilateral_filter: {status: unreviewed, crates: []}
+  tutorial_gausian_median_blur_bilateral_filter: {status: partial, crates: [image, imageproc], snippet: smoothing}
+  tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc], snippet: erosion}
   tutorial_generalized_hough_ballard_guil: {status: unreviewed, crates: []}
   tutorial_back_projection: {status: unreviewed, crates: []}
   tutorial_histogram_calculation: {status: unreviewed, crates: []}
   tutorial_histogram_comparison: {status: unreviewed, crates: []}
-  tutorial_histogram_equalization: {status: unreviewed, crates: []}
+  tutorial_histogram_equalization: {status: covered, crates: [image, imageproc], snippet: equalize}
   tutorial_template_matching: {status: unreviewed, crates: []}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
-  tutorial_canny_detector: {status: unreviewed, crates: []}
+  tutorial_canny_detector: {status: covered, crates: [image, imageproc], snippet: canny}
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}
   tutorial_distance_transform: {status: unreviewed, crates: []}
   tutorial_filter_2d: {status: unreviewed, crates: []}
@@ -20,7 +20,7 @@ tutorials:
   tutorial_hough_lines: {status: unreviewed, crates: []}
   tutorial_laplace_operator: {status: unreviewed, crates: []}
   tutorial_remap: {status: unreviewed, crates: []}
-  tutorial_sobel_derivatives: {status: unreviewed, crates: []}
+  tutorial_sobel_derivatives: {status: covered, crates: [image, imageproc], snippet: sobel}
   tutorial_warp_affine: {status: unreviewed, crates: []}
   tutorial_motion_deblur_filter: {status: unreviewed, crates: []}
   tutorial_opening_closing_hats: {status: unreviewed, crates: []}
@@ -34,5 +34,5 @@ tutorials:
   tutorial_hull: {status: unreviewed, crates: []}
   tutorial_moments: {status: unreviewed, crates: []}
   tutorial_point_polygon_test: {status: unreviewed, crates: []}
-  tutorial_threshold: {status: unreviewed, crates: []}
+  tutorial_threshold: {status: covered, crates: [image, imageproc], snippet: threshold}
   tutorial_threshold_inRange: {status: unreviewed, crates: []}

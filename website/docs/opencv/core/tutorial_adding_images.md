@@ -28,15 +28,14 @@ Results are clamped to 0..=255 so a bright sum cannot wrap around.
 
 ## Code
 
-`imageproc` already has the per-pixel part, `pixelops::weighted_sum`, and the `image` crate supplies the buffers and the
-rotation. The loop over pixels is four lines, because Rust has no overloaded `+` between whole images.
+`imageproc` already has the per-pixel part, `pixelops::weighted_sum`, and the `image` crate supplies the buffers. The loop over pixels is four lines, because Rust has no overloaded `+` between whole images.
 
 ```rust
 //! OpenCV tutorial `tutorial_adding_images` (`cv::addWeighted`) in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example adding_images`.
 
-use cvg_snippets::common::gradient;
-use image::{RgbImage, imageops};
+use cvg_snippets::common::{Figure, describe, sample, save_figures};
+use image::{DynamicImage, RgbImage};
 use imageproc::pixelops::weighted_sum;
 
 /// `dst = alpha * a + beta * b` on every channel, clamped to 0..=255. `None` when the sizes differ.
@@ -48,46 +47,56 @@ pub fn add_weighted(a: &RgbImage, b: &RgbImage, alpha: f32, beta: f32) -> Option
     })
 }
 
-/// Blends a test image with a rotated copy of itself and describes the result.
-pub fn report() -> String {
-    let first = gradient(64, 64);
-    let second = imageops::rotate90(&first);
+/// The tutorial's two logos and their 70 % / 30 % blend.
+pub fn figures() -> Vec<Figure> {
+    let first = sample("LinuxLogo.jpg");
+    let second = sample("WindowsLogo.jpg");
     let blended = add_weighted(&first, &second, 0.7, 0.3).expect("same size");
-    format!(
-        "first(0,0) = {:?}\nsecond(0,0) = {:?}\nblended(0,0) = {:?}",
-        first.get_pixel(0, 0).0,
-        second.get_pixel(0, 0).0,
-        blended.get_pixel(0, 0).0
-    )
+    vec![
+        ("first", DynamicImage::ImageRgb8(first)),
+        ("second", DynamicImage::ImageRgb8(second)),
+        ("blended", DynamicImage::ImageRgb8(blended)),
+    ]
+}
+
+/// Describes the centre pixel of each figure.
+pub fn report() -> String {
+    describe(&figures(), 160, 120)
 }
 
 pub fn main() {
+    save_figures("adding_images", &figures());
     println!("{}", report());
 }
 ```
 
 ## Explanation
 
-1. `gradient(64, 64)` (from the shared `common` module) makes a deterministic test image, so the numbers below never change.
-2. `imageops::rotate90` produces a second image of the same size.
-3. `add_weighted` first checks that both images have the same size, as OpenCV does, and returns `None` otherwise.
-4. `RgbImage::from_fn` visits every pixel; `weighted_sum` applies `α · a + β · b` to the three channels and clamps.
+1. `sample("LinuxLogo.jpg")` and `sample("WindowsLogo.jpg")` load the two 320×240 photographs the OpenCV tutorial uses
+   (the shared `common` module reads them from `snippets/assets/`).
+2. `add_weighted` first checks that both images have the same size, as OpenCV does, and returns `None` otherwise.
+3. `RgbImage::from_fn` visits every pixel; `weighted_sum` applies `α · a + β · b` to the three channels and clamps.
+4. `figures()` returns the inputs and the blend; `main` saves them as PNGs for this page.
 
 The `γ` offset in `cv::addWeighted` is not part of `weighted_sum`. The tutorial sets it to zero; if you need it, add it to
 each channel before clamping.
 
 ## Result
 
-Printed by the code above (a test asserts this exact text):
+| `first` | `second` | `blended` (α = 0.7, β = 0.3) |
+|---|---|---|
+| ![LinuxLogo.jpg](/img/examples/adding_images/first.png) | ![WindowsLogo.jpg](/img/examples/adding_images/second.png) | ![The blend](/img/examples/adding_images/blended.png) |
+
+These pictures are written by the code above, and a test fails if they differ from the committed files. The centre pixel
+of each, printed by the code (also asserted by a test):
 
 ```text
-first(0,0) = [0, 0, 255]
-second(0,0) = [0, 251, 0]
-blended(0,0) = [0, 75, 178]
+first(160,120) = [0, 0, 0]
+second(160,120) = [91, 135, 20]
+blended(160,120) = [27, 40, 6]
 ```
 
-Check one channel by hand: green is `0.7 · 0 + 0.3 · 251 = 75.3`, which becomes 75, and blue is
-`0.7 · 255 + 0.3 · 0 = 178.5`, which the `f32` arithmetic rounds down to 178.
+Check one channel by hand: green is `0.7 · 0 + 0.3 · 135 = 40.5`, which the `f32` arithmetic rounds down to 40.
 
 ## OpenCV to Rust
 

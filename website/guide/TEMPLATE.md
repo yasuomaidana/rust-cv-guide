@@ -19,7 +19,9 @@ Walk through the code above step by step.
 
 ## Result
 
-What the code prints or produces. Numbers here must be asserted by a test in `snippets/`.
+Show the real input and output pictures the example wrote, then the numbers it printed:
+`![input](/img/examples/<example>/input.png)`. Numbers must be asserted by a test in `snippets/`, and the pictures are
+checked against the committed PNGs by `figures_are_committed`.
 
 ## OpenCV to Rust
 

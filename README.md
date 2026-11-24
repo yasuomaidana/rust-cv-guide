@@ -22,9 +22,9 @@ Planned: `catalog/` (OpenCV tree and coverage status), `tools/` (catalog checks)
 
 ```bash
 cd website
-npm ci
-npm start      # preview on http://localhost:3000/rust-cv-guide/
-npm run build  # fails on broken links
+bun install
+bun start      # preview on http://localhost:3000/rust-cv-guide/
+bun run build  # fails on broken links
 ```
 
 Work is tracked in Plane (`RUSTCVGUID-n`). Branch from `develop` as `RUSTCVGUID-n-slug` and open a pull request.

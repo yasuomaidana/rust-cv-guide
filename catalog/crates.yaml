@@ -1,0 +1,166 @@
+# Candidate crates. Version, licence, rust-version, repository and checked date come from the crates.io API;
+# pure_rust is a judgement (yes | partial | no) that the cargo-deny job in CI backs up for crates used by snippets.
+checked: 2026-11-24
+crates:
+  - name: oxipix
+    version: "unpublished"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.89"
+    repository: https://github.com/yasuomaidana/oxipix
+    last_release: n/a
+    pure_rust: yes
+    areas: "image processing"
+    notes: "Unpublished until 0.1.0 is released; wgpu GPU kernels, mosaic, vectorize."
+  - name: oximedia-cv
+    version: "0.2.1"
+    license: "Apache-2.0"
+    rust_version: "1.87"
+    repository: https://github.com/cool-japan/oximedia
+    last_release: 2026-08-12
+    pure_rust: yes
+    areas: "image processing, features, video"
+    notes: "Computer-vision half of oximedia; ORB/ECC/contours. Known limits recorded in oxipix docs."
+  - name: oximedia
+    version: "0.2.1"
+    license: "Apache-2.0"
+    rust_version: "1.87"
+    repository: https://github.com/cool-japan/oximedia
+    last_release: 2026-08-12
+    pure_rust: yes
+    areas: "video io, codecs"
+    notes: "Sovereign multimedia framework (codecs, containers)."
+  - name: image
+    version: "0.25.10"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.88.0"
+    repository: https://github.com/image-rs/image
+    last_release: 2026-03-10
+    pure_rust: yes
+    areas: "image io, core"
+    notes: "De-facto image types and codecs."
+  - name: imageproc
+    version: "0.27.0"
+    license: "MIT"
+    rust_version: "1.87.0"
+    repository: https://github.com/image-rs/imageproc.git
+    last_release: 2026-06-02
+    pure_rust: yes
+    areas: "image processing"
+    notes: "Filters, morphology, contours, geometric transforms on image types."
+  - name: fast_image_resize
+    version: "6.2.0"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.87.0"
+    repository: https://github.com/cykooz/fast_image_resize
+    last_release: 2026-11-20
+    pure_rust: yes
+    areas: "image processing"
+    notes: "SIMD resize."
+  - name: rxing
+    version: "0.9.4"
+    license: "Apache-2.0"
+    rust_version: "1.85"
+    repository: https://github.com/rxing-core/rxing
+    last_release: 2026-11-08
+    pure_rust: yes
+    areas: "objdetect"
+    notes: "Barcode/QR; port of ZXing."
+  - name: kornia
+    version: "0.1.9"
+    license: "Apache-2.0"
+    rust_version: "1.76"
+    repository: https://github.com/kornia/kornia-rs
+    last_release: 2025-07-01
+    pure_rust: yes
+    areas: "features, geometry"
+    notes: "Differentiable CV in Rust (kornia-rs); check activity before recommending."
+  - name: nalgebra
+    version: "0.35.0"
+    license: "Apache-2.0"
+    rust_version: "1.89.0"
+    repository: https://github.com/dimforge/nalgebra
+    last_release: 2026-05-24
+    pure_rust: yes
+    areas: "core, calib3d"
+    notes: "Linear algebra and geometry."
+  - name: ndarray
+    version: "0.17.2"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.64"
+    repository: https://github.com/rust-ndarray/ndarray
+    last_release: 2026-01-10
+    pure_rust: yes
+    areas: "core"
+    notes: "N-dimensional arrays."
+  - name: tract-onnx
+    version: "0.23.10"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.85"
+    repository: https://github.com/snipsco/tract
+    last_release: 2026-11-24
+    pure_rust: yes
+    areas: "dnn"
+    notes: "ONNX inference on CPU."
+  - name: candle-core
+    version: "0.11.1"
+    license: "MIT OR Apache-2.0"
+    rust_version: "unspecified"
+    repository: https://github.com/huggingface/candle
+    last_release: 2026-10-31
+    pure_rust: partial
+    areas: "dnn"
+    notes: "Tensor/inference; optional CUDA/Metal/MKL backends."
+  - name: burn
+    version: "0.22.1"
+    license: "MIT OR Apache-2.0"
+    rust_version: "1.95"
+    repository: https://github.com/tracel-ai/burn
+    last_release: 2026-11-09
+    pure_rust: partial
+    areas: "dnn"
+    notes: "Deep learning framework; backends vary (wgpu, ndarray, libtorch)."
+  - name: rav1e
+    version: "0.8.1"
+    license: "BSD-2-Clause"
+    rust_version: "1.83.0"
+    repository: https://github.com/xiph/rav1e/
+    last_release: 2025-06-16
+    pure_rust: partial
+    areas: "video io"
+    notes: "AV1 encoder; optional hand-written assembly (nasm)."
+  - name: ravif
+    version: "0.13.0"
+    license: "BSD-3-Clause"
+    rust_version: "1.85"
+    repository: https://github.com/kornelski/cavif-rs
+    last_release: 2026-01-19
+    pure_rust: partial
+    areas: "image io"
+    notes: "AVIF encoding via rav1e."
+  - name: rustface
+    version: "0.1.7"
+    license: "BSD-2-Clause"
+    rust_version: "unspecified"
+    repository: https://github.com/atomashpolskiy/rustface
+    last_release: 2021-06-25
+    pure_rust: yes
+    areas: "objdetect"
+    notes: "Frontal face detection (SeetaFace port); unmaintained since 2021."
+  - name: openh264
+    version: "0.9.10"
+    license: "BSD-2-Clause"
+    rust_version: "1.85"
+    repository: https://github.com/ralfbiedert/openh264-rs
+    last_release: 2026-11-10
+    pure_rust: no
+    areas: "video io"
+    notes: "Wraps Cisco's C++ OpenH264; not pure Rust."
+  - name: opencv
+    version: "0.102.0"
+    license: "MIT"
+    rust_version: "1.88.0"
+    repository: https://github.com/twistedfall/opencv-rust
+    last_release: 2026-11-08
+    pure_rust: no
+    areas: "comparison only"
+    notes: "Bindings to system C++ OpenCV; the baseline this guide moves away from."

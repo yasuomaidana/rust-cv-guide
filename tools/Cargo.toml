@@ -1,0 +1,14 @@
+[package]
+name = "cvg-tools"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Checks the OpenCV 5.1 catalog against coverage and generates the guide's stub pages"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml_ng = "0.10"
+
+[dev-dependencies]
+rstest = "0.29"
+tempfile = "3"

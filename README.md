@@ -1,3 +1,30 @@
 # rust-cv-guide
 
-Pure-Rust guide for OpenCV users. Work in progress.
+A guide for developers who know [OpenCV](https://docs.opencv.org/5.1.0/) and want to do the same work in pure Rust.
+It maps OpenCV 5.1 modules and tutorials to Rust crates (oxipix, oximedia, image, imageproc and others), shows tested
+code, and marks the gaps.
+
+Site: <https://yasuomaidana.github.io/rust-cv-guide/> (deployed from `main`).
+
+Not affiliated with OpenCV. The content is original; links go to docs.opencv.org.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `website/` | Docusaurus site (private package, never published) |
+| `.github/dendrite/directives.toml` | Quality policy enforced by CI and agents |
+
+Planned: `catalog/` (OpenCV tree and coverage status), `tools/` (catalog checks), `snippets/` (compiled examples),
+`comparisons/opencv/` (benchmarks).
+
+## Develop
+
+```bash
+cd website
+npm ci
+npm start      # preview on http://localhost:3000/rust-cv-guide/
+npm run build  # fails on broken links
+```
+
+Work is tracked in Plane (`RUSTCVGUID-n`). Branch from `develop` as `RUSTCVGUID-n-slug` and open a pull request.

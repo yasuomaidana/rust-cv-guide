@@ -3,14 +3,14 @@
 #[path = "../examples/adding_images.rs"]
 mod example;
 
-use cvg_snippets::common::gradient;
+use cvg_snippets::common::{figures_are_committed, gradient};
 use rstest::rstest;
 
 #[test]
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "first(0,0) = [0, 0, 255]\nsecond(0,0) = [0, 251, 0]\nblended(0,0) = [0, 75, 178]"
+        "first(160,120) = [0, 0, 0]\nsecond(160,120) = [91, 135, 20]\nblended(160,120) = [27, 40, 6]"
     );
 }
 
@@ -22,7 +22,9 @@ fn sizes_must_match(#[case] width: u32, #[case] height: u32, #[case] accepted: b
     assert_eq!(blended.is_some(), accepted);
 }
 
+/// One test, so the check of the committed pictures never races with `main` rewriting them.
 #[test]
-fn main_prints_the_report() {
+fn the_pictures_on_the_page_are_what_main_produces() {
+    assert!(figures_are_committed("adding_images", &example::figures()));
     example::main();
 }

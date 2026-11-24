@@ -3,7 +3,7 @@
 tutorials:
   tutorial_anisotropic_image_segmentation_by_a_gst: {status: unreviewed, crates: []}
   tutorial_basic_geometric_drawing: {status: unreviewed, crates: []}
-  tutorial_erosion_dilatation: {status: unreviewed, crates: []}
+  tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc], snippet: erosion}
   tutorial_gausian_median_blur_bilateral_filter: {status: unreviewed, crates: []}
   tutorial_generalized_hough_ballard_guil: {status: unreviewed, crates: []}
   tutorial_back_projection: {status: unreviewed, crates: []}

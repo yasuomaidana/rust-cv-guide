@@ -22,12 +22,10 @@ connect to a strong edge. A ratio of about 1:2 or 1:3 between low and high is th
 
 ## Result
 
-| input | Canny 50/150 |
-|---|---|
-| ![input](/img/examples/canny/input.png) | ![Canny 50/150](/img/examples/canny/edges.png) |
+<LiveExample fn="edges" sample="building.jpg" params={[{name: "low", label: "Low threshold", min: 0, max: 255, step: 1, value: 50}, {name: "high", label: "High threshold", min: 0, max: 255, step: 1, value: 150}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(430, 300), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(430,300) = 235

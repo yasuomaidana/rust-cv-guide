@@ -24,12 +24,10 @@ eroding the dark ones.
 
 ## Result
 
-| mask | eroded | dilated |
-|---|---|---|
-| ![mask](/img/examples/erosion/input.png) | ![eroded](/img/examples/erosion/eroded.png) | ![dilated](/img/examples/erosion/dilated.png) |
+<LiveExample fn="morphology" sample="coins.png" params={[{name: "kind", label: "Operation", options: ["Erode", "Dilate"], value: 0}, {name: "radius", label: "Radius (window = 2r + 1)", min: 0, max: 10, step: 1, value: 2}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. White pixel counts,
-printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input: 45117 white pixels

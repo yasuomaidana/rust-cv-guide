@@ -158,8 +158,11 @@ mod tests {
         );
         write("snippets/examples/blend.rs", "fn main() {}\n");
         call("generate", repo.path()).unwrap();
-        let page = fs::read_to_string(repo.path().join("website/docs/opencv/core/tutorial_mat.md"))
-            .unwrap();
+        let page = fs::read_to_string(
+            repo.path()
+                .join("website/docs/opencv/core/tutorial_mat.mdx"),
+        )
+        .unwrap();
         assert!(
             page.contains("Intro.") && page.contains("```rust\nfn main() {}\n```"),
             "{page}"

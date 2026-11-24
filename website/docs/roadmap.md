@@ -45,8 +45,8 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 
 | Tutorial | Status | Note |
 |---|---|---|
-| [Adding (blending) two images using OpenCV](opencv/core/tutorial_adding_images.md) | covered |  |
-| [Changing the contrast and brightness of an image!](opencv/core/tutorial_basic_linear_transform.md) | covered |  |
+| [Adding (blending) two images using OpenCV](opencv/core/tutorial_adding_images.mdx) | covered |  |
+| [Changing the contrast and brightness of an image!](opencv/core/tutorial_basic_linear_transform.mdx) | covered |  |
 | Discrete Fourier Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/core/discrete_fourier_transform/discrete_fourier_transform.markdown)) | unreviewed |  |
 | File Input and Output using XML / YAML / JSON files ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/core/file_input_output_with_xml_yml/file_input_output_with_xml_yml.markdown)) | unreviewed |  |
 | How to scan images, lookup tables and time measurement with OpenCV ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/core/how_to_scan_images/how_to_scan_images.markdown)) | unreviewed |  |
@@ -105,16 +105,16 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 |---|---|---|
 | Anisotropic image segmentation by a gradient structure tensor ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/anisotropic_image_segmentation/anisotropic_image_segmentation.markdown)) | unreviewed |  |
 | Basic Drawing ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/basic_geometric_drawing/basic_geometric_drawing.markdown)) | unreviewed |  |
-| [Eroding and Dilating](opencv/imgproc/tutorial_erosion_dilatation.md) | covered |  |
-| [Smoothing Images](opencv/imgproc/tutorial_gausian_median_blur_bilateral_filter.md) | partial |  |
+| [Eroding and Dilating](opencv/imgproc/tutorial_erosion_dilatation.mdx) | covered |  |
+| [Smoothing Images](opencv/imgproc/tutorial_gausian_median_blur_bilateral_filter.mdx) | partial |  |
 | Object detection with Generalized Ballard and Guil Hough Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/generalized_hough_ballard_guil/generalized_hough_ballard_guil.markdown)) | unreviewed |  |
 | Back Projection ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/back_projection/back_projection.markdown)) | unreviewed |  |
 | Histogram Calculation ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.markdown)) | unreviewed |  |
 | Histogram Comparison ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/histogram_comparison/histogram_comparison.markdown)) | unreviewed |  |
-| [Histogram Equalization](opencv/imgproc/tutorial_histogram_equalization.md) | covered |  |
+| [Histogram Equalization](opencv/imgproc/tutorial_histogram_equalization.mdx) | covered |  |
 | Template Matching ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/template_matching/template_matching.markdown)) | unreviewed |  |
 | Hit-or-Miss ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/hitOrMiss/hitOrMiss.markdown)) | unreviewed |  |
-| [Canny Edge Detector](opencv/imgproc/tutorial_canny_detector.md) | covered |  |
+| [Canny Edge Detector](opencv/imgproc/tutorial_canny_detector.mdx) | covered |  |
 | Adding borders to your images ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/copyMakeBorder/copyMakeBorder.markdown)) | unreviewed |  |
 | Image Segmentation with Distance Transform and Watershed Algorithm ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/distance_transformation/distance_transform.markdown)) | unreviewed |  |
 | Making your own linear filters! ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/filter_2d/filter_2d.markdown)) | unreviewed |  |
@@ -122,7 +122,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Hough Line Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.markdown)) | unreviewed |  |
 | Laplace Operator ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/laplace_operator/laplace_operator.markdown)) | unreviewed |  |
 | Remapping ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/remap/remap.markdown)) | unreviewed |  |
-| [Sobel Derivatives](opencv/imgproc/tutorial_sobel_derivatives.md) | covered |  |
+| [Sobel Derivatives](opencv/imgproc/tutorial_sobel_derivatives.mdx) | covered |  |
 | Affine Transformations ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/warp_affine/warp_affine.markdown)) | unreviewed |  |
 | Motion Deblur Filter ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/motion_deblur_filter/motion_deblur_filter.markdown)) | unreviewed |  |
 | More Morphology Transformations ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/opening_closing_hats/opening_closing_hats.markdown)) | unreviewed |  |
@@ -136,7 +136,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Convex Hull ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/hull/hull.markdown)) | unreviewed |  |
 | Image Moments ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/moments/moments.markdown)) | unreviewed |  |
 | Point Polygon Test ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/point_polygon_test/point_polygon_test.markdown)) | unreviewed |  |
-| [Basic Thresholding Operations](opencv/imgproc/tutorial_threshold.md) | covered |  |
+| [Basic Thresholding Operations](opencv/imgproc/tutorial_threshold.mdx) | covered |  |
 | Thresholding Operations using inRange ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/threshold_inRange/threshold_inRange.markdown)) | unreviewed |  |
 
 ## introduction

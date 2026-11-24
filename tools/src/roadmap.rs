@@ -24,7 +24,7 @@ fn tutorial_row(tutorial: &Tutorial, entry: Option<&Entry>) -> String {
     let (status, _) = status_of(entry);
     let title = tutorial.title.replace('|', "\\|");
     let name = if is_implemented(status) {
-        format!("[{title}](opencv/{}/{}.md)", tutorial.section, tutorial.id)
+        format!("[{title}](opencv/{}/{}.mdx)", tutorial.section, tutorial.id)
     } else {
         format!("{title} ([OpenCV]({BLOB}{}))", tutorial.source)
     };
@@ -107,11 +107,11 @@ mod tests {
     #[rstest]
     #[case(
         Status::Covered,
-        "[The \"Mat\" class](opencv/core/tutorial_mat.md) | covered |"
+        "[The \"Mat\" class](opencv/core/tutorial_mat.mdx) | covered |"
     )]
     #[case(
         Status::Partial,
-        "[The \"Mat\" class](opencv/core/tutorial_mat.md) | partial |"
+        "[The \"Mat\" class](opencv/core/tutorial_mat.mdx) | partial |"
     )]
     #[case(
         Status::Gap,

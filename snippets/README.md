@@ -14,11 +14,13 @@ synthetic `common::gradient`.
 
 Each example exposes:
 
-- `figures() -> Vec<Figure>`: the input and output pictures, named `input`, `output`, ...;
-- `report() -> String`: the numbers the page prints;
-- `main()`: `common::save_figures("<example>", &figures())` writes them to `website/static/img/examples/<example>/` and prints the report.
+- one or more small pure functions with the parameters a reader would change (`detect_edges(&gray, low, high)`);
+- `figures() -> Vec<Figure>`: the pictures for the page's default settings, which `report()` describes with `common::describe`;
+- `report() -> String`: the numbers the page prints, asserted by its test;
+- `main()`: prints the report.
 
-Its test asserts `report()`, and one test asserts `common::figures_are_committed(..)` before calling `main()`, so the pictures
-on the page cannot drift from the code. Regenerate them with `cargo run -p cvg-snippets --example <name>`.
+The pictures on the site are not committed: the `live/` crate (`cvg-live`) compiles the same files to WebAssembly and the page's
+`<LiveExample>` runs them in the browser on the sample photo or the reader's own image. To make a new example live, add a
+`#[wasm_bindgen]` function for it in `live/src/lib.rs` and a `<LiveExample fn=".." sample=".." params={[..]} />` to its guide page.
 
 Dependencies must be pure Rust.

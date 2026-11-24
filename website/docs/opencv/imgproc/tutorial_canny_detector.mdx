@@ -29,14 +29,19 @@ connect to a strong edge. A ratio of about 1:2 or 1:3 between low and high is th
 //! OpenCV tutorial `tutorial_canny_detector` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example canny`.
 
-use cvg_snippets::common::{Figure, describe, sample, save_figures};
-use image::DynamicImage;
+use cvg_snippets::common::{Figure, describe, sample};
+use image::{DynamicImage, GrayImage};
 use imageproc::{edges::canny, filter::gaussian_blur_f32};
 
-/// Edges of the building photo: blur to calm the noise, then Canny with hysteresis thresholds 50 and 150.
+/// Blur to calm the noise, then Canny with hysteresis thresholds `low` and `high`.
+pub fn detect_edges(input: &GrayImage, low: f32, high: f32) -> GrayImage {
+    canny(&gaussian_blur_f32(input, 1.4), low, high)
+}
+
+/// The building photo and its edges for thresholds 50 and 150.
 pub fn figures() -> Vec<Figure> {
     let input = DynamicImage::ImageRgb8(sample("building.jpg")).to_luma8();
-    let edges = canny(&gaussian_blur_f32(&input, 1.4), 50.0, 150.0);
+    let edges = detect_edges(&input, 50.0, 150.0);
     vec![
         ("input", DynamicImage::ImageLuma8(input)),
         ("edges", DynamicImage::ImageLuma8(edges)),
@@ -49,7 +54,6 @@ pub fn report() -> String {
 }
 
 pub fn main() {
-    save_figures("canny", &figures());
     println!("{}", report());
 }
 ```
@@ -62,12 +66,10 @@ pub fn main() {
 
 ## Result
 
-| input | Canny 50/150 |
-|---|---|
-| ![input](/img/examples/canny/input.png) | ![Canny 50/150](/img/examples/canny/edges.png) |
+<LiveExample fn="edges" sample="building.jpg" params={[{name: "low", label: "Low threshold", min: 0, max: 255, step: 1, value: 50}, {name: "high", label: "High threshold", min: 0, max: 255, step: 1, value: 150}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(430, 300), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(430,300) = 235

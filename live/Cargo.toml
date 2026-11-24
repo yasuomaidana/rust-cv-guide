@@ -1,0 +1,19 @@
+[package]
+name = "cvg-live"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "WebAssembly entry points that run the guide's compiled examples in the browser"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cvg-snippets = { path = "../snippets" }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+imageproc = { version = "0.27", default-features = false }
+# Keep in step with the wasm-bindgen-cli version in .github/workflows/site.yml and website/package.json.
+wasm-bindgen = "=0.2.130"
+
+[dev-dependencies]
+rstest = "0.29"

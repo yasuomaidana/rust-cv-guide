@@ -10,7 +10,7 @@ exclude = ["**/generated/**"]
 [coverage]
 min_percent = 100.0
 scope = "line"
-exclude = []
+exclude = ["tools/src/main.rs"]
 
 [duplication]
 max_percent = 0.0

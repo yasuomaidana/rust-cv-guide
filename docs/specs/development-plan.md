@@ -5,6 +5,7 @@
 - The guide preserves OpenCV's **functionality**, not its API. Rust crates do not have to mirror OpenCV names or signatures.
 - **oximedia** (`oximedia-cv`) gets 5 examples.
 - Where both oximedia and `image`/`imageproc` implement a feature, the page shows **both solutions side by side**: code tabs and a live toggle on the same sliders. A test checks that the two agree within a stated tolerance.
+- **oxipix** (0.1.0, now published) is also used, with default features only (no wgpu). Two examples (RUSTCVGUID-137): contours (`find_contours` + `approxPolyDP`) and homography (perspective unwarp), each beside the imageproc solution.
 - **RustCV** is catalogued only (native camera/GUI facade, no wasm, no processing of its own).
 - Every example has a live WebAssembly demo on its page.
 
@@ -16,6 +17,7 @@
 | RUSTCVGUID-134 | oximedia-cv alternatives: 5 examples beside image/imageproc | 133, matching imgproc pages |
 | RUSTCVGUID-135 | imgproc umbrella: 10 more live examples | 133 |
 | RUSTCVGUID-136 | Catalog RustCV, no example | |
+| RUSTCVGUID-137 | oxipix examples: contours and homography beside imageproc | 133 |
 
 ## oximedia examples (134)
 

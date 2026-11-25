@@ -98,8 +98,12 @@ pub struct Coverage {
 pub struct Sources {
     /// Guide bodies, keyed `<section>/<id>`.
     pub bodies: BTreeMap<String, String>,
-    /// Compiled examples, keyed by file stem.
+    /// Compiled examples, keyed `<group>/<file stem>`.
     pub snippets: BTreeMap<String, String>,
+    /// Their tests from `snippets/tests/<group>/*.rs`, keyed the same way.
+    pub tests: BTreeMap<String, String>,
+    /// All the source of the `cvg-live` crate, which carries the wasm exports and the `#[path]` includes of the examples.
+    pub live: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -140,13 +144,29 @@ pub(crate) mod fixtures {
         Sources {
             bodies: BTreeMap::from([(
                 "core/tutorial_mat".to_string(),
-                "Body.\n\n{{snippet}}\n".to_string(),
+                "Body.\n\n{{snippet}}\n\n<LiveExample fn=\"blend\" />\n\n```text\na = 1\n```\n"
+                    .to_string(),
             )]),
-            snippets: BTreeMap::from([
-                ("core/blend".to_string(), "fn main() {}\n".to_string()),
-                ("alt/blend".to_string(), "fn alt() {}\n".to_string()),
-            ]),
+            snippets: BTreeMap::from([("core/blend".to_string(), "fn main() {}\n".to_string())]),
+            tests: BTreeMap::from([(
+                "core/blend".to_string(),
+                "assert_eq!(report(), \"a = 1\");".to_string(),
+            )]),
+            live: "#[path = \"../../snippets/examples/core/blend.rs\"]\npub fn blend() {}\n"
+                .to_string(),
         }
+    }
+
+    /// `sources()` plus the `alt/blend` example, its test and its live export `blend_alt`.
+    pub fn sources_with_alternative() -> Sources {
+        let mut all = sources();
+        all.snippets
+            .insert("alt/blend".into(), "fn alt() {}\n".into());
+        all.tests.insert("alt/blend".into(), "fn t() {}".into());
+        all.live.push_str(
+            "#[path = \"../../snippets/examples/alt/blend.rs\"]\npub fn blend_alt() {}\n",
+        );
+        all
     }
 
     /// A covered entry whose `ndarray` solution has `alt/blend` as its alternative in `alt_crate`.

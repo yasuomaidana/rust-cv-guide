@@ -90,7 +90,15 @@ fn grouped(dir: &Path, extension: &str) -> Result<BTreeMap<String, String>, Stri
 pub fn sources(root: &Path) -> Result<Sources, String> {
     let bodies = grouped(&root.join("website/guide"), "md")?;
     let snippets = grouped(&root.join("snippets/examples"), "rs")?;
-    Ok(Sources { bodies, snippets })
+    let tests = grouped(&root.join("snippets/tests"), "rs")?;
+    let live = read_all(files(&root.join("live/src"), "rs")?, stem)?;
+    let live = live.into_values().collect::<Vec<_>>().join("\n");
+    Ok(Sources {
+        bodies,
+        snippets,
+        tests,
+        live,
+    })
 }
 
 #[cfg(test)]

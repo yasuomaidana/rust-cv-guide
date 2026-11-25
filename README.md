@@ -28,3 +28,8 @@ bun run build  # fails on broken links
 ```
 
 Work is tracked in Plane (`RUSTCVGUID-n`). One pull request per ticket, targeting `main` (or the trunk branch of its section ticket, which targets `main`); merging to `main` deploys the site.
+
+## When is a tutorial "covered"?
+
+The examples are the coverage tests. A tutorial may be marked `covered` or `partial` only when its example is tested, the page's numbers are asserted by that test, and the example runs live in the browser; `cargo run -p cvg-tools -- check` enforces it and CI runs it. The full list is in [`snippets/README.md`](snippets/README.md).
+

@@ -29,3 +29,7 @@ Numbers must be asserted by a test in `snippets/`.
 | OpenCV 5.1 | Rust |
 |---|---|
 | `cv::function` | `crate::function` |
+
+A page is only valid when `cargo run -p cvg-tools -- check` passes: its first ```text block must be asserted verbatim by the
+example's test, its `<LiveExample fn="..">` must name a `#[wasm_bindgen]` export of `live/`, and every alternative crate needs its own tested example.
+

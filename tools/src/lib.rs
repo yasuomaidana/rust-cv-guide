@@ -4,6 +4,7 @@ pub mod check;
 pub mod generate;
 pub mod load;
 pub mod model;
+pub mod proof;
 pub mod roadmap;
 
 use load::at;
@@ -154,9 +155,14 @@ mod tests {
         };
         write(
             "website/guide/core/tutorial_mat.md",
-            "Intro.\n\n{{snippet}}\n",
+            "Intro.\n\n{{snippet}}\n\n<LiveExample fn=\"blend\" />\n",
         );
         write("snippets/examples/core/blend.rs", "fn main() {}\n");
+        write("snippets/tests/core/blend.rs", "fn t() {}\n");
+        write(
+            "live/src/lib.rs",
+            "#[path = \"../../snippets/examples/core/blend.rs\"]\nmod b;\npub fn blend() {}\n",
+        );
         call("generate", repo.path()).unwrap();
         let page = fs::read_to_string(
             repo.path()

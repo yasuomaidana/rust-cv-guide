@@ -1,6 +1,6 @@
 //! Helpers every example shares, so inputs and golden hashes are made one way.
 
-use image::{DynamicImage, GrayImage, Rgb, RgbImage};
+use image::{DynamicImage, GrayImage, Luma, Rgb, RgbImage};
 use std::path::Path;
 
 /// A named picture an example produces; `describe` prints a pixel of each.
@@ -70,6 +70,76 @@ pub fn edge_figures(photo: &str, detect: impl Fn(&GrayImage) -> GrayImage) -> Ve
     ]
 }
 
+/// A sample photograph as a grey image.
+pub fn gray_sample(name: &str) -> GrayImage {
+    DynamicImage::ImageRgb8(sample(name)).to_luma8()
+}
+
+/// Blurs away texture, then keeps what is brighter than `level` as 255 on 0: the mask the contour examples trace.
+pub fn bright_mask(input: &GrayImage, level: u8) -> GrayImage {
+    let smooth = image::imageops::blur(input, 3.0);
+    GrayImage::from_fn(smooth.width(), smooth.height(), |x, y| {
+        Luma([if smooth.get_pixel(x, y).0[0] > level {
+            255
+        } else {
+            0
+        }])
+    })
+}
+
+/// Closed outlines as pixel coordinates, as both contour examples produce them.
+pub type Outlines = Vec<Vec<(f32, f32)>>;
+
+/// The grey picture dimmed, with each outline drawn on it in red.
+pub fn draw_outlines(base: &GrayImage, outlines: &Outlines) -> RgbImage {
+    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
+        let Luma([level]) = *base.get_pixel(x, y);
+        Rgb([level / 3; 3])
+    });
+    for outline in outlines {
+        for (from, to) in outline.iter().zip(outline.iter().cycle().skip(1)) {
+            let steps = (to.0 - from.0)
+                .abs()
+                .max((to.1 - from.1).abs())
+                .ceil()
+                .max(1.0);
+            for step in 0..=steps as u32 {
+                let t = step as f32 / steps;
+                let (x, y) = (from.0 + (to.0 - from.0) * t, from.1 + (to.1 - from.1) * t);
+                if x >= 0.0 && y >= 0.0 && x < base.width() as f32 && y < base.height() as f32 {
+                    canvas.put_pixel(x as u32, y as u32, Rgb([255, 40, 40]));
+                }
+            }
+        }
+    }
+    canvas
+}
+
+/// What a contour example prints: how many outlines it found and how many points they have in total.
+pub fn outline_report(outlines: &Outlines) -> String {
+    let points: usize = outlines.iter().map(Vec::len).sum();
+    format!("outlines = {}\npoints = {points}", outlines.len())
+}
+
+/// Corners of a quadrilateral inside a `width` x `height` picture, clockwise from the top left;
+/// `skew` (0 to 0.4) pulls them in by different amounts so the quad looks like a tilted page.
+pub fn skewed_quad(width: u32, height: u32, skew: f32) -> [(f32, f32); 4] {
+    let (w, h) = (width as f32, height as f32);
+    [
+        (skew * w, 0.5 * skew * h),
+        (w - 0.5 * skew * w, skew * h),
+        (w - skew * w, h - 0.5 * skew * h),
+        (0.5 * skew * w, h - skew * h),
+    ]
+}
+
+/// The photo and the tilted quad of it straightened by `unwarp`: the two figures of a homography example.
+pub fn unwarp_figures(unwarp: impl Fn(&RgbImage, &[(f32, f32); 4]) -> RgbImage) -> Vec<Figure> {
+    let input = sample("building.jpg");
+    let straight = unwarp(&input, &skewed_quad(input.width(), input.height(), 0.15));
+    rgb_figures(input, [("unwarped", straight)])
+}
+
 /// A deterministic test image: red grows left to right, green top to bottom, blue is an 8-pixel checkerboard.
 pub fn gradient(width: u32, height: u32) -> RgbImage {
     RgbImage::from_fn(width, height, |x, y| {
@@ -91,6 +161,29 @@ pub fn fnv1a(bytes: &[u8]) -> u64 {
 mod tests {
     use super::*;
     use rstest::rstest;
+
+    #[test]
+    fn outlines_are_drawn_and_counted() {
+        let base = GrayImage::from_pixel(8, 8, Luma([90]));
+        let square = vec![(1.0, 1.0), (6.0, 1.0), (6.0, 6.0), (1.0, 6.0)];
+        let outside = vec![(-3.0, 2.0), (20.0, 2.0)];
+        let drawn = draw_outlines(&base, &vec![square.clone(), outside]);
+        assert_eq!(drawn.get_pixel(3, 1).0, [255, 40, 40]);
+        assert_eq!(drawn.get_pixel(3, 3).0, [30, 30, 30]);
+        assert_eq!(outline_report(&vec![square]), "outlines = 1\npoints = 4");
+    }
+
+    #[test]
+    fn the_quad_stays_inside_the_picture() {
+        let quad = skewed_quad(400, 300, 0.15);
+        assert!(
+            quad.iter()
+                .all(|(x, y)| (0.0..=400.0).contains(x) && (0.0..=300.0).contains(y))
+        );
+        let kept = unwarp_figures(|image, _| image.clone());
+        assert_eq!(kept.len(), 2);
+        assert_eq!(gray_sample("building.jpg").dimensions(), (868, 600));
+    }
 
     #[test]
     fn figures_are_named_in_order() {

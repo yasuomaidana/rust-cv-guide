@@ -1,0 +1,140 @@
+---
+title: "Basic concepts of the homography explained with code"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+**Status:** partial
+
+**Reason:** Perspective correction only; no pose recovery or homography decomposition
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/homography/homography.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+- [imageproc](https://crates.io/crates/imageproc)
+- [oxipix](https://crates.io/crates/oxipix)
+
+## Goal
+
+Straighten a tilted rectangle in a photograph, the perspective-correction demo of the OpenCV homography tutorial
+(`getPerspectiveTransform` then `warpPerspective`). Two crates do it, `imageproc` and `oxipix`, so the page shows both and
+runs both on the same image.
+
+## Theory
+
+A homography is the 3×3 matrix that maps points of one plane to another as seen by a camera. Four point pairs fix it. For
+perspective correction you pick the four corners of the tilted page in the photo and map them to the corners of an upright
+rectangle; every output pixel is then looked up in the photo through the inverse matrix and interpolated.
+
+## Code
+
+The tilted page is a quadrilateral inside the photo, pulled in from the corners by `skew` (`common::skewed_quad`). Both versions
+map it onto the whole picture with bilinear interpolation.
+
+<Tabs groupId="implementation">
+<TabItem value="image + imageproc" label="image + imageproc" default>
+
+```rust
+//! OpenCV tutorial `tutorial_homography`, perspective correction: `getPerspectiveTransform` then `warpPerspective`.
+//! Run with `cargo run -p cvg-snippets --example homography`.
+
+use cvg_snippets::common::{Figure, describe, unwarp_figures};
+use image::{Rgb, RgbImage};
+use imageproc::geometric_transformations::{Border, Interpolation, Projection, warp};
+
+/// Maps the quadrilateral `quad` (clockwise from the top left) onto the whole picture, bilinearly.
+pub fn unwarp(input: &RgbImage, quad: &[(f32, f32); 4]) -> RgbImage {
+    let (w, h) = (input.width() as f32, input.height() as f32);
+    let page = [(0.0, 0.0), (w, 0.0), (w, h), (0.0, h)];
+    let to_page =
+        Projection::from_control_points(*quad, page).expect("four corners in general position");
+    warp(
+        input,
+        to_page,
+        Interpolation::Bilinear,
+        Border::Constant(Rgb([0, 0, 0])),
+    )
+}
+
+/// The photo and its tilted quad straightened.
+pub fn figures() -> Vec<Figure> {
+    unwarp_figures(unwarp)
+}
+
+/// Describes one pixel of each figure, away from the centre where the straightening moves things.
+pub fn report() -> String {
+    describe(&figures(), 215, 150)
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+</TabItem>
+<TabItem value="oxipix" label="oxipix">
+
+```rust
+//! OpenCV tutorial `tutorial_homography`, perspective correction, with `oxipix` instead of `imageproc`.
+//! Run with `cargo run -p cvg-snippets --example oxipix_homography`.
+
+use cvg_snippets::common::{Figure, describe, unwarp_figures};
+use image::{DynamicImage, RgbImage};
+use oxipix::mosaic::unwarp_quad_rgba;
+
+/// Maps the quadrilateral `quad` (clockwise from the top left) onto the whole picture.
+pub fn unwarp(input: &RgbImage, quad: &[(f32, f32); 4]) -> RgbImage {
+    let wide = quad.map(|(x, y)| (f64::from(x), f64::from(y)));
+    let photo = DynamicImage::ImageRgb8(input.clone()).to_rgba8();
+    let page = unwarp_quad_rgba(&photo, &wide, input.width(), input.height())
+        .expect("four corners in general position");
+    DynamicImage::ImageRgba8(page).to_rgb8()
+}
+
+/// The photo and its tilted quad straightened.
+pub fn figures() -> Vec<Figure> {
+    unwarp_figures(unwarp)
+}
+
+/// Describes one pixel of each figure, away from the centre where the straightening moves things.
+pub fn report() -> String {
+    describe(&figures(), 215, 150)
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Explanation
+
+1. `Projection::from_control_points(quad, page)` solves the homography from the four corner pairs, like `getPerspectiveTransform`. It returns `None` for corners in a degenerate position.
+2. `warp(input, to_page, Interpolation::Bilinear, ..)` is `warpPerspective`; pixels that fall outside the photo take the border value.
+3. `oxipix::mosaic::unwarp_quad_rgba(&photo, &quad, width, height)` does both steps in one call on an RGBA image (it also takes a GPU path when oxipix is built with its `gpu` feature, which this page does not use). A test checks that the two straightened pictures differ by under two grey levels on average.
+
+## Result
+
+<LiveExample fn="unwarp" label="image + imageproc" alt={{fn: "unwarp_oxipix", label: "oxipix"}} sample="building.jpg" params={[{name: "skew", label: "How far the corners are pulled in", min: 0, max: 0.4, step: 0.01, value: 0.15}]} />
+
+Move the control, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text (`oxipix` prints
+`[250, 249, 245]` for the unwarped pixel):
+
+```text
+input(215,150) = [242, 241, 237]
+unwarped(215,150) = [249, 248, 244]
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::getPerspectiveTransform(src, dst)` | `imageproc::geometric_transformations::Projection::from_control_points` |
+| `cv::warpPerspective(img, out, H, size)` | `imageproc::geometric_transformations::warp` |
+| both steps for a quadrilateral | `oxipix::mosaic::unwarp_quad_rgba` |

@@ -8,7 +8,7 @@ tutorials:
   tutorial_feature_detection: {status: unreviewed, crates: []}
   tutorial_feature_flann_matcher: {status: unreviewed, crates: []}
   tutorial_feature_homography: {status: unreviewed, crates: []}
-  tutorial_homography: {status: unreviewed, crates: []}
+  tutorial_homography: {status: partial, crates: [image, imageproc, oxipix], snippet: features/homography, alternatives: [{crate: oxipix, snippet: oxipix/homography}], reason: "Perspective correction only; no pose recovery or homography decomposition"}
   tutorial_corner_subpixels: {status: unreviewed, crates: []}
   tutorial_generic_corner_detector: {status: unreviewed, crates: []}
   tutorial_good_features_to_track: {status: unreviewed, crates: []}

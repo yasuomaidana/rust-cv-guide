@@ -1,6 +1,6 @@
-//! Tests for `examples/erosion.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/imgproc_morph/erosion.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/erosion.rs"]
+#[path = "../../examples/imgproc_morph/erosion.rs"]
 mod example;
 
 #[test]

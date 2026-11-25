@@ -1,6 +1,6 @@
-//! Tests for `examples/equalize.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/imgproc_color/equalize.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/equalize.rs"]
+#[path = "../../examples/imgproc_color/equalize.rs"]
 mod example;
 
 #[test]

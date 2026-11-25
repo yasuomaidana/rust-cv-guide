@@ -1,6 +1,6 @@
-//! Tests for `examples/threshold.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/imgproc_color/threshold.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/threshold.rs"]
+#[path = "../../examples/imgproc_color/threshold.rs"]
 mod example;
 
 #[test]

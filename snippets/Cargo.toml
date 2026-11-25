@@ -11,3 +11,67 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg"]
 [dev-dependencies]
 imageproc = { version = "0.27", default-features = false }
 rstest = "0.29"
+
+[[example]]
+name = "adding_images"
+path = "examples/core/adding_images.rs"
+
+[[example]]
+name = "basic_linear_transform"
+path = "examples/core/basic_linear_transform.rs"
+
+[[example]]
+name = "smoothing"
+path = "examples/imgproc_filters/smoothing.rs"
+
+[[example]]
+name = "sobel"
+path = "examples/imgproc_filters/sobel.rs"
+
+[[example]]
+name = "erosion"
+path = "examples/imgproc_morph/erosion.rs"
+
+[[example]]
+name = "canny"
+path = "examples/imgproc_edges/canny.rs"
+
+[[example]]
+name = "threshold"
+path = "examples/imgproc_color/threshold.rs"
+
+[[example]]
+name = "equalize"
+path = "examples/imgproc_color/equalize.rs"
+
+[[test]]
+name = "adding_images"
+path = "tests/core/adding_images.rs"
+
+[[test]]
+name = "basic_linear_transform"
+path = "tests/core/basic_linear_transform.rs"
+
+[[test]]
+name = "smoothing"
+path = "tests/imgproc_filters/smoothing.rs"
+
+[[test]]
+name = "sobel"
+path = "tests/imgproc_filters/sobel.rs"
+
+[[test]]
+name = "erosion"
+path = "tests/imgproc_morph/erosion.rs"
+
+[[test]]
+name = "canny"
+path = "tests/imgproc_edges/canny.rs"
+
+[[test]]
+name = "threshold"
+path = "tests/imgproc_color/threshold.rs"
+
+[[test]]
+name = "equalize"
+path = "tests/imgproc_color/equalize.rs"

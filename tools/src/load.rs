@@ -74,17 +74,22 @@ fn read_all(
     Ok(out)
 }
 
-/// Guide bodies from `website/guide/<section>/*.md` and examples from `snippets/examples/*.rs`.
-pub fn sources(root: &Path) -> Result<Sources, String> {
-    let mut bodies = BTreeMap::new();
-    let guide = root.join("website/guide");
-    let sections = fs::read_dir(&guide).map(|d| d.filter_map(|e| e.ok()).collect::<Vec<_>>());
-    for section in sections.unwrap_or_default() {
-        let name = section.file_name().to_string_lossy().into_owned();
+/// Reads `<dir>/<group>/*.<extension>` for every group folder, keyed `<group>/<file stem>`.
+fn grouped(dir: &Path, extension: &str) -> Result<BTreeMap<String, String>, String> {
+    let mut found = BTreeMap::new();
+    let groups = fs::read_dir(dir).map(|d| d.filter_map(|e| e.ok()).collect::<Vec<_>>());
+    for group in groups.unwrap_or_default() {
+        let name = group.file_name().to_string_lossy().into_owned();
         let key = |p: &Path| format!("{name}/{}", stem(p));
-        bodies.extend(read_all(files(&section.path(), "md")?, key)?);
+        found.extend(read_all(files(&group.path(), extension)?, key)?);
     }
-    let snippets = read_all(files(&root.join("snippets/examples"), "rs")?, stem)?;
+    Ok(found)
+}
+
+/// Guide bodies from `website/guide/<section>/*.md` and examples from `snippets/examples/<group>/*.rs`.
+pub fn sources(root: &Path) -> Result<Sources, String> {
+    let bodies = grouped(&root.join("website/guide"), "md")?;
+    let snippets = grouped(&root.join("snippets/examples"), "rs")?;
     Ok(Sources { bodies, snippets })
 }
 
@@ -141,13 +146,17 @@ mod tests {
         write(dir.path(), "website/guide/core/tutorial_mat.md", "body");
         write(dir.path(), "website/guide/core/notes.txt", "ignored");
         write(dir.path(), "website/guide/TEMPLATE.md", "not in a section");
-        write(dir.path(), "snippets/examples/blend.rs", "fn main() {}");
+        write(
+            dir.path(),
+            "snippets/examples/core/blend.rs",
+            "fn main() {}",
+        );
         let found = sources(dir.path()).unwrap();
         assert_eq!(
             found.bodies.keys().collect::<Vec<_>>(),
             ["core/tutorial_mat"]
         );
-        assert_eq!(found.snippets["blend"], "fn main() {}");
+        assert_eq!(found.snippets["core/blend"], "fn main() {}");
     }
 
     #[test]

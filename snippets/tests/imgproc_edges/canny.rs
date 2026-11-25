@@ -1,6 +1,6 @@
-//! Tests for `examples/canny.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/imgproc_edges/canny.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/canny.rs"]
+#[path = "../../examples/imgproc_edges/canny.rs"]
 mod example;
 
 #[test]

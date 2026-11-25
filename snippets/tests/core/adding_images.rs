@@ -1,6 +1,6 @@
-//! Tests for `examples/adding_images.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/core/adding_images.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/adding_images.rs"]
+#[path = "../../examples/core/adding_images.rs"]
 mod example;
 
 use cvg_snippets::common::gradient;

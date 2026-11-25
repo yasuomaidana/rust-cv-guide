@@ -21,7 +21,7 @@ Walk through the code above step by step.
 
 Put a live example first, then the numbers the code prints:
 `<LiveExample fn="edges" sample="building.jpg" params={[{name: "low", label: "Low", min: 0, max: 255, step: 1, value: 50}]} />`
-(`fn` is an export of `live/src/lib.rs`; `sample` is a file of `snippets/assets/`; `options: [..]` makes a drop-down).
+(`fn` is an export of a module in `live/src/`; `sample` is a file of `snippets/assets/`; `options: [..]` makes a drop-down).
 Numbers must be asserted by a test in `snippets/`.
 
 ## OpenCV to Rust

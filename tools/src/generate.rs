@@ -131,7 +131,7 @@ mod tests {
     fn renders_expected_text(#[case] path: &str, #[case] expected: &str) {
         let mut cov = coverage(Status::Covered, &["ndarray"]);
         let tutorial = cov.tutorials.get_mut("tutorial_mat").unwrap();
-        tutorial.snippet = Some("blend".into());
+        tutorial.snippet = Some("core/blend".into());
         tutorial.reason = Some("shown below".into());
         let pages = pages(&catalog(), &cov, &sources());
         assert!(

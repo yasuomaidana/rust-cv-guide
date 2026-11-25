@@ -8,6 +8,10 @@ use wasm_bindgen::prelude::*;
 mod smoothing;
 
 #[allow(dead_code)]
+#[path = "../../snippets/examples/imgproc_filters/laplace.rs"]
+mod laplace;
+
+#[allow(dead_code)]
 #[path = "../../snippets/examples/imgproc_filters/sobel.rs"]
 mod sobel;
 
@@ -35,6 +39,12 @@ pub fn sobel_gradient(pixels: &[u8], width: u32, height: u32, kind: u32) -> Vec<
     })
 }
 
+/// The Laplacian of the grey picture smoothed with a Gaussian of spread `sigma`, scaled so the strongest response is 255.
+#[wasm_bindgen]
+pub fn laplace(pixels: &[u8], width: u32, height: u32, sigma: f32) -> Vec<u8> {
+    rgba(laplace::laplacian(&gray(pixels, width, height), sigma))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,6 +58,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn laplace_runs() {
+        assert_picture(&laplace(&pixels(), SIDE, SIDE, 1.0));
     }
 
     #[rstest]

@@ -7,11 +7,11 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 
 | Status | Modules | Tutorials |
 |---|---|---|
-| covered | 0 | 9 |
+| covered | 0 | 10 |
 | partial | 0 | 5 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 124 |
+| unreviewed | 17 | 123 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -120,7 +120,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Making your own linear filters! ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/filter_2d/filter_2d.markdown)) | unreviewed |  |
 | [Hough Circle Transform](opencv/imgproc/tutorial_hough_circle.mdx) | partial | imageproc has no circle Hough transform, so only oximedia-cv is shown; it votes per radius with no gradient direction, so it is slower and less selective than OpenCV's HOUGH_GRADIENT |
 | Hough Line Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.markdown)) | unreviewed |  |
-| Laplace Operator ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/laplace_operator/laplace_operator.markdown)) | unreviewed |  |
+| [Laplace Operator](opencv/imgproc/tutorial_laplace_operator.mdx) | covered |  |
 | Remapping ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/remap/remap.markdown)) | unreviewed |  |
 | [Sobel Derivatives](opencv/imgproc/tutorial_sobel_derivatives.mdx) | covered |  |
 | Affine Transformations ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/warp_affine/warp_affine.markdown)) | unreviewed |  |

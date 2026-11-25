@@ -21,6 +21,10 @@ mod hough_circles;
 mod morphology;
 
 #[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/laplacian.rs"]
+mod laplacian;
+
+#[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/smoothing.rs"]
 mod smoothing;
 
@@ -71,6 +75,12 @@ pub fn hats_oxi(pixels: &[u8], width: u32, height: u32, kind: u32, radius: u32) 
     rgba(hat(&morphology::OPS, kind, &grey, radius.min(255) as u8))
 }
 
+/// As `laplace`, by oximedia.
+#[wasm_bindgen]
+pub fn laplace_oxi(pixels: &[u8], width: u32, height: u32, sigma: f32) -> Vec<u8> {
+    rgba(laplacian::laplacian(&gray(pixels, width, height), sigma))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -84,6 +94,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth_oxi(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn laplace_runs() {
+        assert_picture(&laplace_oxi(&pixels(), SIDE, SIDE, 1.0));
     }
 
     #[test]

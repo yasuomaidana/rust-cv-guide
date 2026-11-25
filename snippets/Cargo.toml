@@ -186,3 +186,19 @@ path = "tests/imgproc_morph/hats.rs"
 [[test]]
 name = "oxi_morphology"
 path = "tests/oximedia/morphology.rs"
+
+[[example]]
+name = "laplace"
+path = "examples/imgproc_filters/laplace.rs"
+
+[[example]]
+name = "oxi_laplacian"
+path = "examples/oximedia/laplacian.rs"
+
+[[test]]
+name = "laplace"
+path = "tests/imgproc_filters/laplace.rs"
+
+[[test]]
+name = "oxi_laplacian"
+path = "tests/oximedia/laplacian.rs"

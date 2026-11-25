@@ -76,6 +76,11 @@ mod tests {
         assert_picture(&smooth(&pixels(), SIDE, SIDE, kind, amount));
     }
 
+    #[test]
+    fn laplace_runs() {
+        assert_picture(&laplace(&pixels(), SIDE, SIDE, 1.0));
+    }
+
     #[rstest]
     #[case(0)]
     #[case(1)]
@@ -83,11 +88,6 @@ mod tests {
     #[case(3)]
     fn filter_2d_runs(#[case] kind: u32) {
         assert_picture(&filter_2d(&pixels(), SIDE, SIDE, kind, 4));
-    }
-
-    #[test]
-    fn laplace_runs() {
-        assert_picture(&laplace(&pixels(), SIDE, SIDE, 1.0));
     }
 
     #[rstest]

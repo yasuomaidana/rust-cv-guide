@@ -92,6 +92,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "cvg-live"
+version = "0.1.0"
+dependencies = [
+ "cvg-snippets",
+ "image",
+ "imageproc",
+ "rstest",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "cvg-snippets"
 version = "0.1.0"
 dependencies = [

@@ -29,12 +29,10 @@ Smoothing replaces each pixel with a combination of its neighbours, which suppre
 
 ## Result
 
-| input | box 5×5 | Gaussian σ=1.1 | median 5×5 |
-|---|---|---|---|
-| ![input](/img/examples/smoothing/input.png) | ![box 5×5](/img/examples/smoothing/box.png) | ![Gaussian σ=1.1](/img/examples/smoothing/gaussian.png) | ![median 5×5](/img/examples/smoothing/median.png) |
+<LiveExample fn="smooth" sample="chelsea.png" params={[{name: "kind", label: "Filter", options: ["Box", "Gaussian", "Median"], value: 1}, {name: "amount", label: "Radius (box, median) or σ (Gaussian)", min: 1, max: 10, step: 0.5, value: 2}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(225, 150), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(225,150) = [190, 150, 124]

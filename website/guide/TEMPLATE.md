@@ -19,9 +19,10 @@ Walk through the code above step by step.
 
 ## Result
 
-Show the real input and output pictures the example wrote, then the numbers it printed:
-`![input](/img/examples/<example>/input.png)`. Numbers must be asserted by a test in `snippets/`, and the pictures are
-checked against the committed PNGs by `figures_are_committed`.
+Put a live example first, then the numbers the code prints:
+`<LiveExample fn="edges" sample="building.jpg" params={[{name: "low", label: "Low", min: 0, max: 255, step: 1, value: 50}]} />`
+(`fn` is an export of `live/src/lib.rs`; `sample` is a file of `snippets/assets/`; `options: [..]` makes a drop-down).
+Numbers must be asserted by a test in `snippets/`.
 
 ## OpenCV to Rust
 

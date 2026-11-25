@@ -1,7 +1,7 @@
 //! OpenCV tutorial `tutorial_basic_linear_transform` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example basic_linear_transform`.
 
-use cvg_snippets::common::{Figure, describe, sample, save_figures};
+use cvg_snippets::common::{Figure, describe, sample};
 use image::{DynamicImage, Rgb, RgbImage};
 
 /// Adjusts contrast (`alpha`) and brightness (`beta`) for every pixel channel:
@@ -30,6 +30,5 @@ pub fn report() -> String {
 }
 
 pub fn main() {
-    save_figures("basic_linear_transform", &figures());
     println!("{}", report());
 }

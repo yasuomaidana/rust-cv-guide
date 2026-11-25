@@ -32,12 +32,10 @@ each channel before clamping.
 
 ## Result
 
-| `first` | `second` | `blended` (α = 0.7, β = 0.3) |
-|---|---|---|
-| ![LinuxLogo.jpg](/img/examples/adding_images/first.png) | ![WindowsLogo.jpg](/img/examples/adding_images/second.png) | ![The blend](/img/examples/adding_images/blended.png) |
+<LiveExample fn="blend" sample="LinuxLogo.jpg" second="WindowsLogo.jpg" params={[{name: "alpha", label: "α (weight of the first image)", min: 0, max: 1, step: 0.05, value: 0.7}]} />
 
-These pictures are written by the code above, and a test fails if they differ from the committed files. The centre pixel
-of each, printed by the code (also asserted by a test):
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 first(160,120) = [0, 0, 0]

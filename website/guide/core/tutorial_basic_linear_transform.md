@@ -33,12 +33,10 @@ mid-grey by `((100 + c) / 100)²`, which is a different curve from `α`). Use th
 
 ## Result
 
-| original | adjusted (α = 1.3, β = 40) |
-|---|---|
-| ![The original photo](/img/examples/basic_linear_transform/original.png) | ![Brighter, higher contrast](/img/examples/basic_linear_transform/adjusted.png) |
+<LiveExample fn="contrast_brightness" sample="coffee.png" params={[{name: "alpha", label: "α (contrast)", min: 0, max: 3, step: 0.1, value: 1.3}, {name: "beta", label: "β (brightness)", min: -100, max: 100, step: 1, value: 40}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(300, 150), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 original(300,150) = [232, 151, 62]

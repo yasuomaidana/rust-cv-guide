@@ -21,12 +21,10 @@ crowded levels and raises the contrast of hazy images.
 
 ## Result
 
-| input | equalized |
-|---|---|
-| ![input](/img/examples/equalize/input.png) | ![equalized](/img/examples/equalize/equalized.png) |
+<LiveExample fn="equalize_histogram" sample="building.jpg" params={[]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(100, 60), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(100,60) = 153

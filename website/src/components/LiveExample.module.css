@@ -1,0 +1,59 @@
+.live {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  font-size: 0.9rem;
+}
+
+.pictures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.pictures figure {
+  margin: 0;
+}
+
+.pictures canvas {
+  width: 100%;
+  height: auto;
+  background: var(--ifm-color-emphasis-200);
+}
+
+.pictures figcaption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.upload input {
+  display: block;
+}
+
+.status {
+  color: var(--ifm-color-emphasis-700);
+}

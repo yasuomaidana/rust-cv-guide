@@ -30,19 +30,23 @@ image whose histogram has two humps, such as bright coins on a darker background
 //! OpenCV tutorial `tutorial_threshold` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example threshold`.
 
-use cvg_snippets::common::{Figure, describe, sample, save_figures};
+use cvg_snippets::common::{Figure, describe, sample};
 use image::{DynamicImage, GrayImage};
 use imageproc::contrast::{ThresholdType, otsu_level, threshold};
+
+/// `cv::threshold`: split at `level`, or at the level Otsu's method picks when `level` is `None`.
+pub fn binarize(input: &GrayImage, level: Option<u8>, kind: ThresholdType) -> GrayImage {
+    threshold(input, level.unwrap_or_else(|| otsu_level(input)), kind)
+}
 
 /// The coins, split at a fixed level and at the level Otsu's method picks, plus the `ToZero` variant.
 pub fn figures() -> Vec<Figure> {
     let input: GrayImage = DynamicImage::ImageRgb8(sample("coins.png")).to_luma8();
-    let level = otsu_level(&input);
     [
         ("input", input.clone()),
-        ("binary", threshold(&input, 100, ThresholdType::Binary)),
-        ("otsu", threshold(&input, level, ThresholdType::Binary)),
-        ("to_zero", threshold(&input, level, ThresholdType::ToZero)),
+        ("binary", binarize(&input, Some(100), ThresholdType::Binary)),
+        ("otsu", binarize(&input, None, ThresholdType::Binary)),
+        ("to_zero", binarize(&input, None, ThresholdType::ToZero)),
     ]
     .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
     .to_vec()
@@ -54,7 +58,6 @@ pub fn report() -> String {
 }
 
 pub fn main() {
-    save_figures("threshold", &figures());
     println!("{}", report());
 }
 ```
@@ -70,12 +73,10 @@ pub fn main() {
 
 ## Result
 
-| input | Binary, level 100 | Binary, Otsu level | ToZero, Otsu level |
-|---|---|---|---|
-| ![input](/img/examples/threshold/input.png) | ![Binary, level 100](/img/examples/threshold/binary.png) | ![Binary, Otsu level](/img/examples/threshold/otsu.png) | ![ToZero, Otsu level](/img/examples/threshold/to_zero.png) |
+<LiveExample fn="binarize" sample="coins.png" params={[{name: "kind", label: "Type", options: ["Binary", "Binary inverted", "Truncate", "To zero", "To zero inverted", "Binary at Otsu level"], value: 5}, {name: "level", label: "Level (ignored for Otsu)", min: 0, max: 255, step: 1, value: 100}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(190, 150), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(190,150) = 41

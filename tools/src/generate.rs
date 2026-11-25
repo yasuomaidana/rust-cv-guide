@@ -21,7 +21,7 @@ pub fn pages(catalog: &Catalog, coverage: &Coverage, sources: &Sources) -> Vec<P
         .iter()
         .filter(|t| implemented(coverage, t))
     {
-        let path = format!("docs/opencv/{}/{}.md", t.section, t.id);
+        let path = format!("docs/opencv/{}/{}.mdx", t.section, t.id);
         let entry = coverage.tutorials.get(&t.id);
         let body = render_body(&format!("{}/{}", t.section, t.id), entry, sources);
         out.push(item_page(path, t, entry, body));
@@ -109,19 +109,22 @@ mod tests {
     }
 
     #[rstest]
-    #[case("docs/opencv/core/tutorial_mat.md", "title: \"The \\\"Mat\\\" class\"")]
     #[case(
-        "docs/opencv/core/tutorial_mat.md",
+        "docs/opencv/core/tutorial_mat.mdx",
+        "title: \"The \\\"Mat\\\" class\""
+    )]
+    #[case(
+        "docs/opencv/core/tutorial_mat.mdx",
         "- [ndarray](https://crates.io/crates/ndarray)"
     )]
     #[case(
-        "docs/opencv/core/tutorial_mat.md",
+        "docs/opencv/core/tutorial_mat.mdx",
         "blob/5.1.0/doc/tutorials/core/mat.markdown"
     )]
     #[case("docs/opencv/core/_category_.json", "\"label\": \"core\"")]
-    #[case("docs/opencv/core/tutorial_mat.md", "**Reason:** shown below")]
+    #[case("docs/opencv/core/tutorial_mat.mdx", "**Reason:** shown below")]
     #[case(
-        "docs/opencv/core/tutorial_mat.md",
+        "docs/opencv/core/tutorial_mat.mdx",
         "Body.\n\n```rust\nfn main() {}\n```"
     )]
     #[case("docs/roadmap.md", "| covered | 1 | 1 |")]
@@ -155,7 +158,7 @@ mod tests {
             &coverage(Status::Partial, &[]),
             &Sources::default(),
         );
-        let text = find(&pages, "docs/opencv/core/tutorial_mat.md");
+        let text = find(&pages, "docs/opencv/core/tutorial_mat.mdx");
         assert!(text.contains("No crate named yet.") && text.contains("**Status:** partial"));
     }
 }

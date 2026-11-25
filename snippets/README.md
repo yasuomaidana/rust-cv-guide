@@ -24,3 +24,15 @@ The pictures on the site are not committed: the `live/` crate (`cvg-live`) compi
 `#[wasm_bindgen]` function for it in the matching module of `live/src/` (`basics`, `filters`, `morph`, `edges`, `color`) and a `<LiveExample fn=".." sample=".." params={[..]} />` to its guide page.
 
 Dependencies must be pure Rust.
+
+## Definition of done: the examples are the coverage tests
+
+A tutorial is `covered` or `partial` only when all of this is true, and `cargo run -p cvg-tools -- check` (run by CI) fails otherwise:
+
+1. its example exists under `examples/<group>/` and has a test under `tests/<group>/` that asserts `report()` verbatim;
+2. the numbers its page prints (the first ```text block) are exactly that asserted text;
+3. the example is compiled into `live/` (a `#[path = "../../snippets/examples/<group>/<name>.rs"]` include) and its wasm function is exported there, and the page's `<LiveExample fn="..">` (and `alt`) name exported functions;
+4. each alternative crate (`alternatives:` in the coverage file) meets the same rules and has a test that its result agrees with the main solution within a stated tolerance;
+5. no example is left out of the catalog: every file in `examples/` is named by a coverage entry.
+
+Until then the tutorial stays `unreviewed` (or `gap` with a reason) and appears on the roadmap, not as a page. A ticket is not finished until its tutorials pass `check`.

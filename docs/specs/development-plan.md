@@ -9,6 +9,14 @@
 - **RustCV** is catalogued only (native camera/GUI facade, no wasm, no processing of its own).
 - Every example has a live WebAssembly demo on its page.
 
+## Definition of done (decided 2026-11-24)
+
+The examples are the coverage tests. A tutorial is not finished until `cvg-tools check` proves it: tested example, page numbers asserted by the test, live wasm export, tested alternatives, no orphan examples (RUSTCVGUID-138).
+
+## oximedia features
+
+The five oximedia examples cover five different oximedia features, not five of one: bilateral filtering (done), Canny edges (done), ORB feature matching, Hough circles, PSNR/SSIM quality metrics.
+
 ## Tickets
 
 | Ticket | Goal | Blocked by |

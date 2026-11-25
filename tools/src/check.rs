@@ -18,6 +18,7 @@ pub fn problems(
     out.extend(entry_problems("module", &coverage.modules, &known));
     out.extend(entry_problems("tutorial", &coverage.tutorials, &known));
     out.extend(evidence_problems(catalog, coverage, sources));
+    out.extend(crate::proof::problems(catalog, coverage, sources));
     out
 }
 
@@ -131,6 +132,7 @@ mod tests {
     use crate::model::fixtures::catalog;
     use crate::model::fixtures::{
         coverage, coverage_for, crates, entry, entry_with_alternative, full_entry, sources,
+        sources_with_alternative,
     };
     use rstest::rstest;
 
@@ -219,7 +221,12 @@ mod tests {
         #[case] tutorial: Entry,
         #[case] expected: &str,
     ) {
-        let found = problems(&catalog(), &coverage_for(tutorial), &crates(), &sources());
+        let found = problems(
+            &catalog(),
+            &coverage_for(tutorial),
+            &crates(),
+            &sources_with_alternative(),
+        );
         assert!(found.iter().any(|p| p == expected), "{found:?}");
     }
 

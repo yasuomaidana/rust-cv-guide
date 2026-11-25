@@ -153,7 +153,9 @@ fn category_pages(catalog: &Catalog, coverage: &Coverage) -> Vec<Page> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::fixtures::{catalog, coverage, entry_with_alternative, sources};
+    use crate::model::fixtures::{
+        catalog, coverage, entry_with_alternative, sources, sources_with_alternative,
+    };
     use rstest::rstest;
 
     fn find<'a>(pages: &'a [Page], path: &str) -> &'a str {
@@ -211,7 +213,7 @@ mod tests {
             crates: vec!["ndarray".into(), "oximedia-cv".into()],
             ..entry_with_alternative("oximedia-cv", "alt/blend")
         };
-        let pages = pages(&catalog(), &cov, &sources());
+        let pages = pages(&catalog(), &cov, &sources_with_alternative());
         let text = find(&pages, "docs/opencv/core/tutorial_mat.mdx");
         for expected in [
             "import Tabs from '@theme/Tabs';",

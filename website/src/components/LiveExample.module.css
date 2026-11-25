@@ -67,3 +67,9 @@
   display: block;
   color: var(--ifm-color-danger);
 }
+
+.readout {
+  margin: 0.75rem 0 0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}

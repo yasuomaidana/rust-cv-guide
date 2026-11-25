@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 8 |
-| partial | 0 | 4 |
+| partial | 0 | 5 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 126 |
+| unreviewed | 17 | 125 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -26,7 +26,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Using Orbbec 3D cameras (UVC) ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/app/orbbec_uvc.markdown)) | unreviewed |  |
 | Reading Geospatial Raster files with GDAL ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/app/raster_io_gdal.markdown)) | unreviewed |  |
 | Adding a Trackbar to our applications! ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/app/trackbar.markdown)) | unreviewed |  |
-| Video Input with OpenCV and similarity measurement ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/app/video_input_psnr_ssim.markdown)) | unreviewed |  |
+| [Video Input with OpenCV and similarity measurement](opencv/app/tutorial_video_input_psnr_ssim.mdx) | partial | Still-image PSNR (by hand and by oximedia-cv) and SSIM (oximedia-cv); no video capture or frame-by-frame comparison |
 | Creating a video with OpenCV ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/app/video_write.markdown)) | unreviewed |  |
 
 ## calib3d

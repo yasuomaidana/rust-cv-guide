@@ -8,6 +8,9 @@ description = "Compiled examples shown in the Rust CV Guide; every page's code a
 [dependencies]
 # Pure Rust; no default features so it builds for wasm32 (no rayon-threaded FFT).
 oximedia-cv = { version = "0.2", default-features = false }
+# Frame types the quality metrics take; the same versions oximedia-cv uses.
+oximedia-codec = { version = "0.2", default-features = false }
+oximedia-core = { version = "0.2", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 
 [dev-dependencies]
@@ -151,3 +154,19 @@ path = "examples/oximedia/hough_circles.rs"
 [[test]]
 name = "oxi_hough_circles"
 path = "tests/oximedia/hough_circles.rs"
+
+[[example]]
+name = "psnr"
+path = "examples/app/psnr.rs"
+
+[[example]]
+name = "oxi_quality"
+path = "examples/oximedia/quality.rs"
+
+[[test]]
+name = "psnr"
+path = "tests/app/psnr.rs"
+
+[[test]]
+name = "oxi_quality"
+path = "tests/oximedia/quality.rs"

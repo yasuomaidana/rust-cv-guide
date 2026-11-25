@@ -7,6 +7,7 @@
 use cvg_snippets::common::{Outlines, draw_outlines, draw_points, ink_mask, invoice_quad};
 use image::{DynamicImage, GrayImage, RgbImage};
 
+mod app;
 mod basics;
 mod color;
 mod edges;

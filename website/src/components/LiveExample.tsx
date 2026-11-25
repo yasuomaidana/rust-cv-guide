@@ -27,10 +27,12 @@ type Props = {
   label?: string;
   /** A second implementation of the same job (another crate), run on the same pixels and controls and drawn beside the first. */
   alt?: {fn: string; label: string};
+  /** An exported function that returns text, called with the same arguments and shown under the pictures (numbers such as PSNR). */
+  readout?: {fn: string; label: string};
 };
 
 const MAX_SIDE = 640;
-type Wasm = Record<string, (...args: unknown[]) => Uint8Array>;
+type Wasm = Record<string, (...args: unknown[]) => Uint8Array & string>;
 let wasmLoading: Promise<Wasm> | undefined;
 
 /** `version` changes with every build, so a rebuilt bundle is never served from the browser cache. */
@@ -102,13 +104,46 @@ type Outcomes = {main?: Outcome; alt?: Outcome};
 
 const describe = (failure: unknown) => String(failure instanceof Error ? failure.message : failure);
 
+/** What a wasm function is called with: the pictures' bytes, their size and the controls' values. */
+type Call = {wasm: Wasm; images: Uint8Array[]; size: {width: number; height: number}; values: number[]};
+
+const invoke = ({wasm, images, size, values}: Call, name: string) => wasm[name](...images, size.width, size.height, ...values);
+
+/** Draws the result of one exported function and times it; a missing export or a failure is reported, not thrown. */
+function runOne(call: Call, name: string, canvas: HTMLCanvasElement | null): Outcome {
+  if (typeof call.wasm[name] !== 'function') {
+    return {error: `cvg-live has no export "${name}": rebuild the wasm (bun run wasm) and hard-reload`};
+  }
+  try {
+    const started = performance.now();
+    show(canvas, new ImageData(new Uint8ClampedArray(invoke(call, name)), call.size.width, call.size.height));
+    return {ms: Math.round(performance.now() - started)};
+  } catch (failure) {
+    return {error: `"${name}" failed: ${describe(failure)}`};
+  }
+}
+
+/** The text an exported function returns, or why there is none. */
+function readoutOf(call: Call, name: string): string {
+  return typeof call.wasm[name] === 'function' ? String(invoke(call, name)) : `no export "${name}"`;
+}
+
 /** Runs the wasm function whenever the pictures or the controls change and draws both canvases, timing each one on its own. */
-function useRun(base: string, version: string, fn: string, altFn: string | undefined, pictures: Pictures | undefined, values: number[]) {
+function useRun(
+  base: string,
+  version: string,
+  fn: string,
+  extra: {altFn?: string; readoutFn?: string},
+  pictures: Pictures | undefined,
+  values: number[],
+) {
+  const {altFn, readoutFn} = extra;
   const input = useRef<HTMLCanvasElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
   const altOutput = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('Loading…');
   const [outcomes, setOutcomes] = useState<Outcomes>({});
+  const [readout, setReadout] = useState('');
   useEffect(() => {
     if (!pictures) return;
     let cancelled = false;
@@ -116,30 +151,18 @@ function useRun(base: string, version: string, fn: string, altFn: string | undef
     loadWasm(base, version)
       .then((wasm) => {
         if (cancelled) return;
-        const images = other ? [bytes(first), bytes(other)] : [bytes(first)];
-        const runOne = (name: string, canvas: HTMLCanvasElement | null): Outcome => {
-          if (typeof wasm[name] !== 'function') {
-            return {error: `cvg-live has no export "${name}": rebuild the wasm (bun run wasm) and hard-reload`};
-          }
-          try {
-            const started = performance.now();
-            const result = wasm[name](...images, first.width, first.height, ...values);
-            show(canvas, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
-            return {ms: Math.round(performance.now() - started)};
-          } catch (failure) {
-            return {error: `"${name}" failed: ${describe(failure)}`};
-          }
-        };
+        const call: Call = {wasm, images: other ? [bytes(first), bytes(other)] : [bytes(first)], size: first, values};
         show(input.current, first);
-        setOutcomes({main: runOne(fn, output.current), alt: altFn ? runOne(altFn, altOutput.current) : undefined});
+        setOutcomes({main: runOne(call, fn, output.current), alt: altFn ? runOne(call, altFn, altOutput.current) : undefined});
+        if (readoutFn) setReadout(readoutOf(call, readoutFn));
         setStatus('Computed in your browser');
       })
       .catch((failure) => setStatus(`Could not run the example: ${describe(failure)}`));
     return () => {
       cancelled = true;
     };
-  }, [base, version, fn, altFn, pictures, values]);
-  return {input, output, altOutput, status, outcomes};
+  }, [base, version, fn, altFn, readoutFn, pictures, values]);
+  return {input, output, altOutput, status, outcomes, readout};
 }
 
 /** The caption of one output with its own time (or the reason it did not run). */
@@ -193,12 +216,19 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
+function Live({fn, sample, second, params = [], label = 'Output', alt, readout: readoutSpec}: Props) {
   const base = useBaseUrl('/');
   const version = String(useDocusaurusContext().siteConfig.customFields?.buildTime ?? '');
   const [values, setValues] = useState(params.map((p) => p.value));
   const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {input, output, altOutput, status, outcomes} = useRun(base, version, fn, alt?.fn, pictures, values);
+  const {input, output, altOutput, status, outcomes, readout} = useRun(
+    base,
+    version,
+    fn,
+    {altFn: alt?.fn, readoutFn: readoutSpec?.fn},
+    pictures,
+    values,
+  );
 
   const upload = async (file?: File) => {
     if (!file) return;
@@ -235,6 +265,11 @@ function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
           </figure>
         )}
       </div>
+      {readoutSpec && (
+        <p className={styles.readout}>
+          <strong>{readoutSpec.label}:</strong> {readout}
+        </p>
+      )}
       <Footer status={error ?? status} second={Boolean(second)} onFile={(f) => void upload(f)} onReset={() => void reload()} />
     </div>
   );

@@ -58,6 +58,16 @@
   color: var(--ifm-color-emphasis-700);
 }
 
+.timing {
+  color: var(--ifm-color-emphasis-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.failure {
+  display: block;
+  color: var(--ifm-color-danger);
+}
+
 .readout {
   margin: 0.75rem 0 0;
   font-family: var(--ifm-font-family-monospace);

@@ -12,6 +12,10 @@ mod smoothing;
 mod laplace;
 
 #[allow(dead_code)]
+#[path = "../../snippets/examples/imgproc_filters/filter2d.rs"]
+mod filter2d;
+
+#[allow(dead_code)]
 #[path = "../../snippets/examples/imgproc_filters/sobel.rs"]
 mod sobel;
 
@@ -45,6 +49,18 @@ pub fn laplace(pixels: &[u8], width: u32, height: u32, sigma: f32) -> Vec<u8> {
     rgba(laplace::laplacian(&gray(pixels, width, height), sigma))
 }
 
+/// Convolution with a kernel by number: 0 a normalised box of side `size` (made odd), 1 sharpen, 2 outline, anything else emboss.
+#[wasm_bindgen]
+pub fn filter_2d(pixels: &[u8], width: u32, height: u32, kind: u32, size: u32) -> Vec<u8> {
+    let preset = match kind {
+        0 => filter2d::Preset::Box(size | 1),
+        1 => filter2d::Preset::Sharpen,
+        2 => filter2d::Preset::Outline,
+        _ => filter2d::Preset::Emboss,
+    };
+    rgba(filter2d::filter_2d(&rgb(pixels, width, height), preset))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -63,6 +79,15 @@ mod tests {
     #[test]
     fn laplace_runs() {
         assert_picture(&laplace(&pixels(), SIDE, SIDE, 1.0));
+    }
+
+    #[rstest]
+    #[case(0)]
+    #[case(1)]
+    #[case(2)]
+    #[case(3)]
+    fn filter_2d_runs(#[case] kind: u32) {
+        assert_picture(&filter_2d(&pixels(), SIDE, SIDE, kind, 4));
     }
 
     #[rstest]

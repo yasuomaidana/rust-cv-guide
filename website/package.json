@@ -9,12 +9,16 @@
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
-    "serve": "docusaurus serve --port 3000"
+    "serve": "docusaurus serve --port 3000",
+    "wasm": "cargo build -p cvg-live --release --target wasm32-unknown-unknown --manifest-path ../Cargo.toml && wasm-bindgen --target web --out-dir static/wasm --out-name cvg_live ../target/wasm32-unknown-unknown/release/cvg_live.wasm && mkdir -p static/samples && cp ../snippets/assets/*.jpg ../snippets/assets/*.png static/samples/",
+    "prebuild": "bun run wasm",
+    "prestart": "bun run wasm"
   },
   "dependencies": {
     "@docusaurus/core": "^3.5.2",
     "@docusaurus/preset-classic": "^3.5.2",
     "@docusaurus/theme-mermaid": "^3.5.2",
+    "@easyops-cn/docusaurus-search-local": "^0.55.3",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",
     "prism-react-renderer": "^2.3.0",

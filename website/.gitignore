@@ -5,3 +5,5 @@ build/
 *.log
 .DS_Store
 dendrite-docs.tar.gz
+static/wasm/
+static/samples/

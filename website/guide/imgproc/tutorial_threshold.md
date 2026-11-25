@@ -26,12 +26,10 @@ image whose histogram has two humps, such as bright coins on a darker background
 
 ## Result
 
-| input | Binary, level 100 | Binary, Otsu level | ToZero, Otsu level |
-|---|---|---|---|
-| ![input](/img/examples/threshold/input.png) | ![Binary, level 100](/img/examples/threshold/binary.png) | ![Binary, Otsu level](/img/examples/threshold/otsu.png) | ![ToZero, Otsu level](/img/examples/threshold/to_zero.png) |
+<LiveExample fn="binarize" sample="coins.png" params={[{name: "kind", label: "Type", options: ["Binary", "Binary inverted", "Truncate", "To zero", "To zero inverted", "Binary at Otsu level"], value: 5}, {name: "level", label: "Level (ignored for Otsu)", min: 0, max: 255, step: 1, value: 100}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(190, 150), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(190,150) = 41

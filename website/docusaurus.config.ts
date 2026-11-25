@@ -24,6 +24,12 @@ const config: Config = {
       } satisfies Preset.Options,
     ],
   ],
+  themes: [
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {hashed: true, indexDocs: true, indexBlog: false, indexPages: false, docsRouteBasePath: '/', highlightSearchTermsOnTargetPage: true},
+    ],
+  ],
   themeConfig: {
     navbar: {
       title: 'Rust CV Guide',

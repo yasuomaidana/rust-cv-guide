@@ -4,6 +4,7 @@ pub mod check;
 pub mod generate;
 pub mod load;
 pub mod model;
+pub mod roadmap;
 
 use load::at;
 use model::{Catalog, Coverage, Crates, Sources};
@@ -127,9 +128,9 @@ mod tests {
         let stale = dir.path().join("website/docs/opencv/old/gone.md");
         fs::create_dir_all(stale.parent().unwrap()).unwrap();
         fs::write(&stale, "x").unwrap();
-        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 5 pages");
+        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 1 pages");
         assert!(!stale.exists());
-        assert!(dir.path().join("website/docs/status.md").exists());
+        assert!(dir.path().join("website/docs/roadmap.md").exists());
     }
 
     #[rstest]
@@ -157,8 +158,11 @@ mod tests {
         );
         write("snippets/examples/blend.rs", "fn main() {}\n");
         call("generate", repo.path()).unwrap();
-        let page = fs::read_to_string(repo.path().join("website/docs/opencv/core/tutorial_mat.md"))
-            .unwrap();
+        let page = fs::read_to_string(
+            repo.path()
+                .join("website/docs/opencv/core/tutorial_mat.mdx"),
+        )
+        .unwrap();
         assert!(
             page.contains("Intro.") && page.contains("```rust\nfn main() {}\n```"),
             "{page}"

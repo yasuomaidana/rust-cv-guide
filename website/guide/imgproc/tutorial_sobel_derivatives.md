@@ -22,12 +22,10 @@ magnitude is `√(Gx² + Gy²)`, and the tutorial approximates it by blending th
 
 ## Result
 
-| input | x derivative | y derivative | magnitude |
-|---|---|---|---|
-| ![input](/img/examples/sobel/input.png) | ![x derivative](/img/examples/sobel/grad_x.png) | ![y derivative](/img/examples/sobel/grad_y.png) | ![magnitude](/img/examples/sobel/magnitude.png) |
+<LiveExample fn="sobel_gradient" sample="building.jpg" params={[{name: "kind", label: "Output", options: ["x derivative", "y derivative", "Magnitude"], value: 2}]} />
 
-These pictures are written by the code above and a test fails if they differ from the committed files. The pixel at
-(430, 300), printed by the code and asserted by a test:
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 grad_x(430,300) = 22

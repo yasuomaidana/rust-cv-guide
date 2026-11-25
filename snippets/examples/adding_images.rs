@@ -1,7 +1,7 @@
 //! OpenCV tutorial `tutorial_adding_images` (`cv::addWeighted`) in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example adding_images`.
 
-use cvg_snippets::common::{Figure, describe, sample, save_figures};
+use cvg_snippets::common::{Figure, describe, sample};
 use image::{DynamicImage, RgbImage};
 use imageproc::pixelops::weighted_sum;
 
@@ -32,6 +32,5 @@ pub fn report() -> String {
 }
 
 pub fn main() {
-    save_figures("adding_images", &figures());
     println!("{}", report());
 }

@@ -3,7 +3,7 @@
 #[path = "../examples/adding_images.rs"]
 mod example;
 
-use cvg_snippets::common::{check_example, gradient};
+use cvg_snippets::common::gradient;
 use rstest::rstest;
 
 #[test]
@@ -23,6 +23,6 @@ fn sizes_must_match(#[case] width: u32, #[case] height: u32, #[case] accepted: b
 }
 
 #[test]
-fn the_pictures_on_the_page_are_what_main_produces() {
-    check_example("adding_images", &example::figures(), example::main);
+fn main_prints_the_report() {
+    example::main();
 }

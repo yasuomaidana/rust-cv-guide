@@ -104,6 +104,30 @@ type Outcomes = {main?: Outcome; alt?: Outcome};
 
 const describe = (failure: unknown) => String(failure instanceof Error ? failure.message : failure);
 
+/** What a wasm function is called with: the pictures' bytes, their size and the controls' values. */
+type Call = {wasm: Wasm; images: Uint8Array[]; size: {width: number; height: number}; values: number[]};
+
+const invoke = ({wasm, images, size, values}: Call, name: string) => wasm[name](...images, size.width, size.height, ...values);
+
+/** Draws the result of one exported function and times it; a missing export or a failure is reported, not thrown. */
+function runOne(call: Call, name: string, canvas: HTMLCanvasElement | null): Outcome {
+  if (typeof call.wasm[name] !== 'function') {
+    return {error: `cvg-live has no export "${name}": rebuild the wasm (bun run wasm) and hard-reload`};
+  }
+  try {
+    const started = performance.now();
+    show(canvas, new ImageData(new Uint8ClampedArray(invoke(call, name)), call.size.width, call.size.height));
+    return {ms: Math.round(performance.now() - started)};
+  } catch (failure) {
+    return {error: `"${name}" failed: ${describe(failure)}`};
+  }
+}
+
+/** The text an exported function returns, or why there is none. */
+function readoutOf(call: Call, name: string): string {
+  return typeof call.wasm[name] === 'function' ? String(invoke(call, name)) : `no export "${name}"`;
+}
+
 /** Runs the wasm function whenever the pictures or the controls change and draws both canvases, timing each one on its own. */
 function useRun(
   base: string,
@@ -127,25 +151,10 @@ function useRun(
     loadWasm(base, version)
       .then((wasm) => {
         if (cancelled) return;
-        const images = other ? [bytes(first), bytes(other)] : [bytes(first)];
-        const runOne = (name: string, canvas: HTMLCanvasElement | null): Outcome => {
-          if (typeof wasm[name] !== 'function') {
-            return {error: `cvg-live has no export "${name}": rebuild the wasm (bun run wasm) and hard-reload`};
-          }
-          try {
-            const started = performance.now();
-            const result = wasm[name](...images, first.width, first.height, ...values);
-            show(canvas, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
-            return {ms: Math.round(performance.now() - started)};
-          } catch (failure) {
-            return {error: `"${name}" failed: ${describe(failure)}`};
-          }
-        };
+        const call: Call = {wasm, images: other ? [bytes(first), bytes(other)] : [bytes(first)], size: first, values};
         show(input.current, first);
-        setOutcomes({main: runOne(fn, output.current), alt: altFn ? runOne(altFn, altOutput.current) : undefined});
-        if (readoutFn) {
-          setReadout(typeof wasm[readoutFn] === 'function' ? String(wasm[readoutFn](...images, first.width, first.height, ...values)) : `no export "${readoutFn}"`);
-        }
+        setOutcomes({main: runOne(call, fn, output.current), alt: altFn ? runOne(call, altFn, altOutput.current) : undefined});
+        if (readoutFn) setReadout(readoutOf(call, readoutFn));
         setStatus('Computed in your browser');
       })
       .catch((failure) => setStatus(`Could not run the example: ${describe(failure)}`));

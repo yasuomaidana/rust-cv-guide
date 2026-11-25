@@ -16,7 +16,7 @@ tutorials:
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}
   tutorial_distance_transform: {status: unreviewed, crates: []}
   tutorial_filter_2d: {status: unreviewed, crates: []}
-  tutorial_hough_circle: {status: unreviewed, crates: []}
+  tutorial_hough_circle: {status: partial, crates: [image, imageproc, oximedia-cv], snippet: oximedia/hough_circles, reason: "imageproc has no circle Hough transform, so only oximedia-cv is shown; it votes per radius with no gradient direction, so it is slower and less selective than OpenCV's HOUGH_GRADIENT"}
   tutorial_hough_lines: {status: unreviewed, crates: []}
   tutorial_laplace_operator: {status: unreviewed, crates: []}
   tutorial_remap: {status: unreviewed, crates: []}

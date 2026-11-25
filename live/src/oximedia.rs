@@ -1,6 +1,7 @@
 //! The same live examples computed by `oximedia-cv`, shown beside the `image` + `imageproc` result.
 
 use crate::{BILATERAL_SIGMA_COLOR, gray, marked, rgb, rgba};
+use cvg_snippets::common::draw_circles;
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
@@ -10,6 +11,10 @@ mod canny;
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/orb.rs"]
 mod orb;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/hough_circles.rs"]
+mod hough_circles;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/smoothing.rs"]
@@ -40,6 +45,21 @@ pub fn keypoints_oxi(pixels: &[u8], width: u32, height: u32, threshold: u32, max
     marked(pixels, width, height, (threshold, max), orb::keypoints)
 }
 
+/// Circles of radius `min_radius` to `max_radius` that at least `votes` Canny edge points lie on, drawn as red rings.
+#[wasm_bindgen]
+pub fn circles_oxi(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    min_radius: f32,
+    max_radius: f32,
+    votes: u32,
+) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    let found = hough_circles::circles(&grey, min_radius, max_radius, votes);
+    rgba(draw_circles(&grey, &found))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,6 +73,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth_oxi(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn circles_run() {
+        assert_picture(&circles_oxi(&pixels(), SIDE, SIDE, 4.0, 8.0, 10));
     }
 
     #[test]

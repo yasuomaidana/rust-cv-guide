@@ -258,3 +258,11 @@ path = "examples/imgproc_geom/template_matching.rs"
 [[test]]
 name = "template_matching"
 path = "tests/imgproc_geom/template_matching.rs"
+
+[[example]]
+name = "in_range"
+path = "examples/imgproc_color/in_range.rs"
+
+[[test]]
+name = "in_range"
+path = "tests/imgproc_color/in_range.rs"

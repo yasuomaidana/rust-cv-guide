@@ -1,0 +1,151 @@
+---
+title: "Thresholding Operations using inRange"
+---
+
+**Status:** covered
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/threshold_inRange/threshold_inRange.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+
+## Goal
+
+Pick out the pixels of one colour with a range test in HSV, as OpenCV's `inRange` does. The page isolates the red pane of a
+logo; the sliders let you pick any other colour.
+
+## Theory
+
+In RGB a colour and its brightness are mixed up: a dark red and a bright red share no channel value. HSV separates them: **hue**
+is the position on the colour wheel (0° red, 60° yellow, 120° green, 180° cyan, 240° blue, 300° magenta), **saturation** says how
+far from grey, and **value** how bright. A colour range then is a hue interval plus a minimum saturation and value, which also keeps
+out greys (no hue) and dark pixels (unreliable hue). Red sits at both ends of the hue wheel, so its range wraps through 0°.
+
+## Code
+
+The crates have no HSV conversion in the guide's dependencies, and the conversion is a few lines, so the example writes it out.
+
+```rust
+//! OpenCV tutorial `tutorial_threshold_inRange` in pure Rust: pick the pixels whose colour is in a range, in HSV.
+//! Run with `cargo run -p cvg-snippets --example in_range`.
+
+use cvg_snippets::common::sample;
+use image::{GrayImage, Luma, Rgb, RgbImage};
+
+/// `cv::cvtColor(.., COLOR_RGB2HSV)` for one pixel: hue in degrees (0 to 360), saturation and value from 0 to 1.
+pub fn rgb_to_hsv(Rgb([r, g, b]): Rgb<u8>) -> (f32, f32, f32) {
+    let (r, g, b) = (
+        f32::from(r) / 255.0,
+        f32::from(g) / 255.0,
+        f32::from(b) / 255.0,
+    );
+    let (high, low) = (r.max(g).max(b), r.min(g).min(b));
+    let spread = high - low;
+    let hue = if spread == 0.0 {
+        0.0
+    } else if high == r {
+        60.0 * ((g - b) / spread).rem_euclid(6.0)
+    } else if high == g {
+        60.0 * ((b - r) / spread + 2.0)
+    } else {
+        60.0 * ((r - g) / spread + 4.0)
+    };
+    (hue, if high == 0.0 { 0.0 } else { spread / high }, high)
+}
+
+/// What the page asks for: hues from `low` to `high` degrees (a range with `low > high` wraps through red, as red does),
+/// at least `saturation` saturated and at least `value` bright.
+#[derive(Clone, Copy, Debug)]
+pub struct Range {
+    pub low: f32,
+    pub high: f32,
+    pub saturation: f32,
+    pub value: f32,
+}
+
+/// `cv::inRange` on the HSV image: 255 where the pixel is in the range, 0 elsewhere.
+pub fn in_range(input: &RgbImage, range: Range) -> GrayImage {
+    GrayImage::from_fn(input.width(), input.height(), |x, y| {
+        let (hue, saturation, value) = rgb_to_hsv(*input.get_pixel(x, y));
+        let in_hue = if range.low <= range.high {
+            hue >= range.low && hue <= range.high
+        } else {
+            hue >= range.low || hue <= range.high
+        };
+        Luma([
+            if in_hue && saturation >= range.saturation && value >= range.value {
+                255
+            } else {
+                0
+            },
+        ])
+    })
+}
+
+/// `cv::bitwise_and(src, src, dst, mask)`: the picture where the mask is set, black elsewhere.
+pub fn keep(input: &RgbImage, mask: &GrayImage) -> RgbImage {
+    RgbImage::from_fn(input.width(), input.height(), |x, y| {
+        if mask.get_pixel(x, y).0[0] > 0 {
+            *input.get_pixel(x, y)
+        } else {
+            Rgb([0, 0, 0])
+        }
+    })
+}
+
+/// The red pane of the logo: hues from 345 through 0 to 15 degrees, clearly coloured and not dark.
+pub const RED: Range = Range {
+    low: 345.0,
+    high: 15.0,
+    saturation: 0.5,
+    value: 0.4,
+};
+
+/// How many pixels the red range picks, and what a pixel of the red pane and one of the green pane become.
+pub fn report() -> String {
+    let photo = sample("WindowsLogo.jpg");
+    let mask = in_range(&photo, RED);
+    let kept = mask.pixels().filter(|p| p.0[0] > 0).count();
+    let result = keep(&photo, &mask);
+    format!(
+        "in range = {kept} of {}\nred pane (150,80) = {:?}\ngreen pane (190,95) = {:?}",
+        photo.width() * photo.height(),
+        result.get_pixel(150, 80).0,
+        result.get_pixel(190, 95).0
+    )
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+## Explanation
+
+1. `rgb_to_hsv` is the standard conversion: the value is the largest channel, the saturation is the spread over the value, and the hue depends on which channel is largest. OpenCV stores the hue in 0 to 179 for 8-bit pictures; this page uses degrees, 0 to 360.
+2. `in_range` tests each pixel's hue against the interval (with wrap-around when `low > high`), and its saturation and value against their minimums; the mask is 255 inside and 0 outside, like `cv::inRange` on the HSV image.
+3. `keep` is `bitwise_and` with the mask: the colour pixels survive and the rest become black.
+4. Tests check that the six pure colours of the RGB cube have hues 0°, 60°, ..., 300°, that grey has none, and that the red range wraps while the green one does not and a grey pixel is rejected by the saturation test.
+
+## Result
+
+<LiveExample fn="colour_range" sample="WindowsLogo.jpg" params={[{name: "low", label: "Hue from (degrees)", min: 0, max: 360, step: 1, value: 345}, {name: "high", label: "Hue to (degrees)", min: 0, max: 360, step: 1, value: 15}, {name: "saturation", label: "Saturation at least", min: 0, max: 1, step: 0.05, value: 0.5}, {name: "value", label: "Value at least", min: 0, max: 1, step: 0.05, value: 0.4}]} />
+
+Try hue 100 to 140 for the green pane or 190 to 230 for the blue one. Move the controls, or use your own image: the code above
+runs in your browser as WebAssembly. For the sample photo and the settings this page starts with, the code prints the numbers
+below, and a test asserts this exact text:
+
+```text
+in range = 1081 of 76800
+red pane (150,80) = [199, 37, 35]
+green pane (190,95) = [0, 0, 0]
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::cvtColor(src, hsv, COLOR_BGR2HSV)` | `rgb_to_hsv` per pixel (hue in degrees here, 0 to 179 in OpenCV) |
+| `cv::inRange(hsv, lo, hi, mask)` | `in_range`, with the wrap-around for red |
+| `cv::bitwise_and(src, src, dst, mask)` | `keep` |

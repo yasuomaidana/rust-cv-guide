@@ -35,4 +35,4 @@ tutorials:
   tutorial_moments: {status: unreviewed, crates: []}
   tutorial_point_polygon_test: {status: unreviewed, crates: []}
   tutorial_threshold: {status: covered, crates: [image, imageproc], snippet: imgproc_color/threshold}
-  tutorial_threshold_inRange: {status: unreviewed, crates: []}
+  tutorial_threshold_inRange: {status: covered, crates: [image], snippet: imgproc_color/in_range}

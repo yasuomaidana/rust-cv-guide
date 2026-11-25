@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 13 |
-| partial | 0 | 7 |
+| partial | 0 | 8 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 118 |
+| unreviewed | 17 | 117 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -112,7 +112,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Histogram Calculation ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.markdown)) | unreviewed |  |
 | Histogram Comparison ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/histogram_comparison/histogram_comparison.markdown)) | unreviewed |  |
 | [Histogram Equalization](opencv/imgproc/tutorial_histogram_equalization.mdx) | covered |  |
-| Template Matching ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/template_matching/template_matching.markdown)) | unreviewed |  |
+| [Template Matching](opencv/imgproc/tutorial_template_matching.mdx) | partial | Four of OpenCV's six methods and no mask; the zero-mean (CCOEFF) methods are missing |
 | Hit-or-Miss ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/hitOrMiss/hitOrMiss.markdown)) | unreviewed |  |
 | [Canny Edge Detector](opencv/imgproc/tutorial_canny_detector.mdx) | covered |  |
 | Adding borders to your images ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/copyMakeBorder/copyMakeBorder.markdown)) | unreviewed |  |

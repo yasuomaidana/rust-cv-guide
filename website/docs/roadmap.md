@@ -7,11 +7,11 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 
 | Status | Modules | Tutorials |
 |---|---|---|
-| covered | 0 | 13 |
+| covered | 0 | 14 |
 | partial | 0 | 8 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 117 |
+| unreviewed | 17 | 116 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -137,7 +137,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Image Moments ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/moments/moments.markdown)) | unreviewed |  |
 | Point Polygon Test ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/point_polygon_test/point_polygon_test.markdown)) | unreviewed |  |
 | [Basic Thresholding Operations](opencv/imgproc/tutorial_threshold.mdx) | covered |  |
-| Thresholding Operations using inRange ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/threshold_inRange/threshold_inRange.markdown)) | unreviewed |  |
+| [Thresholding Operations using inRange](opencv/imgproc/tutorial_threshold_inRange.mdx) | covered |  |
 
 ## introduction
 

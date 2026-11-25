@@ -1,3 +1,7 @@
 [workspace]
 members = ["tools", "snippets", "live"]
 resolver = "2"
+
+# oximedia-cv's Hough transform is a triple loop; unoptimised it takes minutes in tests.
+[profile.dev.package.oximedia-cv]
+opt-level = 3

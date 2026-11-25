@@ -143,3 +143,11 @@ path = "tests/features/fast.rs"
 [[test]]
 name = "oxi_orb"
 path = "tests/oximedia/orb.rs"
+
+[[example]]
+name = "oxi_hough_circles"
+path = "examples/oximedia/hough_circles.rs"
+
+[[test]]
+name = "oxi_hough_circles"
+path = "tests/oximedia/hough_circles.rs"

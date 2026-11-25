@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 8 |
-| partial | 0 | 3 |
+| partial | 0 | 4 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 127 |
+| unreviewed | 17 | 126 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -118,7 +118,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Adding borders to your images ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/copyMakeBorder/copyMakeBorder.markdown)) | unreviewed |  |
 | Image Segmentation with Distance Transform and Watershed Algorithm ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/distance_transformation/distance_transform.markdown)) | unreviewed |  |
 | Making your own linear filters! ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/filter_2d/filter_2d.markdown)) | unreviewed |  |
-| Hough Circle Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/hough_circle/hough_circle.markdown)) | unreviewed |  |
+| [Hough Circle Transform](opencv/imgproc/tutorial_hough_circle.mdx) | partial | imageproc has no circle Hough transform, so only oximedia-cv is shown; it votes per radius with no gradient direction, so it is slower and less selective than OpenCV's HOUGH_GRADIENT |
 | Hough Line Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.markdown)) | unreviewed |  |
 | Laplace Operator ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/laplace_operator/laplace_operator.markdown)) | unreviewed |  |
 | Remapping ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/remap/remap.markdown)) | unreviewed |  |

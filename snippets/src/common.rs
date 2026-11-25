@@ -133,6 +133,25 @@ pub fn draw_points(base: &GrayImage, points: &[(f32, f32)]) -> RgbImage {
     canvas
 }
 
+/// The grey picture dimmed, with each `(x, y, radius)` circle drawn as a red ring.
+pub fn draw_circles(base: &GrayImage, circles: &[(f32, f32, f32)]) -> RgbImage {
+    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
+        let Luma([level]) = *base.get_pixel(x, y);
+        Rgb([level / 2; 3])
+    });
+    for (cx, cy, radius) in circles {
+        let steps = (radius * 8.0).max(16.0) as u32;
+        for step in 0..steps {
+            let angle = step as f32 / steps as f32 * std::f32::consts::TAU;
+            let (x, y) = (cx + radius * angle.cos(), cy + radius * angle.sin());
+            if x >= 0.0 && y >= 0.0 && x < base.width() as f32 && y < base.height() as f32 {
+                canvas.put_pixel(x as u32, y as u32, Rgb([255, 40, 40]));
+            }
+        }
+    }
+    canvas
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -204,6 +223,14 @@ mod tests {
         let marked = draw_points(&base, &[(4.0, 4.0), (-5.0, 3.0)]);
         assert_eq!(marked.get_pixel(5, 4).0, [255, 40, 40]);
         assert_eq!(marked.get_pixel(0, 0).0, [50, 50, 50]);
+    }
+
+    #[test]
+    fn circles_are_drawn_where_they_fit() {
+        let base = GrayImage::from_pixel(20, 20, Luma([100]));
+        let drawn = draw_circles(&base, &[(10.0, 10.0, 5.0), (-30.0, 0.0, 4.0)]);
+        assert_eq!(drawn.get_pixel(15, 10).0, [255, 40, 40]);
+        assert_eq!(drawn.get_pixel(10, 10).0, [50, 50, 50]);
     }
 
     #[test]

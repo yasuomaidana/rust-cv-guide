@@ -229,6 +229,17 @@ pub fn edge_points(edges: &GrayImage) -> Vec<(f64, f64)> {
     on.map(|(x, y, _)| (f64::from(x), f64::from(y))).collect()
 }
 
+/// The picture pasted at the top left of a black `width` x `height` canvas (cropped if larger): a result of another size, shown at the input's.
+pub fn on_canvas(width: u32, height: u32, picture: &RgbImage) -> RgbImage {
+    RgbImage::from_fn(width, height, |x, y| {
+        if x < picture.width() && y < picture.height() {
+            *picture.get_pixel(x, y)
+        } else {
+            Rgb([0, 0, 0])
+        }
+    })
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -340,6 +351,17 @@ mod tests {
             Luma([if x == y { 255 } else { 0 }])
         }));
         assert_eq!(points, vec![(0.0, 0.0), (1.0, 1.0), (2.0, 2.0)]);
+    }
+
+    #[test]
+    fn pictures_are_pasted_or_cropped_onto_a_canvas() {
+        let small = RgbImage::from_pixel(2, 2, Rgb([9, 9, 9]));
+        let pasted = on_canvas(4, 3, &small);
+        assert_eq!(
+            (pasted.get_pixel(1, 1).0, pasted.get_pixel(3, 2).0),
+            ([9, 9, 9], [0, 0, 0])
+        );
+        assert_eq!(on_canvas(1, 1, &small).dimensions(), (1, 1));
     }
 
     #[test]

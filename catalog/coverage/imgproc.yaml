@@ -26,7 +26,7 @@ tutorials:
   tutorial_opening_closing_hats: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_morph/hats, alternatives: [{crate: oximedia-cv, snippet: oximedia/morphology}]}
   tutorial_out_of_focus_deblur_filter: {status: unreviewed, crates: []}
   tutorial_periodic_noise_removing_filter: {status: unreviewed, crates: []}
-  tutorial_pyramids: {status: unreviewed, crates: []}
+  tutorial_pyramids: {status: covered, crates: [image, imageproc], snippet: imgproc_geom/pyramids}
   tutorial_random_generator_and_text: {status: unreviewed, crates: []}
   tutorial_bounding_rects_circles: {status: unreviewed, crates: []}
   tutorial_bounding_rotated_ellipses: {status: unreviewed, crates: []}

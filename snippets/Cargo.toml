@@ -226,3 +226,11 @@ path = "examples/imgproc_filters/filter2d.rs"
 [[test]]
 name = "filter2d"
 path = "tests/imgproc_filters/filter2d.rs"
+
+[[example]]
+name = "pyramids"
+path = "examples/imgproc_geom/pyramids.rs"
+
+[[test]]
+name = "pyramids"
+path = "tests/imgproc_geom/pyramids.rs"

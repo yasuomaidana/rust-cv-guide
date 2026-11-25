@@ -1,6 +1,6 @@
-//! Tests for `examples/smoothing.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/imgproc_filters/smoothing.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/smoothing.rs"]
+#[path = "../../examples/imgproc_filters/smoothing.rs"]
 mod example;
 
 #[test]

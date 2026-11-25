@@ -1,0 +1,34 @@
+# Development plan
+
+## Direction (decided 2026-11-24)
+
+- The guide preserves OpenCV's **functionality**, not its API. Rust crates do not have to mirror OpenCV names or signatures.
+- **oximedia** (`oximedia-cv`) gets 5 examples.
+- Where both oximedia and `image`/`imageproc` implement a feature, the page shows **both solutions side by side**: code tabs and a live toggle on the same sliders. A test checks that the two agree within a stated tolerance.
+- **RustCV** is catalogued only (native camera/GUI facade, no wasm, no processing of its own).
+- Every example has a live WebAssembly demo on its page.
+
+## Tickets
+
+| Ticket | Goal | Blocked by |
+|---|---|---|
+| RUSTCVGUID-133 | Group examples, tests and live bindings by section (`max_files_per_dir = 12`) | |
+| RUSTCVGUID-134 | oximedia-cv alternatives: 5 examples beside image/imageproc | 133, matching imgproc pages |
+| RUSTCVGUID-135 | imgproc umbrella: 10 more live examples | 133 |
+| RUSTCVGUID-136 | Catalog RustCV, no example | |
+
+## oximedia examples (134)
+
+| # | Page | oximedia-cv | Counterpart |
+|---|---|---|---|
+| O1 | `tutorial_gausian_median_blur_bilateral_filter` | `BilateralFilter`, `GaussianBlur`, `MedianFilter` | `smoothing` (bilateral is oximedia-only) |
+| O2 | `tutorial_canny_detector` | `CannyEdge` | `canny` |
+| O3 | `tutorial_laplace_operator` | `LaplacianEdge` | imgproc example 2 |
+| O4 | `tutorial_opening_closing_hats` | `MorphOperation`, `StructuringElement` | imgproc example 1 |
+| O5 | `tutorial_hough_lines` | `hough_transform` | imgproc example 6 |
+
+A spike comes first: `oximedia-cv` must build and run on `wasm32-unknown-unknown` (it depends on `rayon`). If it does not, its tab shows tested native code only and the reason goes in `catalog/crates.yaml`.
+
+## imgproc examples (135)
+
+opening_closing_hats, laplace_operator, filter_2d, pyramids, warp_affine, hough_lines, find_contours, distance_transform, template_matching, threshold_inRange. One PR per sub-ticket into the umbrella trunk; the trunk PR targets `main`.

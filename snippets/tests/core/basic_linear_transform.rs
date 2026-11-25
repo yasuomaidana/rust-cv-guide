@@ -1,6 +1,6 @@
-//! Tests for `examples/basic_linear_transform.rs`; the page prints exactly what `report()` returns.
+//! Tests for `examples/core/basic_linear_transform.rs`; the page prints exactly what `report()` returns.
 
-#[path = "../examples/basic_linear_transform.rs"]
+#[path = "../../examples/core/basic_linear_transform.rs"]
 mod example;
 
 use cvg_snippets::common::gradient;

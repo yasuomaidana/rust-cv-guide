@@ -66,7 +66,7 @@ pub struct Entry {
     /// Why an item is a gap or not planned.
     #[serde(default)]
     pub reason: Option<String>,
-    /// Name of `snippets/examples/<snippet>.rs`, the compiled example the page shows.
+    /// Name of `snippets/examples/<snippet>.rs` (`<group>/<name>`), the compiled example the page shows.
     #[serde(default)]
     pub snippet: Option<String>,
 }
@@ -117,7 +117,7 @@ pub(crate) mod fixtures {
     pub fn full_entry(status: Status) -> Entry {
         Entry {
             reason: Some("why".into()),
-            snippet: Some("blend".into()),
+            snippet: Some("core/blend".into()),
             ..entry(status, &["ndarray"])
         }
     }
@@ -128,7 +128,7 @@ pub(crate) mod fixtures {
                 "core/tutorial_mat".to_string(),
                 "Body.\n\n{{snippet}}\n".to_string(),
             )]),
-            snippets: BTreeMap::from([("blend".to_string(), "fn main() {}\n".to_string())]),
+            snippets: BTreeMap::from([("core/blend".to_string(), "fn main() {}\n".to_string())]),
         }
     }
 

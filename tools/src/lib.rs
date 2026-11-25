@@ -145,7 +145,7 @@ mod tests {
 
     #[rstest]
     fn generate_embeds_the_guide_body_and_snippet(repo: TempDir) {
-        let covered = "tutorials:\n  tutorial_mat: {status: covered, crates: [ndarray], snippet: blend}\nmodules:\n  core: {status: gap, reason: r}\n";
+        let covered = "tutorials:\n  tutorial_mat: {status: covered, crates: [ndarray], snippet: core/blend}\nmodules:\n  core: {status: gap, reason: r}\n";
         fs::write(repo.path().join("catalog/coverage/all.yaml"), covered).unwrap();
         let write = |relative: &str, text: &str| {
             let path = repo.path().join(relative);
@@ -156,7 +156,7 @@ mod tests {
             "website/guide/core/tutorial_mat.md",
             "Intro.\n\n{{snippet}}\n",
         );
-        write("snippets/examples/blend.rs", "fn main() {}\n");
+        write("snippets/examples/core/blend.rs", "fn main() {}\n");
         call("generate", repo.path()).unwrap();
         let page = fs::read_to_string(
             repo.path()

@@ -234,3 +234,11 @@ path = "examples/imgproc_geom/pyramids.rs"
 [[test]]
 name = "pyramids"
 path = "tests/imgproc_geom/pyramids.rs"
+
+[[example]]
+name = "warp_affine"
+path = "examples/imgproc_geom/warp_affine.rs"
+
+[[test]]
+name = "warp_affine"
+path = "tests/imgproc_geom/warp_affine.rs"

@@ -1,0 +1,102 @@
+---
+title: "Affine Transformations"
+---
+
+**Status:** partial
+
+**Reason:** Rotation and scaling about the centre; the three-point getAffineTransform demo is not shown
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/warp_affine/warp_affine.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+- [imageproc](https://crates.io/crates/imageproc)
+
+## Goal
+
+Rotate and scale a picture about its centre, as OpenCV's `warpAffine` does with the matrix of `getRotationMatrix2D`.
+
+## Theory
+
+An affine transform maps each point with a 2×3 matrix: it can move, rotate, scale and shear, and keeps straight lines
+straight and parallel lines parallel. To rotate about the centre you first move the centre to the origin, rotate, scale, and
+move it back; the product of those steps is one matrix. Every output pixel is then found by looking up where it came from in
+the input (the inverse), and the in-between values are interpolated.
+
+## Code
+
+```rust
+//! OpenCV tutorial `tutorial_warp_affine` in pure Rust: rotate and scale a picture about its centre with `warpAffine`.
+//! Run with `cargo run -p cvg-snippets --example warp_affine`.
+
+use cvg_snippets::common::{Figure, describe, rgb_figures, sample};
+use image::{Rgb, RgbImage};
+use imageproc::geometric_transformations::{Border, Interpolation, Projection, warp};
+
+/// `cv::warpAffine` with the matrix of `cv::getRotationMatrix2D(centre, angle, scale)`: turns the picture by `degrees` clockwise
+/// and scales it by `scale`, both about its centre; the output has the input's size and what falls outside is black.
+pub fn rotate_scale(input: &RgbImage, degrees: f32, scale: f32) -> RgbImage {
+    let (cx, cy) = (input.width() as f32 / 2.0, input.height() as f32 / 2.0);
+    let about_centre = Projection::translate(-cx, -cy)
+        .and_then(Projection::rotate(degrees.to_radians()))
+        .and_then(Projection::scale(scale, scale))
+        .and_then(Projection::translate(cx, cy));
+    warp(
+        input,
+        about_centre,
+        Interpolation::Bilinear,
+        Border::Constant(Rgb([0, 0, 0])),
+    )
+}
+
+/// The photo turned 30 degrees, shrunk to 0.6, and both.
+pub fn figures() -> Vec<Figure> {
+    let input = sample("astronaut.png");
+    let results = [
+        ("rotated", rotate_scale(&input, 30.0, 1.0)),
+        ("scaled", rotate_scale(&input, 0.0, 0.6)),
+        ("both", rotate_scale(&input, 30.0, 0.6)),
+    ];
+    rgb_figures(input.clone(), results)
+}
+
+/// Describes one pixel of each figure, off the centre (which the transform leaves in place).
+pub fn report() -> String {
+    describe(&figures(), 300, 200)
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+## Explanation
+
+1. `Projection::translate(-cx, -cy)` moves the centre to the origin; `.and_then(Projection::rotate(..))` and `.and_then(Projection::scale(..))` compose the next steps, and the last `translate(cx, cy)` moves it back. `Projection` is a 3×3 matrix, the general form of an affine or perspective transform.
+2. `warp(input, projection, Interpolation::Bilinear, Border::Constant(black))` is `warpAffine`: it keeps the input's size and fills what falls outside with black.
+3. The angle is clockwise, in the picture's own axes (y points down). OpenCV's `getRotationMatrix2D` turns counter-clockwise for a positive angle, so use the negative angle to match it.
+4. The centre pixel stays where it is, so the page prints a pixel away from the centre. The tests put a single white pixel 10 pixels to the right of the centre and check where it lands after a 90° turn and after halving, and that black fills the outside.
+5. The tutorial's other demo builds the matrix from three point pairs with `getAffineTransform`; this page shows the rotation and scaling part. `Projection::from_control_points` takes four pairs and also handles perspective, as the homography page shows.
+
+## Result
+
+<LiveExample fn="rotate_scale" sample="astronaut.png" params={[{name: "degrees", label: "Rotation (degrees, clockwise)", min: -180, max: 180, step: 1, value: 30}, {name: "scale", label: "Scale", min: 0.2, max: 2, step: 0.05, value: 0.6}]} />
+
+Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
+
+```text
+input(300,200) = [232, 219, 221]
+rotated(300,200) = [126, 115, 130]
+scaled(300,200) = [216, 205, 199]
+both(300,200) = [224, 215, 215]
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::getRotationMatrix2D(center, angle, scale)` | `Projection::translate(-c).and_then(rotate).and_then(scale).and_then(translate(c))` |
+| `cv::warpAffine(src, dst, M, size)` | `imageproc::geometric_transformations::warp(&img, projection, Interpolation::Bilinear, Border::Constant(..))` |
+| `cv::getAffineTransform(src, dst)` | `Projection::from_control_points` (four pairs) |

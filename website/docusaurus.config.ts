@@ -11,6 +11,8 @@ const config: Config = {
   organizationName: 'yasuomaidana',
   projectName: 'rust-cv-guide',
   trailingSlash: false,
+  // Versions the wasm URLs so a rebuilt bundle is not served from the browser cache.
+  customFields: {buildTime: Date.now()},
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   markdown: {format: 'detect'},

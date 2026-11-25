@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './LiveExample.module.css';
 
 /** A control above the pictures. With `options` it is a drop-down whose value is the option's index. */
@@ -32,9 +33,11 @@ const MAX_SIDE = 640;
 type Wasm = Record<string, (...args: unknown[]) => Uint8Array>;
 let wasmLoading: Promise<Wasm> | undefined;
 
-function loadWasm(base: string): Promise<Wasm> {
-  wasmLoading ??= import(/* webpackIgnore: true */ `${base}wasm/cvg_live.js`).then(async (module) => {
-    await module.default();
+/** `version` changes with every build, so a rebuilt bundle is never served from the browser cache. */
+function loadWasm(base: string, version: string): Promise<Wasm> {
+  wasmLoading ??= import(/* webpackIgnore: true */ `${base}wasm/cvg_live.js?v=${version}`).then(async (module) => {
+    // The glue resolves the .wasm without our query, so it is given explicitly.
+    await module.default({module_or_path: `${base}wasm/cvg_live_bg.wasm?v=${version}`});
     return module as Wasm;
   });
   return wasmLoading;
@@ -93,36 +96,61 @@ function useSamples(base: string, sample: string, second?: string) {
 
 const bytes = (data: ImageData) => new Uint8Array(data.data.buffer);
 
-/** Runs the wasm function whenever the pictures or the controls change and draws both canvases. */
-function useRun(base: string, fn: string, altFn: string | undefined, pictures: Pictures | undefined, values: number[]) {
+/** How long one solution took, or why it could not run. */
+type Outcome = {ms: number} | {error: string};
+type Outcomes = {main?: Outcome; alt?: Outcome};
+
+const describe = (failure: unknown) => String(failure instanceof Error ? failure.message : failure);
+
+/** Runs the wasm function whenever the pictures or the controls change and draws both canvases, timing each one on its own. */
+function useRun(base: string, version: string, fn: string, altFn: string | undefined, pictures: Pictures | undefined, values: number[]) {
   const input = useRef<HTMLCanvasElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
   const altOutput = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('Loading…');
+  const [outcomes, setOutcomes] = useState<Outcomes>({});
   useEffect(() => {
     if (!pictures) return;
     let cancelled = false;
     const {first, other} = pictures;
-    loadWasm(base)
+    loadWasm(base, version)
       .then((wasm) => {
         if (cancelled) return;
-        const started = performance.now();
         const images = other ? [bytes(first), bytes(other)] : [bytes(first)];
-        const draw = (name: string, canvas: HTMLCanvasElement | null) => {
-          const result = wasm[name](...images, first.width, first.height, ...values);
-          show(canvas, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
+        const runOne = (name: string, canvas: HTMLCanvasElement | null): Outcome => {
+          if (typeof wasm[name] !== 'function') {
+            return {error: `cvg-live has no export "${name}": rebuild the wasm (bun run wasm) and hard-reload`};
+          }
+          try {
+            const started = performance.now();
+            const result = wasm[name](...images, first.width, first.height, ...values);
+            show(canvas, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
+            return {ms: Math.round(performance.now() - started)};
+          } catch (failure) {
+            return {error: `"${name}" failed: ${describe(failure)}`};
+          }
         };
         show(input.current, first);
-        draw(fn, output.current);
-        if (altFn) draw(altFn, altOutput.current);
-        setStatus(`Computed in your browser in ${Math.round(performance.now() - started)} ms`);
+        setOutcomes({main: runOne(fn, output.current), alt: altFn ? runOne(altFn, altOutput.current) : undefined});
+        setStatus('Computed in your browser');
       })
-      .catch((failure) => setStatus(`Could not run the example: ${failure}`));
+      .catch((failure) => setStatus(`Could not run the example: ${describe(failure)}`));
     return () => {
       cancelled = true;
     };
-  }, [base, fn, altFn, pictures, values]);
-  return {input, output, altOutput, status};
+  }, [base, version, fn, altFn, pictures, values]);
+  return {input, output, altOutput, status, outcomes};
+}
+
+/** The caption of one output with its own time (or the reason it did not run). */
+function Caption({label, outcome}: {label: string; outcome?: Outcome}) {
+  return (
+    <figcaption>
+      {label}
+      {outcome && 'ms' in outcome && <span className={styles.timing}> · {outcome.ms} ms</span>}
+      {outcome && 'error' in outcome && <span className={styles.failure}>{outcome.error}</span>}
+    </figcaption>
+  );
 }
 
 function Control({param, value, onChange}: {param: Param; value: number; onChange: (value: number) => void}) {
@@ -167,9 +195,10 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
 
 function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
   const base = useBaseUrl('/');
+  const version = String(useDocusaurusContext().siteConfig.customFields?.buildTime ?? '');
   const [values, setValues] = useState(params.map((p) => p.value));
   const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {input, output, altOutput, status} = useRun(base, fn, alt?.fn, pictures, values);
+  const {input, output, altOutput, status, outcomes} = useRun(base, version, fn, alt?.fn, pictures, values);
 
   const upload = async (file?: File) => {
     if (!file) return;
@@ -197,12 +226,12 @@ function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
         </figure>
         <figure>
           <canvas ref={output} />
-          <figcaption>{label}</figcaption>
+          <Caption label={label} outcome={outcomes.main} />
         </figure>
         {alt && (
           <figure>
             <canvas ref={altOutput} />
-            <figcaption>{alt.label}</figcaption>
+            <Caption label={alt.label} outcome={outcomes.alt} />
           </figure>
         )}
       </div>

@@ -3,14 +3,14 @@
 checked: 2026-11-24
 crates:
   - name: oxipix
-    version: "unpublished"
+    version: "0.1.0"
     license: "MIT OR Apache-2.0"
     rust_version: "1.89"
     repository: https://github.com/yasuomaidana/oxipix
-    last_release: n/a
+    last_release: 2026-11-24
     pure_rust: yes
     areas: "image processing"
-    notes: "Unpublished until 0.1.0 is released; wgpu GPU kernels, mosaic, vectorize."
+    notes: "Document capture on top of image: perspective unwarp, mosaic stitching, contour tracing to SVG; optional wgpu kernels."
   - name: oximedia-cv
     version: "0.2.1"
     license: "Apache-2.0"

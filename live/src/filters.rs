@@ -11,7 +11,7 @@ mod smoothing;
 #[path = "../../snippets/examples/imgproc_filters/sobel.rs"]
 mod sobel;
 
-/// `kind` 0 is the box filter, 1 the Gaussian (`amount` is sigma) and anything else the median; `amount` is the radius otherwise.
+/// `kind` 0 is the box filter, 1 the Gaussian (`amount` is sigma), 3 the bilateral filter and anything else the median; `amount` is the radius otherwise.
 #[wasm_bindgen]
 pub fn smooth(pixels: &[u8], width: u32, height: u32, kind: u32, amount: f32) -> Vec<u8> {
     let image = rgb(pixels, width, height);
@@ -19,6 +19,7 @@ pub fn smooth(pixels: &[u8], width: u32, height: u32, kind: u32, amount: f32) ->
     rgba(match kind {
         0 => smoothing::box_blur(&image, radius),
         1 => smoothing::gaussian(&image, amount),
+        3 => smoothing::bilateral(&image, radius, crate::BILATERAL_SIGMA_COLOR),
         _ => smoothing::median(&image, radius),
     })
 }
@@ -44,6 +45,7 @@ mod tests {
     #[case(0, 2.0)]
     #[case(1, 1.5)]
     #[case(2, 2.0)]
+    #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth(&pixels(), SIDE, SIDE, kind, amount));
     }

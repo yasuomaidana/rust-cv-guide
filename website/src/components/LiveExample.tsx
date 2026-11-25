@@ -22,6 +22,10 @@ type Props = {
   /** Second photo for examples that combine two images; it is resized to the first one's size. */
   second?: string;
   params?: Param[];
+  /** Caption of the output of `fn`; defaults to "Output". */
+  label?: string;
+  /** A second implementation of the same job (another crate), run on the same pixels and controls and drawn beside the first. */
+  alt?: {fn: string; label: string};
 };
 
 const MAX_SIDE = 640;
@@ -90,9 +94,10 @@ function useSamples(base: string, sample: string, second?: string) {
 const bytes = (data: ImageData) => new Uint8Array(data.data.buffer);
 
 /** Runs the wasm function whenever the pictures or the controls change and draws both canvases. */
-function useRun(base: string, fn: string, pictures: Pictures | undefined, values: number[]) {
+function useRun(base: string, fn: string, altFn: string | undefined, pictures: Pictures | undefined, values: number[]) {
   const input = useRef<HTMLCanvasElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
+  const altOutput = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('Loading…');
   useEffect(() => {
     if (!pictures) return;
@@ -103,17 +108,21 @@ function useRun(base: string, fn: string, pictures: Pictures | undefined, values
         if (cancelled) return;
         const started = performance.now();
         const images = other ? [bytes(first), bytes(other)] : [bytes(first)];
-        const result = wasm[fn](...images, first.width, first.height, ...values);
+        const draw = (name: string, canvas: HTMLCanvasElement | null) => {
+          const result = wasm[name](...images, first.width, first.height, ...values);
+          show(canvas, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
+        };
         show(input.current, first);
-        show(output.current, new ImageData(new Uint8ClampedArray(result), first.width, first.height));
+        draw(fn, output.current);
+        if (altFn) draw(altFn, altOutput.current);
         setStatus(`Computed in your browser in ${Math.round(performance.now() - started)} ms`);
       })
       .catch((failure) => setStatus(`Could not run the example: ${failure}`));
     return () => {
       cancelled = true;
     };
-  }, [base, fn, pictures, values]);
-  return {input, output, status};
+  }, [base, fn, altFn, pictures, values]);
+  return {input, output, altOutput, status};
 }
 
 function Control({param, value, onChange}: {param: Param; value: number; onChange: (value: number) => void}) {
@@ -156,11 +165,11 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function Live({fn, sample, second, params = []}: Props) {
+function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
   const base = useBaseUrl('/');
   const [values, setValues] = useState(params.map((p) => p.value));
   const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {input, output, status} = useRun(base, fn, pictures, values);
+  const {input, output, altOutput, status} = useRun(base, fn, alt?.fn, pictures, values);
 
   const upload = async (file?: File) => {
     if (!file) return;
@@ -188,8 +197,14 @@ function Live({fn, sample, second, params = []}: Props) {
         </figure>
         <figure>
           <canvas ref={output} />
-          <figcaption>Output</figcaption>
+          <figcaption>{label}</figcaption>
         </figure>
+        {alt && (
+          <figure>
+            <canvas ref={altOutput} />
+            <figcaption>{alt.label}</figcaption>
+          </figure>
+        )}
       </div>
       <Footer status={error ?? status} second={Boolean(second)} onFile={(f) => void upload(f)} onReset={() => void reload()} />
     </div>

@@ -6,6 +6,8 @@ publish = false
 description = "Compiled examples shown in the Rust CV Guide; every page's code and printed numbers are tested here"
 
 [dependencies]
+# Pure Rust; no default features so it builds for wasm32 (no rayon-threaded FFT).
+oximedia-cv = { version = "0.2", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 
 [dev-dependencies]
@@ -75,3 +77,19 @@ path = "tests/imgproc_color/threshold.rs"
 [[test]]
 name = "equalize"
 path = "tests/imgproc_color/equalize.rs"
+
+[[example]]
+name = "oxi_smoothing"
+path = "examples/oximedia/smoothing.rs"
+
+[[example]]
+name = "oxi_canny"
+path = "examples/oximedia/canny.rs"
+
+[[test]]
+name = "oxi_smoothing"
+path = "tests/oximedia/smoothing.rs"
+
+[[test]]
+name = "oxi_canny"
+path = "tests/oximedia/canny.rs"

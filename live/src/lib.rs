@@ -11,6 +11,10 @@ mod color;
 mod edges;
 mod filters;
 mod morph;
+mod oximedia;
+
+/// How different two levels may be and still mix in the bilateral filter, for both implementations.
+const BILATERAL_SIGMA_COLOR: f32 = 30.0;
 
 fn rgb(pixels: &[u8], width: u32, height: u32) -> RgbImage {
     let channels = pixels

@@ -47,6 +47,7 @@ fn entry_evidence(id: &str, key: &str, entry: &Entry, sources: &Sources) -> Vec<
             snippet_issue(id, entry, sources)
                 .into_iter()
                 .chain(page)
+                .chain(alternative_issues(id, entry, sources))
                 .collect()
         }
         Status::Gap | Status::NotPlanned
@@ -66,6 +67,25 @@ fn snippet_issue(id: &str, entry: &Entry, sources: &Sources) -> Option<String> {
         )),
         Some(_) => None,
     }
+}
+
+fn alternative_issues(id: &str, entry: &Entry, sources: &Sources) -> Vec<String> {
+    let issues = entry.alternatives.iter().flat_map(|a| {
+        let missing = (!sources.snippets.contains_key(&a.snippet)).then(|| {
+            format!(
+                "tutorial {id} alternative {} has no snippets/examples/{}.rs",
+                a.crate_name, a.snippet
+            )
+        });
+        let unlisted = (!entry.crates.contains(&a.crate_name)).then(|| {
+            format!(
+                "tutorial {id} alternative {} is not in its crates",
+                a.crate_name
+            )
+        });
+        missing.into_iter().chain(unlisted)
+    });
+    issues.collect()
 }
 
 fn compare<'a>(
@@ -109,7 +129,9 @@ fn entry_problems(
 mod tests {
     use super::*;
     use crate::model::fixtures::catalog;
-    use crate::model::fixtures::{coverage, coverage_for, crates, entry, full_entry, sources};
+    use crate::model::fixtures::{
+        coverage, coverage_for, crates, entry, entry_with_alternative, full_entry, sources,
+    };
     use rstest::rstest;
 
     #[test]
@@ -180,6 +202,23 @@ mod tests {
         "tutorial tutorial_mat is not-planned but gives no reason"
     )]
     fn evidence_rules(#[case] tutorial: Entry, #[case] expected: &str) {
+        let found = problems(&catalog(), &coverage_for(tutorial), &crates(), &sources());
+        assert!(found.iter().any(|p| p == expected), "{found:?}");
+    }
+
+    #[rstest]
+    #[case(
+        entry_with_alternative("ndarray", "alt/zzz"),
+        "tutorial tutorial_mat alternative ndarray has no snippets/examples/alt/zzz.rs"
+    )]
+    #[case(
+        entry_with_alternative("nalgebra", "alt/blend"),
+        "tutorial tutorial_mat alternative nalgebra is not in its crates"
+    )]
+    fn alternatives_need_a_snippet_and_a_listed_crate(
+        #[case] tutorial: Entry,
+        #[case] expected: &str,
+    ) {
         let found = problems(&catalog(), &coverage_for(tutorial), &crates(), &sources());
         assert!(found.iter().any(|p| p == expected), "{found:?}");
     }

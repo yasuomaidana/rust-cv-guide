@@ -1,9 +1,12 @@
 //! OpenCV tutorial `tutorial_gausian_median_blur_bilateral_filter` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example smoothing`.
 
-use cvg_snippets::common::{Figure, describe, sample};
-use image::{DynamicImage, RgbImage};
-use imageproc::filter::{gaussian_blur_f32, median_filter, separable_filter_equal};
+use cvg_snippets::common::{Figure, Smoothers, describe, smoothing_figures};
+use image::RgbImage;
+use imageproc::filter::{
+    bilateral::{GaussianEuclideanColorDistance, bilateral_filter},
+    gaussian_blur_f32, median_filter, separable_filter_equal,
+};
 
 /// Normalised box filter (`cv::blur`) over a square window of `2 * radius + 1` pixels.
 pub fn box_blur(input: &RgbImage, radius: u32) -> RgbImage {
@@ -21,20 +24,20 @@ pub fn median(input: &RgbImage, radius: u32) -> RgbImage {
     median_filter(input, radius, radius)
 }
 
-/// The photo and three 5x5 smoothings of it.
+/// Edge-preserving smoothing (`cv::bilateralFilter`); `sigma_color` says how different two levels may be and still mix.
+pub fn bilateral(input: &RgbImage, radius: u32, sigma_color: f32) -> RgbImage {
+    let color = GaussianEuclideanColorDistance::new(sigma_color);
+    bilateral_filter(input, radius.min(255) as u8, radius as f32, color)
+}
+
+/// The photo and four 5x5 smoothings of it.
 pub fn figures() -> Vec<Figure> {
-    let input = sample("chelsea.png");
-    let smoothed = [
-        ("box", box_blur(&input, 2)),
-        ("gaussian", gaussian(&input, 1.1)),
-        ("median", median(&input, 2)),
-    ];
-    let mut figures = vec![("input", input)];
-    figures.extend(smoothed);
-    figures
-        .into_iter()
-        .map(|(name, picture)| (name, DynamicImage::ImageRgb8(picture)))
-        .collect()
+    smoothing_figures(&Smoothers {
+        box_blur,
+        gaussian,
+        median,
+        bilateral,
+    })
 }
 
 /// Describes one pixel of each figure.

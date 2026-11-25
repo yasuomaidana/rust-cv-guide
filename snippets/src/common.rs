@@ -1,6 +1,6 @@
 //! Helpers every example shares, so inputs and golden hashes are made one way.
 
-use image::{DynamicImage, Rgb, RgbImage};
+use image::{DynamicImage, GrayImage, Rgb, RgbImage};
 use std::path::Path;
 
 /// A named picture an example produces; `describe` prints a pixel of each.
@@ -29,6 +29,47 @@ pub fn describe(figures: &[Figure], x: u32, y: u32) -> String {
     lines.collect::<Vec<_>>().join("\n")
 }
 
+/// The photo as the first figure, then each named result: the figures of a colour filter example.
+pub fn rgb_figures(
+    input: RgbImage,
+    results: impl IntoIterator<Item = (&'static str, RgbImage)>,
+) -> Vec<Figure> {
+    std::iter::once(("input", input))
+        .chain(results)
+        .map(|(name, picture)| (name, DynamicImage::ImageRgb8(picture)))
+        .collect()
+}
+
+/// The four smoothing filters an example offers, in the order the page lists them.
+pub struct Smoothers {
+    pub box_blur: fn(&RgbImage, u32) -> RgbImage,
+    pub gaussian: fn(&RgbImage, f32) -> RgbImage,
+    pub median: fn(&RgbImage, u32) -> RgbImage,
+    pub bilateral: fn(&RgbImage, u32, f32) -> RgbImage,
+}
+
+/// The photo and four 5x5 smoothings of it, whichever crate does the smoothing.
+pub fn smoothing_figures(filters: &Smoothers) -> Vec<Figure> {
+    let input = sample("chelsea.png");
+    let smoothed = [
+        ("box", (filters.box_blur)(&input, 2)),
+        ("gaussian", (filters.gaussian)(&input, 1.1)),
+        ("median", (filters.median)(&input, 2)),
+        ("bilateral", (filters.bilateral)(&input, 2, 30.0)),
+    ];
+    rgb_figures(input.clone(), smoothed)
+}
+
+/// The grey photo and what `detect` makes of it: the two figures of an edge example.
+pub fn edge_figures(photo: &str, detect: impl Fn(&GrayImage) -> GrayImage) -> Vec<Figure> {
+    let input = DynamicImage::ImageRgb8(sample(photo)).to_luma8();
+    let edges = detect(&input);
+    vec![
+        ("input", DynamicImage::ImageLuma8(input)),
+        ("edges", DynamicImage::ImageLuma8(edges)),
+    ]
+}
+
 /// A deterministic test image: red grows left to right, green top to bottom, blue is an 8-pixel checkerboard.
 pub fn gradient(width: u32, height: u32) -> RgbImage {
     RgbImage::from_fn(width, height, |x, y| {
@@ -50,6 +91,27 @@ pub fn fnv1a(bytes: &[u8]) -> u64 {
 mod tests {
     use super::*;
     use rstest::rstest;
+
+    #[test]
+    fn figures_are_named_in_order() {
+        let names = |figures: Vec<Figure>| figures.iter().map(|f| f.0).collect::<Vec<_>>();
+        let results = [("blur", gradient(4, 4))];
+        assert_eq!(
+            names(rgb_figures(gradient(4, 4), results)),
+            ["input", "blur"]
+        );
+        let identity = Smoothers {
+            box_blur: |i, _| i.clone(),
+            gaussian: |i, _| i.clone(),
+            median: |i, _| i.clone(),
+            bilateral: |i, _, _| i.clone(),
+        };
+        assert_eq!(names(smoothing_figures(&identity)).len(), 5);
+        assert_eq!(
+            names(edge_figures("building.jpg", GrayImage::clone)),
+            ["input", "edges"]
+        );
+    }
 
     #[rstest]
     #[case(b"", 0xcbf2_9ce4_8422_2325)]

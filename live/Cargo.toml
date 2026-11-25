@@ -10,6 +10,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 cvg-snippets = { path = "../snippets" }
+# No default features, so it builds for wasm32 (same as in snippets).
+oximedia-cv = { version = "0.2", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 imageproc = { version = "0.27", default-features = false }
 # Keep in step with the wasm-bindgen-cli version in .github/workflows/site.yml and website/package.json.

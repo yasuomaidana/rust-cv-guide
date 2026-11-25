@@ -3,7 +3,7 @@
 tutorials:
   tutorial_anisotropic_image_segmentation_by_a_gst: {status: unreviewed, crates: []}
   tutorial_basic_geometric_drawing: {status: unreviewed, crates: []}
-  tutorial_gausian_median_blur_bilateral_filter: {status: partial, crates: [image, imageproc], snippet: imgproc_filters/smoothing}
+  tutorial_gausian_median_blur_bilateral_filter: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_filters/smoothing, alternatives: [{crate: oximedia-cv, snippet: oximedia/smoothing}]}
   tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc], snippet: imgproc_morph/erosion}
   tutorial_generalized_hough_ballard_guil: {status: unreviewed, crates: []}
   tutorial_back_projection: {status: unreviewed, crates: []}
@@ -12,7 +12,7 @@ tutorials:
   tutorial_histogram_equalization: {status: covered, crates: [image, imageproc], snippet: imgproc_color/equalize}
   tutorial_template_matching: {status: unreviewed, crates: []}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
-  tutorial_canny_detector: {status: covered, crates: [image, imageproc], snippet: imgproc_edges/canny}
+  tutorial_canny_detector: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_edges/canny, alternatives: [{crate: oximedia-cv, snippet: oximedia/canny}]}
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}
   tutorial_distance_transform: {status: unreviewed, crates: []}
   tutorial_filter_2d: {status: unreviewed, crates: []}

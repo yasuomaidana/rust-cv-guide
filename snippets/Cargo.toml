@@ -218,3 +218,11 @@ path = "tests/imgproc_edges/hough_lines.rs"
 [[test]]
 name = "oxi_hough_lines"
 path = "tests/oximedia/hough_lines.rs"
+
+[[example]]
+name = "filter2d"
+path = "examples/imgproc_filters/filter2d.rs"
+
+[[test]]
+name = "filter2d"
+path = "tests/imgproc_filters/filter2d.rs"

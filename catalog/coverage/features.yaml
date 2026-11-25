@@ -5,7 +5,7 @@ tutorials:
   tutorial_akaze_tracking: {status: unreviewed, crates: []}
   tutorial_detection_of_planar_objects: {status: unreviewed, crates: []}
   tutorial_feature_description: {status: unreviewed, crates: []}
-  tutorial_feature_detection: {status: unreviewed, crates: []}
+  tutorial_feature_detection: {status: partial, crates: [image, imageproc, oximedia-cv], snippet: features/fast, alternatives: [{crate: oximedia-cv, snippet: oximedia/orb}], reason: "FAST corners and an ORB-style blob detector with binary descriptors; no SIFT/SURF descriptors, no rotation-invariant matching"}
   tutorial_feature_flann_matcher: {status: unreviewed, crates: []}
   tutorial_feature_homography: {status: unreviewed, crates: []}
   tutorial_homography: {status: partial, crates: [image, imageproc, oxipix], snippet: features/homography, alternatives: [{crate: oxipix, snippet: oxipix/homography}], reason: "Perspective correction only; no pose recovery or homography decomposition"}

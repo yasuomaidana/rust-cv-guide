@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 8 |
-| partial | 0 | 2 |
+| partial | 0 | 3 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 128 |
+| unreviewed | 17 | 127 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -77,7 +77,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | AKAZE and ORB planar tracking ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/akaze_tracking/akaze_tracking.markdown)) | unreviewed |  |
 | Detection of planar objects ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/detection_of_planar_objects/detection_of_planar_objects.markdown)) | unreviewed |  |
 | Feature Description ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_description/feature_description.markdown)) | unreviewed |  |
-| Feature Detection ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_detection/feature_detection.markdown)) | unreviewed |  |
+| [Feature Detection](opencv/features/tutorial_feature_detection.mdx) | partial | FAST corners and an ORB-style blob detector with binary descriptors; no SIFT/SURF descriptors, no rotation-invariant matching |
 | Feature Matching with FLANN ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_flann_matcher/feature_flann_matcher.markdown)) | unreviewed |  |
 | Features + Homography to find a known object ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_homography/feature_homography.markdown)) | unreviewed |  |
 | [Basic concepts of the homography explained with code](opencv/features/tutorial_homography.mdx) | partial | Perspective correction only; no pose recovery or homography decomposition |

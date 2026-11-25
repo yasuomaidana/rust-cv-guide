@@ -115,6 +115,24 @@ pub fn draw_outlines(base: &GrayImage, outlines: &Outlines) -> RgbImage {
     canvas
 }
 
+/// The grey picture dimmed, with a small red cross on each point.
+pub fn draw_points(base: &GrayImage, points: &[(f32, f32)]) -> RgbImage {
+    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
+        let Luma([level]) = *base.get_pixel(x, y);
+        Rgb([level / 2; 3])
+    });
+    for (x, y) in points {
+        for step in -2_i32..=2 {
+            for (px, py) in [(*x as i32 + step, *y as i32), (*x as i32, *y as i32 + step)] {
+                if px >= 0 && py >= 0 && (px as u32) < base.width() && (py as u32) < base.height() {
+                    canvas.put_pixel(px as u32, py as u32, Rgb([255, 40, 40]));
+                }
+            }
+        }
+    }
+    canvas
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -178,6 +196,14 @@ mod tests {
         assert_eq!(drawn.get_pixel(3, 1).0, [255, 40, 40]);
         assert_eq!(drawn.get_pixel(3, 3).0, [30, 30, 30]);
         assert_eq!(outline_report(&vec![square]), "outlines = 1\npoints = 4");
+    }
+
+    #[test]
+    fn points_are_marked_inside_the_picture_only() {
+        let base = GrayImage::from_pixel(8, 8, Luma([100]));
+        let marked = draw_points(&base, &[(4.0, 4.0), (-5.0, 3.0)]);
+        assert_eq!(marked.get_pixel(5, 4).0, [255, 40, 40]);
+        assert_eq!(marked.get_pixel(0, 0).0, [50, 50, 50]);
     }
 
     #[test]

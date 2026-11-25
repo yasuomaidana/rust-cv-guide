@@ -30,7 +30,7 @@ tutorials:
   tutorial_random_generator_and_text: {status: unreviewed, crates: []}
   tutorial_bounding_rects_circles: {status: unreviewed, crates: []}
   tutorial_bounding_rotated_ellipses: {status: unreviewed, crates: []}
-  tutorial_find_contours: {status: unreviewed, crates: []}
+  tutorial_find_contours: {status: partial, crates: [image, imageproc, oxipix], snippet: imgproc_edges/contours, alternatives: [{crate: oxipix, snippet: oxipix/contours}], reason: "Outer borders and simplification only; no retrieval modes or chain-approximation flags"}
   tutorial_hull: {status: unreviewed, crates: []}
   tutorial_moments: {status: unreviewed, crates: []}
   tutorial_point_polygon_test: {status: unreviewed, crates: []}

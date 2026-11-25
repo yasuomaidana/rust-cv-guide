@@ -11,6 +11,8 @@ oximedia-cv = { version = "0.2", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 
 [dev-dependencies]
+# Document capture: contour tracing and perspective unwarp. Default features only (no wgpu), so it builds for wasm32.
+oxipix = "0.1"
 imageproc = { version = "0.27", default-features = false }
 rstest = "0.29"
 
@@ -93,3 +95,35 @@ path = "tests/oximedia/smoothing.rs"
 [[test]]
 name = "oxi_canny"
 path = "tests/oximedia/canny.rs"
+
+[[example]]
+name = "contours"
+path = "examples/imgproc_edges/contours.rs"
+
+[[example]]
+name = "oxipix_contours"
+path = "examples/oxipix/contours.rs"
+
+[[example]]
+name = "homography"
+path = "examples/features/homography.rs"
+
+[[example]]
+name = "oxipix_homography"
+path = "examples/oxipix/homography.rs"
+
+[[test]]
+name = "contours"
+path = "tests/imgproc_edges/contours.rs"
+
+[[test]]
+name = "oxipix_contours"
+path = "tests/oxipix/contours.rs"
+
+[[test]]
+name = "homography"
+path = "tests/features/homography.rs"
+
+[[test]]
+name = "oxipix_homography"
+path = "tests/oxipix/homography.rs"

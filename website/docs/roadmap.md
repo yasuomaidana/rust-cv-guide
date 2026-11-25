@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 8 |
-| partial | 0 | 0 |
+| partial | 0 | 2 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 130 |
+| unreviewed | 17 | 128 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -80,7 +80,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Feature Detection ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_detection/feature_detection.markdown)) | unreviewed |  |
 | Feature Matching with FLANN ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_flann_matcher/feature_flann_matcher.markdown)) | unreviewed |  |
 | Features + Homography to find a known object ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_homography/feature_homography.markdown)) | unreviewed |  |
-| Basic concepts of the homography explained with code ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/homography/homography.markdown)) | unreviewed |  |
+| [Basic concepts of the homography explained with code](opencv/features/tutorial_homography.mdx) | partial | Perspective correction only; no pose recovery or homography decomposition |
 | Detecting corners location in subpixels ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/trackingmotion/corner_subpixels/corner_subpixels.markdown)) | unreviewed |  |
 | Creating your own corner detector ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/trackingmotion/generic_corner_detector/generic_corner_detector.markdown)) | unreviewed |  |
 | Shi-Tomasi corner detector ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/trackingmotion/good_features_to_track/good_features_to_track.markdown)) | unreviewed |  |
@@ -132,7 +132,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Random generator and text with OpenCV ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/random_generator_and_text/random_generator_and_text.markdown)) | unreviewed |  |
 | Creating Bounding boxes and circles for contours ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/bounding_rects_circles/bounding_rects_circles.markdown)) | unreviewed |  |
 | Creating Bounding rotated boxes and ellipses for contours ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/bounding_rotated_ellipses/bounding_rotated_ellipses.markdown)) | unreviewed |  |
-| Finding contours in your image ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/find_contours/find_contours.markdown)) | unreviewed |  |
+| [Finding contours in your image](opencv/imgproc/tutorial_find_contours.mdx) | partial | Outer borders and simplification only; no retrieval modes or chain-approximation flags |
 | Convex Hull ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/hull/hull.markdown)) | unreviewed |  |
 | Image Moments ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/moments/moments.markdown)) | unreviewed |  |
 | Point Polygon Test ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/point_polygon_test/point_polygon_test.markdown)) | unreviewed |  |

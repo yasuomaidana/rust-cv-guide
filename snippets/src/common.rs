@@ -187,6 +187,48 @@ pub fn hat_figures(ops: &Hats) -> Vec<Figure> {
         .collect()
 }
 
+/// Straight lines in normal form: `(rho, theta)` with `x * cos(theta) + y * sin(theta) = rho`, theta in radians.
+pub type Lines = Vec<(f32, f32)>;
+
+/// The grey picture dimmed, with each line drawn across it in red.
+pub fn draw_lines(base: &GrayImage, lines: &Lines) -> RgbImage {
+    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
+        let Luma([level]) = *base.get_pixel(x, y);
+        Rgb([level / 2; 3])
+    });
+    let reach = (base.width() + base.height()) as i32 * 2;
+    for (rho, theta) in lines {
+        let (sin, cos) = theta.sin_cos();
+        for step in -reach..=reach {
+            let t = step as f32 * 0.5;
+            let (x, y) = (rho * cos - t * sin, rho * sin + t * cos);
+            if x >= 0.0 && y >= 0.0 && x < base.width() as f32 && y < base.height() as f32 {
+                canvas.put_pixel(x as u32, y as u32, Rgb([255, 40, 40]));
+            }
+        }
+    }
+    canvas
+}
+
+/// Keeps a line only when no stronger kept line (the input is strongest first) is within `rho_gap` pixels and `theta_gap` radians.
+pub fn suppress_lines(strongest_first: &Lines, rho_gap: f32, theta_gap: f32) -> Lines {
+    let mut kept: Lines = Vec::new();
+    for (rho, theta) in strongest_first {
+        let near =
+            |(r, t): &(f32, f32)| (rho - r).abs() <= rho_gap && (theta - t).abs() <= theta_gap;
+        if !kept.iter().any(near) {
+            kept.push((*rho, *theta));
+        }
+    }
+    kept
+}
+
+/// The coordinates of the non-zero pixels of an edge map, the points that vote in a Hough transform.
+pub fn edge_points(edges: &GrayImage) -> Vec<(f64, f64)> {
+    let on = edges.enumerate_pixels().filter(|(_, _, p)| p.0[0] > 0);
+    on.map(|(x, y, _)| (f64::from(x), f64::from(y))).collect()
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -284,6 +326,20 @@ mod tests {
         assert_eq!(hat(&ops, 1, &grey, 1).get_pixel(0, 0).0, [255]);
         assert_eq!(hat(&ops, 9, &grey, 1).get_pixel(0, 0).0, [0]);
         assert_eq!(hat_figures(&ops).len(), 6);
+    }
+
+    #[test]
+    fn lines_are_drawn_and_thinned() {
+        let base = GrayImage::from_pixel(20, 20, Luma([100]));
+        let drawn = draw_lines(&base, &vec![(10.0, 0.0)]);
+        assert_eq!(drawn.get_pixel(10, 5).0, [255, 40, 40]);
+        assert_eq!(drawn.get_pixel(3, 5).0, [50, 50, 50]);
+        let thinned = suppress_lines(&vec![(10.0, 0.5), (11.0, 0.52), (40.0, 0.5)], 2.0, 0.1);
+        assert_eq!(thinned, vec![(10.0, 0.5), (40.0, 0.5)]);
+        let points = edge_points(&GrayImage::from_fn(3, 3, |x, y| {
+            Luma([if x == y { 255 } else { 0 }])
+        }));
+        assert_eq!(points, vec![(0.0, 0.0), (1.0, 1.0), (2.0, 2.0)]);
     }
 
     #[test]

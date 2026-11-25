@@ -49,17 +49,17 @@ mod tests {
 
     #[rstest]
     #[case(0)]
-    #[case(1)]
-    #[case(2)]
-    fn distance_map_runs(#[case] kind: u32) {
-        assert_picture(&distance_map(&pixels(), SIDE, SIDE, kind));
+    #[case(4)]
+    fn hats_run(#[case] kind: u32) {
+        assert_picture(&morph_hats(&pixels(), SIDE, SIDE, kind, 2));
     }
 
     #[rstest]
     #[case(0)]
-    #[case(4)]
-    fn hats_run(#[case] kind: u32) {
-        assert_picture(&morph_hats(&pixels(), SIDE, SIDE, kind, 2));
+    #[case(1)]
+    #[case(2)]
+    fn distance_map_runs(#[case] kind: u32) {
+        assert_picture(&distance_map(&pixels(), SIDE, SIDE, kind));
     }
 
     #[rstest]

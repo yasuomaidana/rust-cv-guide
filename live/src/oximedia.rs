@@ -1,7 +1,7 @@
 //! The same live examples computed by `oximedia-cv`, shown beside the `image` + `imageproc` result.
 
 use crate::{BILATERAL_SIGMA_COLOR, gray, marked, rgb, rgba};
-use cvg_snippets::common::{draw_circles, hat};
+use cvg_snippets::common::{draw_circles, draw_lines, hat};
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
@@ -23,6 +23,10 @@ mod morphology;
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/laplacian.rs"]
 mod laplacian;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/hough_lines.rs"]
+mod hough_lines;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/smoothing.rs"]
@@ -81,6 +85,13 @@ pub fn laplace_oxi(pixels: &[u8], width: u32, height: u32, sigma: f32) -> Vec<u8
     rgba(laplacian::laplacian(&gray(pixels, width, height), sigma))
 }
 
+/// As `lines`, by oximedia.
+#[wasm_bindgen]
+pub fn lines_oxi(pixels: &[u8], width: u32, height: u32, votes: u32) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    rgba(draw_lines(&grey, &hough_lines::lines(&grey, votes)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,6 +105,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth_oxi(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn lines_run() {
+        assert_picture(&lines_oxi(&pixels(), SIDE, SIDE, 10));
     }
 
     #[test]

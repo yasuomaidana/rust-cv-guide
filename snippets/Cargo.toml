@@ -202,3 +202,19 @@ path = "tests/imgproc_filters/laplace.rs"
 [[test]]
 name = "oxi_laplacian"
 path = "tests/oximedia/laplacian.rs"
+
+[[example]]
+name = "hough_lines"
+path = "examples/imgproc_edges/hough_lines.rs"
+
+[[example]]
+name = "oxi_hough_lines"
+path = "examples/oximedia/hough_lines.rs"
+
+[[test]]
+name = "hough_lines"
+path = "tests/imgproc_edges/hough_lines.rs"
+
+[[test]]
+name = "oxi_hough_lines"
+path = "tests/oximedia/hough_lines.rs"

@@ -1,6 +1,7 @@
 //! Image processing: edge detection.
 
 use crate::{gray, outlined, rgba};
+use cvg_snippets::common::draw_lines;
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
@@ -10,6 +11,10 @@ mod canny;
 #[allow(dead_code)]
 #[path = "../../snippets/examples/imgproc_edges/contours.rs"]
 mod contours;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/imgproc_edges/hough_lines.rs"]
+mod hough_lines;
 
 /// Canny edges with hysteresis thresholds `low` and `high`.
 #[wasm_bindgen]
@@ -25,6 +30,13 @@ pub fn outlines(pixels: &[u8], width: u32, height: u32, level: u32, epsilon: f32
     })
 }
 
+/// Straight lines that at least `votes` Canny edge pixels lie on, drawn in red.
+#[wasm_bindgen]
+pub fn lines(pixels: &[u8], width: u32, height: u32, votes: u32) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    rgba(draw_lines(&grey, &hough_lines::lines(&grey, votes)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,5 +46,6 @@ mod tests {
     fn edges_and_outlines_run() {
         assert_picture(&edges(&pixels(), SIDE, SIDE, 50.0, 150.0));
         assert_picture(&outlines(&pixels(), SIDE, SIDE, 100, 2.0));
+        assert_picture(&lines(&pixels(), SIDE, SIDE, 10));
     }
 }

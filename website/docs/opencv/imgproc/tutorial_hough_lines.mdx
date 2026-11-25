@@ -1,0 +1,156 @@
+---
+title: "Hough Line Transform"
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+**Status:** partial
+
+**Reason:** Standard Hough transform only; no probabilistic HoughLinesP with segments
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/hough_lines/hough_lines.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+- [imageproc](https://crates.io/crates/imageproc)
+- [oximedia-cv](https://crates.io/crates/oximedia-cv)
+
+## Goal
+
+Find the straight lines in a photograph, as OpenCV's `HoughLines` does. Two crates do it, `imageproc` and `oximedia-cv`, so the
+page shows both and runs both on the same image. Both start from the same Canny edges.
+
+## Theory
+
+Every edge pixel `(x, y)` votes for the lines that could pass through it. A line is written in normal form,
+`x · cos θ + y · sin θ = ρ`, where `θ` is the direction of its normal and `ρ` its distance from the origin. Each pixel votes
+for one `ρ` per angle `θ`; many pixels on the same line vote for the same `(ρ, θ)`, so peaks in the vote table are the
+lines. A threshold on the number of votes decides which peaks count, and a neighbouring peak of a real line is not a new line.
+
+## Code
+
+<Tabs groupId="implementation">
+<TabItem value="image + imageproc" label="image + imageproc" default>
+
+```rust
+//! OpenCV tutorial `tutorial_hough_lines` in pure Rust: Canny edges, then the standard Hough line transform.
+//! Run with `cargo run -p cvg-snippets --example hough_lines`.
+
+use cvg_snippets::common::{Lines, gray_sample};
+use image::GrayImage;
+use imageproc::{
+    edges::canny,
+    hough::{LineDetectionOptions, detect_lines},
+};
+
+/// Lines that at least `votes` edge pixels lie on; only the strongest in each 17 x 17 bucket neighbourhood are kept.
+pub fn lines(input: &GrayImage, votes: u32) -> Lines {
+    let options = LineDetectionOptions {
+        vote_threshold: votes,
+        suppression_radius: 8,
+    };
+    let found = detect_lines(&canny(input, 50.0, 150.0), options);
+    found
+        .iter()
+        .map(|l| (l.r, (l.angle_in_degrees as f32).to_radians()))
+        .collect()
+}
+
+/// Votes the page starts with.
+pub const VOTES: u32 = 150;
+
+/// How many lines the building photo gives.
+pub fn report() -> String {
+    format!(
+        "lines = {}",
+        lines(&gray_sample("building.jpg"), VOTES).len()
+    )
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+</TabItem>
+<TabItem value="oximedia-cv" label="oximedia-cv">
+
+```rust
+//! OpenCV tutorial `tutorial_hough_lines` with `oximedia-cv` instead of `imageproc`.
+//! Run with `cargo run -p cvg-snippets --example oxi_hough_lines`.
+
+use cvg_snippets::common::{Lines, edge_points, gray_sample, suppress_lines};
+use image::GrayImage;
+use imageproc::edges::canny;
+use oximedia_cv::hough_transform::{HoughLineConfig, hough_lines};
+
+/// Lines that at least `votes` edge pixels lie on. `oximedia-cv` returns every accumulator bucket above the threshold,
+/// strongest first, so the example keeps only lines that are not within 8 pixels and 8 degrees of a stronger one.
+pub fn lines(input: &GrayImage, votes: u32) -> Lines {
+    let config = HoughLineConfig {
+        vote_threshold: votes,
+        max_lines: 2000,
+        ..HoughLineConfig::default()
+    };
+    let points = edge_points(&canny(input, 50.0, 150.0));
+    let found = hough_lines(
+        &points,
+        input.width() as usize,
+        input.height() as usize,
+        &config,
+    );
+    let all: Lines = found
+        .iter()
+        .map(|l| (l.rho as f32, l.theta as f32))
+        .collect();
+    suppress_lines(&all, 8.0, 8.0_f32.to_radians())
+}
+
+/// Votes the page starts with.
+pub const VOTES: u32 = 150;
+
+/// How many lines the building photo gives.
+pub fn report() -> String {
+    format!(
+        "lines = {}",
+        lines(&gray_sample("building.jpg"), VOTES).len()
+    )
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Explanation
+
+1. `canny(input, 50.0, 150.0)` gives the edges (the same step in both versions).
+2. `imageproc::hough::detect_lines` takes the edge image and `LineDetectionOptions`: the votes needed and a suppression radius, which keeps only the strongest bucket in each neighbourhood. Its angles are whole degrees.
+3. `oximedia_cv::hough_transform::hough_lines` takes the coordinates of the edge pixels and a `HoughLineConfig` (angle step, distance step, votes, maximum lines). It returns every bucket above the threshold, strongest first, so a real line appears several times; the example keeps a line only if no stronger one is within 8 pixels and 8 degrees, the same neighbourhood `imageproc` suppresses.
+4. Both use the same `(ρ, θ)` convention, so the shared `draw_lines` draws either result.
+5. Tests check that both find the vertical edge of a half-dark half-bright picture where it is (`ρ = 50`, `θ = 0`), and that at least 60 % of the lines `imageproc` finds on the photo are also found by `oximedia-cv` (within 10 pixels and 10 degrees).
+
+## Result
+
+<LiveExample fn="lines" label="image + imageproc" alt={{fn: "lines_oxi", label: "oximedia-cv"}} sample="building.jpg" params={[{name: "votes", label: "Votes needed", min: 60, max: 400, step: 10, value: 150}]} />
+
+Move the control, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the `imageproc` code prints the number below, and a test asserts this exact text
+(`oximedia-cv` finds 11 lines):
+
+```text
+lines = 13
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::Canny(src, edges, 50, 150)` | `imageproc::edges::canny` |
+| `cv::HoughLines(edges, lines, 1, CV_PI/180, votes)` | `imageproc::hough::detect_lines`, or `oximedia_cv::hough_transform::hough_lines` |
+| `cv::line` over the polar lines | `common::draw_lines`, a few lines |

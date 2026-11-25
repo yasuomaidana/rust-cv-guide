@@ -57,3 +57,13 @@
 .status {
   color: var(--ifm-color-emphasis-700);
 }
+
+.timing {
+  color: var(--ifm-color-emphasis-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.failure {
+  display: block;
+  color: var(--ifm-color-danger);
+}

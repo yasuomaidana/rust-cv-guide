@@ -8,10 +8,10 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Status | Modules | Tutorials |
 |---|---|---|
 | covered | 0 | 12 |
-| partial | 0 | 6 |
+| partial | 0 | 7 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 120 |
+| unreviewed | 17 | 119 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -123,7 +123,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | [Laplace Operator](opencv/imgproc/tutorial_laplace_operator.mdx) | covered |  |
 | Remapping ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/remap/remap.markdown)) | unreviewed |  |
 | [Sobel Derivatives](opencv/imgproc/tutorial_sobel_derivatives.mdx) | covered |  |
-| Affine Transformations ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/warp_affine/warp_affine.markdown)) | unreviewed |  |
+| [Affine Transformations](opencv/imgproc/tutorial_warp_affine.mdx) | partial | Rotation and scaling about the centre; the three-point getAffineTransform demo is not shown |
 | Motion Deblur Filter ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/motion_deblur_filter/motion_deblur_filter.markdown)) | unreviewed |  |
 | [More Morphology Transformations](opencv/imgproc/tutorial_opening_closing_hats.mdx) | covered |  |
 | Out-of-focus Deblur Filter ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/out_of_focus_deblur_filter/out_of_focus_deblur_filter.markdown)) | unreviewed |  |

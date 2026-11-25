@@ -1,7 +1,7 @@
 //! The same live examples computed by `oximedia-cv`, shown beside the `image` + `imageproc` result.
 
 use crate::{BILATERAL_SIGMA_COLOR, gray, marked, rgb, rgba};
-use cvg_snippets::common::draw_circles;
+use cvg_snippets::common::{draw_circles, hat};
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
@@ -15,6 +15,10 @@ mod orb;
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/hough_circles.rs"]
 mod hough_circles;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/morphology.rs"]
+mod morphology;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/smoothing.rs"]
@@ -60,6 +64,13 @@ pub fn circles_oxi(
     rgba(draw_circles(&grey, &found))
 }
 
+/// As `morph_hats`, by oximedia.
+#[wasm_bindgen]
+pub fn hats_oxi(pixels: &[u8], width: u32, height: u32, kind: u32, radius: u32) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    rgba(hat(&morphology::OPS, kind, &grey, radius.min(255) as u8))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,6 +84,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth_oxi(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn hats_run() {
+        assert_picture(&hats_oxi(&pixels(), SIDE, SIDE, 2, 1));
     }
 
     #[test]

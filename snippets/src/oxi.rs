@@ -5,7 +5,7 @@ use oximedia_codec::{Plane, VideoFrame};
 use oximedia_core::PixelFormat;
 use oximedia_cv::{
     error::CvResult,
-    image::{EdgeDetector, ImageFilter},
+    image::{EdgeDetector, ImageFilter, StructuringElement},
 };
 
 /// Runs a byte-level operation on a grey image; the output has the same size.
@@ -23,6 +23,16 @@ pub fn filter(image: &GrayImage, filter: &impl ImageFilter) -> GrayImage {
 /// Applies an oximedia edge detector (`CannyEdge`, `LaplacianEdge`, ...) to a grey image.
 pub fn detect(image: &GrayImage, detector: &impl EdgeDetector) -> GrayImage {
     run(image, |bytes, w, h| detector.detect(bytes, w, h))
+}
+
+/// An oximedia morphology function such as `morph::top_hat`.
+pub type MorphOp = fn(&[u8], u32, u32, &StructuringElement) -> CvResult<Vec<u8>>;
+
+/// Applies an oximedia morphology function with a square window of `2 * radius + 1` pixels.
+pub fn morph(image: &GrayImage, op: MorphOp, radius: u8) -> GrayImage {
+    let side = 2 * usize::from(radius) + 1;
+    let element = StructuringElement::rectangle(side, side);
+    run(image, |bytes, w, h| op(bytes, w, h, &element))
 }
 
 /// Runs a grey-image operation on each of the three colour planes, since oximedia filters are grey only.
@@ -81,6 +91,12 @@ mod tests {
         assert_eq!(filter(&ramp(), &BoxBlur::new(3)).dimensions(), (16, 16));
         let detector = CannyEdge::new(50.0, 150.0, 1.0);
         assert_eq!(detect(&ramp(), &detector).dimensions(), (16, 16));
+    }
+
+    #[test]
+    fn morphology_keeps_the_size() {
+        let opened = morph(&ramp(), oximedia_cv::image::morph::morphological_open, 1);
+        assert_eq!(opened.dimensions(), (16, 16));
     }
 
     #[test]

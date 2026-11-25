@@ -1,11 +1,16 @@
 //! Image processing: morphological operations.
 
 use crate::{gray, rgba};
+use cvg_snippets::common::hat;
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/imgproc_morph/erosion.rs"]
 mod erosion;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/imgproc_morph/hats.rs"]
+mod hats;
 
 /// Erodes (`kind` 0) or dilates (anything else) the Otsu mask of the image with a square of the given radius.
 #[wasm_bindgen]
@@ -18,11 +23,25 @@ pub fn morphology(pixels: &[u8], width: u32, height: u32, kind: u32, radius: u32
     })
 }
 
+/// One of opening (0), closing (1), top hat (2), black hat (3) or gradient (anything else) with a square window of `radius`.
+#[wasm_bindgen]
+pub fn morph_hats(pixels: &[u8], width: u32, height: u32, kind: u32, radius: u32) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    rgba(hat(&hats::OPS, kind, &grey, radius.min(255) as u8))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::testing::{SIDE, assert_picture, pixels};
     use rstest::rstest;
+
+    #[rstest]
+    #[case(0)]
+    #[case(4)]
+    fn hats_run(#[case] kind: u32) {
+        assert_picture(&morph_hats(&pixels(), SIDE, SIDE, kind, 2));
+    }
 
     #[rstest]
     #[case(0)]

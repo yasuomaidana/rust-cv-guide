@@ -170,3 +170,19 @@ path = "tests/app/psnr.rs"
 [[test]]
 name = "oxi_quality"
 path = "tests/oximedia/quality.rs"
+
+[[example]]
+name = "hats"
+path = "examples/imgproc_morph/hats.rs"
+
+[[example]]
+name = "oxi_morphology"
+path = "examples/oximedia/morphology.rs"
+
+[[test]]
+name = "hats"
+path = "tests/imgproc_morph/hats.rs"
+
+[[test]]
+name = "oxi_morphology"
+path = "tests/oximedia/morphology.rs"

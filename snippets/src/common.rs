@@ -75,11 +75,11 @@ pub fn gray_sample(name: &str) -> GrayImage {
     DynamicImage::ImageRgb8(sample(name)).to_luma8()
 }
 
-/// Blurs away texture, then keeps what is brighter than `level` as 255 on 0: the mask the contour examples trace.
-pub fn bright_mask(input: &GrayImage, level: u8) -> GrayImage {
-    let smooth = image::imageops::blur(input, 3.0);
+/// Blurs away speckle, then keeps what is darker than `level` as 255 on 0: the ink of a scanned page, the mask the contour examples trace.
+pub fn ink_mask(input: &GrayImage, level: u8) -> GrayImage {
+    let smooth = image::imageops::blur(input, 0.8);
     GrayImage::from_fn(smooth.width(), smooth.height(), |x, y| {
-        Luma([if smooth.get_pixel(x, y).0[0] > level {
+        Luma([if smooth.get_pixel(x, y).0[0] < level {
             255
         } else {
             0
@@ -121,23 +121,30 @@ pub fn outline_report(outlines: &Outlines) -> String {
     format!("outlines = {}\npoints = {points}", outlines.len())
 }
 
-/// Corners of a quadrilateral inside a `width` x `height` picture, clockwise from the top left;
-/// `skew` (0 to 0.4) pulls them in by different amounts so the quad looks like a tilted page.
-pub fn skewed_quad(width: u32, height: u32, skew: f32) -> [(f32, f32); 4] {
-    let (w, h) = (width as f32, height as f32);
-    [
-        (skew * w, 0.5 * skew * h),
-        (w - 0.5 * skew * w, skew * h),
-        (w - skew * w, h - 0.5 * skew * h),
-        (0.5 * skew * w, h - skew * h),
-    ]
+/// Corners of the invoice in `invoice_photo.png` (640 x 480), clockwise from the top left.
+pub const INVOICE_QUAD: [(f32, f32); 4] =
+    [(70.0, 40.0), (580.0, 70.0), (555.0, 430.0), (40.0, 400.0)];
+
+/// The invoice corners scaled to a `width` x `height` picture and pulled `shrink` (0 to 0.3) of the way to the centre, which crops the page.
+pub fn invoice_quad(width: u32, height: u32, shrink: f32) -> [(f32, f32); 4] {
+    let (sx, sy) = (width as f32 / 640.0, height as f32 / 480.0);
+    let scaled = INVOICE_QUAD.map(|(x, y)| (x * sx, y * sy));
+    let centre = scaled
+        .iter()
+        .fold((0.0, 0.0), |c, p| (c.0 + p.0 / 4.0, c.1 + p.1 / 4.0));
+    scaled.map(|(x, y)| {
+        (
+            centre.0 + (x - centre.0) * (1.0 - shrink),
+            centre.1 + (y - centre.1) * (1.0 - shrink),
+        )
+    })
 }
 
-/// The photo and the tilted quad of it straightened by `unwarp`: the two figures of a homography example.
+/// The photographed invoice and the page straightened by `unwarp`: the two figures of a homography example.
 pub fn unwarp_figures(unwarp: impl Fn(&RgbImage, &[(f32, f32); 4]) -> RgbImage) -> Vec<Figure> {
-    let input = sample("building.jpg");
-    let straight = unwarp(&input, &skewed_quad(input.width(), input.height(), 0.15));
-    rgb_figures(input, [("unwarped", straight)])
+    let input = sample("invoice_photo.png");
+    let page = unwarp(&input, &invoice_quad(input.width(), input.height(), 0.0));
+    rgb_figures(input, [("page", page)])
 }
 
 /// A deterministic test image: red grows left to right, green top to bottom, blue is an 8-pixel checkerboard.
@@ -174,15 +181,13 @@ mod tests {
     }
 
     #[test]
-    fn the_quad_stays_inside_the_picture() {
-        let quad = skewed_quad(400, 300, 0.15);
-        assert!(
-            quad.iter()
-                .all(|(x, y)| (0.0..=400.0).contains(x) && (0.0..=300.0).contains(y))
-        );
-        let kept = unwarp_figures(|image, _| image.clone());
-        assert_eq!(kept.len(), 2);
-        assert_eq!(gray_sample("building.jpg").dimensions(), (868, 600));
+    fn the_invoice_quad_scales_and_shrinks() {
+        assert_eq!(invoice_quad(640, 480, 0.0), INVOICE_QUAD);
+        assert_eq!(invoice_quad(320, 240, 0.0)[0], (35.0, 20.0));
+        let (x, y) = invoice_quad(640, 480, 0.2)[0];
+        assert!(x > 70.0 && y > 40.0);
+        assert_eq!(unwarp_figures(|image, _| image.clone()).len(), 2);
+        assert_eq!(gray_sample("invoice.png").dimensions(), (560, 420));
     }
 
     #[test]

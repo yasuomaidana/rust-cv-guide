@@ -21,7 +21,7 @@ pub fn figures() -> Vec<Figure> {
 
 /// Describes one pixel of each figure, away from the centre where the straightening moves things.
 pub fn report() -> String {
-    describe(&figures(), 215, 150)
+    describe(&figures(), 60, 50)
 }
 
 pub fn main() {

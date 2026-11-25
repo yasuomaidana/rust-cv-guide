@@ -4,7 +4,7 @@
 //! returns RGBA pixels to draw. Choices such as "which filter" arrive as small integers from the page's controls. The
 //! modules mirror the groups under `snippets/examples/`.
 
-use cvg_snippets::common::{Outlines, bright_mask, draw_outlines, skewed_quad};
+use cvg_snippets::common::{Outlines, draw_outlines, ink_mask, invoice_quad};
 use image::{DynamicImage, GrayImage, RgbImage};
 
 mod basics;
@@ -45,20 +45,20 @@ fn outlined(
     trace: impl Fn(&GrayImage) -> Outlines,
 ) -> Vec<u8> {
     let grey = gray(pixels, width, height);
-    let outlines = trace(&bright_mask(&grey, level.min(255) as u8));
+    let outlines = trace(&ink_mask(&grey, level.min(255) as u8));
     rgba(draw_outlines(&grey, &outlines))
 }
 
-/// The picture with the tilted quad (`skew` 0 to 0.4) straightened by `unwarp`.
+/// The picture with the invoice quad (pulled `shrink` of the way to its centre) straightened by `unwarp`.
 fn straightened(
     pixels: &[u8],
     width: u32,
     height: u32,
-    skew: f32,
+    shrink: f32,
     unwarp: impl Fn(&RgbImage, &[(f32, f32); 4]) -> RgbImage,
 ) -> Vec<u8> {
     let photo = rgb(pixels, width, height);
-    rgba(unwarp(&photo, &skewed_quad(width, height, skew)))
+    rgba(unwarp(&photo, &invoice_quad(width, height, shrink)))
 }
 
 #[cfg(test)]

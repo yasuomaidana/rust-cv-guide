@@ -7,11 +7,11 @@ mod example;
 #[path = "../../examples/imgproc_edges/contours.rs"]
 mod imageproc_version;
 
-use cvg_snippets::common::{bright_mask, gray_sample};
+use cvg_snippets::common::{gray_sample, ink_mask};
 
 #[test]
 fn prints_the_numbers_shown_on_the_page() {
-    assert_eq!(example::report(), "outlines = 33\npoints = 313");
+    assert_eq!(example::report(), "outlines = 174\npoints = 1092");
 }
 
 #[test]
@@ -19,14 +19,14 @@ fn main_prints_the_report() {
     example::main();
 }
 
-/// The two tracers find the same coins: the counts differ by under a fifth.
+/// The two tracers find the same letters and holes: the counts differ by under a tenth.
 #[test]
 fn finds_about_as_many_outlines_as_the_imageproc_version() {
-    let mask = bright_mask(&gray_sample("coins.png"), example::LEVEL);
+    let mask = ink_mask(&gray_sample("invoice.png"), example::LEVEL);
     let ours = example::outlines(&mask, example::EPSILON).len();
     let theirs = imageproc_version::outlines(&mask, example::EPSILON).len();
     assert!(
-        ours.abs_diff(theirs) * 5 <= theirs,
+        ours.abs_diff(theirs) * 10 <= theirs,
         "{ours} against {theirs}"
     );
 }

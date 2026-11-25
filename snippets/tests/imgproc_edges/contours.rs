@@ -5,7 +5,7 @@ mod example;
 
 #[test]
 fn prints_the_numbers_shown_on_the_page() {
-    assert_eq!(example::report(), "outlines = 30\npoints = 260");
+    assert_eq!(example::report(), "outlines = 169\npoints = 930");
 }
 
 #[test]

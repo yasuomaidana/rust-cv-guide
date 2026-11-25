@@ -1,8 +1,8 @@
 ## Goal
 
-Straighten a tilted rectangle in a photograph, the perspective-correction demo of the OpenCV homography tutorial
-(`getPerspectiveTransform` then `warpPerspective`). Two crates do it, `imageproc` and `oxipix`, so the page shows both and
-runs both on the same image.
+Straighten a photographed invoice, the perspective-correction demo of the OpenCV homography tutorial
+(`getPerspectiveTransform` then `warpPerspective`). This is the first step of document capture. Two crates do it,
+`imageproc` and `oxipix`, so the page shows both and runs both on the same image.
 
 ## Theory
 
@@ -12,8 +12,9 @@ rectangle; every output pixel is then looked up in the photo through the inverse
 
 ## Code
 
-The tilted page is a quadrilateral inside the photo, pulled in from the corners by `skew` (`common::skewed_quad`). Both versions
-map it onto the whole picture with bilinear interpolation.
+The corners of the invoice in the sample photo are known (`common::INVOICE_QUAD`; a real app would find them, which is what
+`oxipix::mosaic::auto_dewarp_dominant_quad` is for). Both versions map that quadrilateral onto the whole picture with
+bilinear interpolation.
 
 {{snippet}}
 
@@ -21,20 +22,22 @@ map it onto the whole picture with bilinear interpolation.
 
 1. `Projection::from_control_points(quad, page)` solves the homography from the four corner pairs, like `getPerspectiveTransform`. It returns `None` for corners in a degenerate position.
 2. `warp(input, to_page, Interpolation::Bilinear, ..)` is `warpPerspective`; pixels that fall outside the photo take the border value.
-3. `oxipix::mosaic::unwarp_quad_rgba(&photo, &quad, width, height)` does both steps in one call on an RGBA image (it also takes a GPU path when oxipix is built with its `gpu` feature, which this page does not use). A test checks that the two straightened pictures differ by under two grey levels on average.
+3. `oxipix::mosaic::unwarp_quad_rgba(&photo, &quad, width, height)` does both steps in one call on an RGBA image (it also takes a GPU path when oxipix is built with its `gpu` feature, which this page does not use). A test checks that the two straightened pages differ by under one grey level on average.
 
 ## Result
 
-<LiveExample fn="unwarp" label="image + imageproc" alt={{fn: "unwarp_oxipix", label: "oxipix"}} sample="building.jpg" params={[{name: "skew", label: "How far the corners are pulled in", min: 0, max: 0.4, step: 0.01, value: 0.15}]} />
+<LiveExample fn="unwarp" label="image + imageproc" alt={{fn: "unwarp_oxipix", label: "oxipix"}} sample="invoice_photo.png" params={[{name: "shrink", label: "Crop: pull the corners towards the centre", min: 0, max: 0.3, step: 0.01, value: 0}]} />
 
-Move the control, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
-settings this page starts with, the code prints the numbers below, and a test asserts this exact text (`oxipix` prints
-`[250, 249, 245]` for the unwarped pixel):
+The sample is a drawn invoice warped onto a desk, so the corners are exact. The corners are those of the sample, scaled to
+the image, so your own photo will not straighten unless its page sits in the same place. For the sample photo, the code
+prints the numbers below, and a test asserts this exact text (`oxipix` prints the same):
 
 ```text
-input(215,150) = [242, 241, 237]
-unwarped(215,150) = [249, 248, 244]
+input(60,50) = [72, 60, 50]
+page(60,50) = [243, 240, 233]
 ```
+
+The pixel at (60, 50) is desk in the photo and paper in the straightened page.
 
 ## OpenCV to Rust
 

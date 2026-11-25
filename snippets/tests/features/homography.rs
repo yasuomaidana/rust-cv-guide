@@ -7,7 +7,7 @@ mod example;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "input(215,150) = [242, 241, 237]\nunwarped(215,150) = [249, 248, 244]"
+        "input(60,50) = [72, 60, 50]\npage(60,50) = [243, 240, 233]"
     );
 }
 

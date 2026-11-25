@@ -7,10 +7,10 @@ use wasm_bindgen::prelude::*;
 #[path = "../../snippets/examples/features/homography.rs"]
 mod homography;
 
-/// Straightens the tilted quad `skew` (0 to 0.4) pulls in from the picture's corners, bilinearly.
+/// Straightens the invoice quad, pulled `shrink` of the way to its centre, bilinearly.
 #[wasm_bindgen]
-pub fn unwarp(pixels: &[u8], width: u32, height: u32, skew: f32) -> Vec<u8> {
-    straightened(pixels, width, height, skew, homography::unwarp)
+pub fn unwarp(pixels: &[u8], width: u32, height: u32, shrink: f32) -> Vec<u8> {
+    straightened(pixels, width, height, shrink, homography::unwarp)
 }
 
 #[cfg(test)]
@@ -20,6 +20,6 @@ mod tests {
 
     #[test]
     fn unwarping_keeps_the_size() {
-        assert_picture(&unwarp(&pixels(), SIDE, SIDE, 0.15));
+        assert_picture(&unwarp(&pixels(), SIDE, SIDE, 0.1));
     }
 }

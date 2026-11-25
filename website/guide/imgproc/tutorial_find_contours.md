@@ -1,47 +1,50 @@
 ## Goal
 
-Find the outlines of objects in a picture and simplify them to a few corner points, as OpenCV's `findContours` followed by
-`approxPolyDP` does. Two crates do it, `imageproc` and `oxipix`, so the page shows both and runs both on the same image.
+Find the outline of every letter on a scanned invoice and reduce each to a few corner points, as OpenCV's `findContours`
+followed by `approxPolyDP` does. This is the first step of turning a scan into vector graphics. Two crates do it,
+`imageproc` and `oxipix`, so the page shows both and runs both on the same image.
 
 ## Theory
 
-A contour is the chain of boundary pixels around a region of a binary image. Tracing follows the boundary pixel by pixel
-(Suzuki and Abe's algorithm in OpenCV, the Moore-neighbour walk in `oxipix`). A raw contour has one point per boundary pixel,
+A contour is the chain of boundary pixels around a region of a binary image: every letter has an outer border, and letters
+with a loop (such as `O`, `0` or `4`) have a hole border too. Tracing follows the boundary pixel by pixel (Suzuki and Abe's
+algorithm in OpenCV and `imageproc`, the Moore-neighbour walk in `oxipix`). A raw contour has one point per boundary pixel,
 so it is then thinned with the Ramer-Douglas-Peucker rule: keep the point farthest from the chord between the ends if it is
-more than `epsilon` away, and recurse on both halves. A larger `epsilon` gives fewer, straighter segments.
+more than `epsilon` away, and recurse on both halves. A larger `epsilon` gives fewer, straighter segments, and a fragment
+that shrinks below three points is not a shape any more.
 
 ## Code
 
-Both versions trace a binary mask. `bright_mask` blurs the photograph a little, so coin texture does not break the shapes into
-specks, and keeps what is brighter than `level`.
+Both versions trace a binary mask. `ink_mask` blurs the page a little, so speckle does not break letters apart, and keeps
+what is darker than `level`.
 
 {{snippet}}
 
 ## Explanation
 
-1. `bright_mask` turns the grey coin photograph into a black and white picture.
-2. `imageproc::contours::find_contours` returns every border with its type and its parent; the example keeps the outer ones (no parent).
+1. `ink_mask` turns the grey invoice into a black and white picture where the ink is white.
+2. `imageproc::contours::find_contours` returns every border, outer and hole, each with its parent.
 3. `approximate_polygon_dp(&points, epsilon, true)` is `approxPolyDP` for a closed curve.
-4. `oxipix::vectorize::trace_moore_neighbor_contours` walks the boundary of every region in a boolean grid, and `simplify_rdp` does the thinning. It was written to turn scans into SVG, so it is happiest on clean shapes: on a noisy mask it may report extra small outlines. A test checks the two find nearly the same number of coins.
+4. `oxipix::vectorize::trace_moore_neighbor_contours` walks every boundary of a boolean grid, and `simplify_rdp` does the thinning. It was written to turn scans into SVG (`vectorize_rgba_to_svg`), which drops fragments under three points exactly as the example does. A test checks the two crates find the same number of outlines to within a tenth.
 
 ## Result
 
-<LiveExample fn="outlines" label="image + imageproc" alt={{fn: "outlines_oxipix", label: "oxipix"}} sample="coins.png" params={[{name: "level", label: "Brightness level", min: 20, max: 230, step: 1, value: 130}, {name: "epsilon", label: "Simplification ε (pixels)", min: 0.5, max: 10, step: 0.5, value: 2}]} />
+<LiveExample fn="outlines" label="image + imageproc" alt={{fn: "outlines_oxipix", label: "oxipix"}} sample="invoice.png" params={[{name: "level", label: "Ink level (darker than)", min: 20, max: 230, step: 1, value: 128}, {name: "epsilon", label: "Simplification ε (pixels)", min: 0.5, max: 6, step: 0.5, value: 2}]} />
 
-Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+Move the controls, or use your own scan: the code above runs in your browser as WebAssembly. For the sample invoice and the
 settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text (`oxipix`
-finds 33 outlines and 313 points):
+finds 174 outlines and 1092 points):
 
 ```text
-outlines = 30
-points = 260
+outlines = 169
+points = 930
 ```
 
 ## OpenCV to Rust
 
 | OpenCV 5.1 | Rust |
 |---|---|
-| `cv::threshold` / `cv::blur` | `bright_mask` (blur, then compare with a level) |
-| `cv::findContours(.., RETR_EXTERNAL, CHAIN_APPROX_NONE)` | `imageproc::contours::find_contours`, outer borders, or `oxipix::vectorize::trace_moore_neighbor_contours` |
+| `cv::threshold` / `cv::blur` | `ink_mask` (blur, then compare with a level) |
+| `cv::findContours(.., RETR_LIST, CHAIN_APPROX_NONE)` | `imageproc::contours::find_contours`, or `oxipix::vectorize::trace_moore_neighbor_contours` |
 | `cv::approxPolyDP(c, eps, true)` | `imageproc::geometry::approximate_polygon_dp` or `oxipix::vectorize::simplify_rdp` |
 | `cv::drawContours` | `common::draw_outlines`, a few lines of line drawing |

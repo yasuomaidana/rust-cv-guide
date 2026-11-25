@@ -9,5 +9,6 @@ Every photograph used by an example is listed here with its source and licence. 
 | `chelsea.png` | Stefan van der Walt, via scikit-image `data` | CC0 1.0 |
 | `coffee.png` | Rachel Michetti (Pikolo Espresso Bar), via scikit-image `data` | CC0 1.0 |
 | `coins.png` | Greek coins from Pompeii, [Brooklyn Museum collection](https://www.brooklynmuseum.org/opencollection/archives/image/51611), via scikit-image `data` | No known copyright restrictions |
+| `invoice.png`, `invoice_photo.png` | Drawn for this guide with a script: a 5x7 pixel font on a procedural page, and that page warped onto a desk by a known perspective transform (corners in `common::INVOICE_QUAD`) | Public domain (CC0) |
 
 scikit-image files are from tag `v0.25.0`, `skimage/data/`.

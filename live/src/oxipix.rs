@@ -27,8 +27,8 @@ pub fn outlines_oxipix(
 
 /// As `unwarp`, by oxipix.
 #[wasm_bindgen]
-pub fn unwarp_oxipix(pixels: &[u8], width: u32, height: u32, skew: f32) -> Vec<u8> {
-    straightened(pixels, width, height, skew, homography::unwarp)
+pub fn unwarp_oxipix(pixels: &[u8], width: u32, height: u32, shrink: f32) -> Vec<u8> {
+    straightened(pixels, width, height, shrink, homography::unwarp)
 }
 
 #[cfg(test)]
@@ -39,6 +39,6 @@ mod tests {
     #[test]
     fn both_functions_keep_the_size() {
         assert_picture(&outlines_oxipix(&pixels(), SIDE, SIDE, 100, 2.0));
-        assert_picture(&unwarp_oxipix(&pixels(), SIDE, SIDE, 0.15));
+        assert_picture(&unwarp_oxipix(&pixels(), SIDE, SIDE, 0.1));
     }
 }

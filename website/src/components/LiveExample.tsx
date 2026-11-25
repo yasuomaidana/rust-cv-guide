@@ -26,10 +26,12 @@ type Props = {
   label?: string;
   /** A second implementation of the same job (another crate), run on the same pixels and controls and drawn beside the first. */
   alt?: {fn: string; label: string};
+  /** An exported function that returns text, called with the same arguments and shown under the pictures (numbers such as PSNR). */
+  readout?: {fn: string; label: string};
 };
 
 const MAX_SIDE = 640;
-type Wasm = Record<string, (...args: unknown[]) => Uint8Array>;
+type Wasm = Record<string, (...args: unknown[]) => Uint8Array & string>;
 let wasmLoading: Promise<Wasm> | undefined;
 
 function loadWasm(base: string): Promise<Wasm> {
@@ -94,11 +96,13 @@ function useSamples(base: string, sample: string, second?: string) {
 const bytes = (data: ImageData) => new Uint8Array(data.data.buffer);
 
 /** Runs the wasm function whenever the pictures or the controls change and draws both canvases. */
-function useRun(base: string, fn: string, altFn: string | undefined, pictures: Pictures | undefined, values: number[]) {
+function useRun(base: string, fn: string, extra: {altFn?: string; readoutFn?: string}, pictures: Pictures | undefined, values: number[]) {
+  const {altFn, readoutFn} = extra;
   const input = useRef<HTMLCanvasElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
   const altOutput = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('Loading…');
+  const [readout, setReadout] = useState('');
   useEffect(() => {
     if (!pictures) return;
     let cancelled = false;
@@ -115,14 +119,15 @@ function useRun(base: string, fn: string, altFn: string | undefined, pictures: P
         show(input.current, first);
         draw(fn, output.current);
         if (altFn) draw(altFn, altOutput.current);
+        if (readoutFn) setReadout(String(wasm[readoutFn](...images, first.width, first.height, ...values)));
         setStatus(`Computed in your browser in ${Math.round(performance.now() - started)} ms`);
       })
       .catch((failure) => setStatus(`Could not run the example: ${failure}`));
     return () => {
       cancelled = true;
     };
-  }, [base, fn, altFn, pictures, values]);
-  return {input, output, altOutput, status};
+  }, [base, fn, altFn, readoutFn, pictures, values]);
+  return {input, output, altOutput, status, readout};
 }
 
 function Control({param, value, onChange}: {param: Param; value: number; onChange: (value: number) => void}) {
@@ -165,11 +170,11 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
+function Live({fn, sample, second, params = [], label = 'Output', alt, readout: readoutSpec}: Props) {
   const base = useBaseUrl('/');
   const [values, setValues] = useState(params.map((p) => p.value));
   const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {input, output, altOutput, status} = useRun(base, fn, alt?.fn, pictures, values);
+  const {input, output, altOutput, status, readout} = useRun(base, fn, {altFn: alt?.fn, readoutFn: readoutSpec?.fn}, pictures, values);
 
   const upload = async (file?: File) => {
     if (!file) return;
@@ -206,6 +211,11 @@ function Live({fn, sample, second, params = [], label = 'Output', alt}: Props) {
           </figure>
         )}
       </div>
+      {readoutSpec && (
+        <p className={styles.readout}>
+          <strong>{readoutSpec.label}:</strong> {readout}
+        </p>
+      )}
       <Footer status={error ?? status} second={Boolean(second)} onFile={(f) => void upload(f)} onReset={() => void reload()} />
     </div>
   );

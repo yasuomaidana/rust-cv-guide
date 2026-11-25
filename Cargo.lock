@@ -185,6 +185,8 @@ version = "0.1.0"
 dependencies = [
  "image",
  "imageproc",
+ "oximedia-codec",
+ "oximedia-core",
  "oximedia-cv",
  "oxipix",
  "rstest",

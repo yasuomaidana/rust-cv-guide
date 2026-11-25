@@ -9,5 +9,5 @@ tutorials:
   tutorial_orbbec_uvc: {status: unreviewed, crates: []}
   tutorial_raster_io_gdal: {status: unreviewed, crates: []}
   tutorial_trackbar: {status: unreviewed, crates: []}
-  tutorial_video_input_psnr_ssim: {status: unreviewed, crates: []}
+  tutorial_video_input_psnr_ssim: {status: partial, crates: [image, oximedia-cv], snippet: app/psnr, alternatives: [{crate: oximedia-cv, snippet: oximedia/quality}], reason: "Still-image PSNR (by hand and by oximedia-cv) and SSIM (oximedia-cv); no video capture or frame-by-frame comparison"}
   tutorial_video_write: {status: unreviewed, crates: []}

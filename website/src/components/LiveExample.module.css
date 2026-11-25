@@ -57,3 +57,9 @@
 .status {
   color: var(--ifm-color-emphasis-700);
 }
+
+.readout {
+  margin: 0.75rem 0 0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}

@@ -13,6 +13,7 @@ mod color;
 mod edges;
 mod features;
 mod filters;
+mod geom;
 mod morph;
 mod oximedia;
 mod oxipix;

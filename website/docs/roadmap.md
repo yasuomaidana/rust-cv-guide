@@ -7,11 +7,11 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 
 | Status | Modules | Tutorials |
 |---|---|---|
-| covered | 0 | 11 |
+| covered | 0 | 12 |
 | partial | 0 | 6 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
-| unreviewed | 17 | 121 |
+| unreviewed | 17 | 120 |
 | **Total** | 17 | 138 |
 
 ## app
@@ -128,7 +128,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | [More Morphology Transformations](opencv/imgproc/tutorial_opening_closing_hats.mdx) | covered |  |
 | Out-of-focus Deblur Filter ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/out_of_focus_deblur_filter/out_of_focus_deblur_filter.markdown)) | unreviewed |  |
 | Periodic Noise Removing Filter ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/periodic_noise_removing_filter/periodic_noise_removing_filter.markdown)) | unreviewed |  |
-| Image Pyramids ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/pyramids/pyramids.markdown)) | unreviewed |  |
+| [Image Pyramids](opencv/imgproc/tutorial_pyramids.mdx) | covered |  |
 | Random generator and text with OpenCV ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/random_generator_and_text/random_generator_and_text.markdown)) | unreviewed |  |
 | Creating Bounding boxes and circles for contours ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/bounding_rects_circles/bounding_rects_circles.markdown)) | unreviewed |  |
 | Creating Bounding rotated boxes and ellipses for contours ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/shapedescriptors/bounding_rotated_ellipses/bounding_rotated_ellipses.markdown)) | unreviewed |  |

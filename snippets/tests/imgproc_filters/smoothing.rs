@@ -7,7 +7,7 @@ mod example;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "input(225,150) = [190, 150, 124]\nbox(225,150) = [185, 143, 116]\ngaussian(225,150) = [187, 146, 119]\nmedian(225,150) = [187, 146, 118]"
+        "input(225,150) = [190, 150, 124]\nbox(225,150) = [185, 143, 116]\ngaussian(225,150) = [187, 146, 119]\nmedian(225,150) = [187, 146, 118]\nbilateral(225,150) = [187, 145, 118]"
     );
 }
 

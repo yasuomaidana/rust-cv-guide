@@ -58,6 +58,16 @@ pub struct Catalog {
     pub tutorials: Vec<Tutorial>,
 }
 
+/// A second solution to the same tutorial in another crate, shown beside the main one.
+#[derive(Debug, Deserialize)]
+pub struct Alternative {
+    /// The crate that does the job; it must also be in the entry's `crates`.
+    #[serde(rename = "crate")]
+    pub crate_name: String,
+    /// Name of `snippets/examples/<snippet>.rs` (`<group>/<name>`) that uses it.
+    pub snippet: String,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Entry {
     pub status: Status,
@@ -69,6 +79,9 @@ pub struct Entry {
     /// Name of `snippets/examples/<snippet>.rs` (`<group>/<name>`), the compiled example the page shows.
     #[serde(default)]
     pub snippet: Option<String>,
+    /// Other crates that do the same job, each with its own compiled example.
+    #[serde(default)]
+    pub alternatives: Vec<Alternative>,
 }
 
 /// `catalog/coverage/*.yaml`, merged.
@@ -110,6 +123,7 @@ pub(crate) mod fixtures {
             crates: crates.iter().map(|c| c.to_string()).collect(),
             reason: None,
             snippet: None,
+            alternatives: Vec::new(),
         }
     }
 
@@ -128,7 +142,21 @@ pub(crate) mod fixtures {
                 "core/tutorial_mat".to_string(),
                 "Body.\n\n{{snippet}}\n".to_string(),
             )]),
-            snippets: BTreeMap::from([("core/blend".to_string(), "fn main() {}\n".to_string())]),
+            snippets: BTreeMap::from([
+                ("core/blend".to_string(), "fn main() {}\n".to_string()),
+                ("alt/blend".to_string(), "fn alt() {}\n".to_string()),
+            ]),
+        }
+    }
+
+    /// A covered entry whose `ndarray` solution has `alt/blend` as its alternative in `alt_crate`.
+    pub fn entry_with_alternative(alt_crate: &str, snippet: &str) -> Entry {
+        Entry {
+            alternatives: vec![Alternative {
+                crate_name: alt_crate.into(),
+                snippet: snippet.into(),
+            }],
+            ..full_entry(Status::Covered)
         }
     }
 

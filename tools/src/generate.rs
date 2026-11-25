@@ -50,17 +50,68 @@ fn yaml_quote(text: &str) -> String {
     format!("\"{}\"", text.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
+fn code_block(source: &str) -> String {
+    format!("```rust\n{}\n```", source.trim_end())
+}
+
+/// The compiled example's code; with alternatives, one tab per crate so readers compare the solutions.
+fn snippet_markup(entry: Option<&Entry>, sources: &Sources) -> String {
+    let Some(entry) = entry else {
+        return String::new();
+    };
+    let main = entry
+        .snippet
+        .as_ref()
+        .and_then(|name| sources.snippets.get(name))
+        .map(|source| code_block(source))
+        .unwrap_or_default();
+    if entry.alternatives.is_empty() {
+        return main;
+    }
+    let others: Vec<&str> = entry
+        .alternatives
+        .iter()
+        .map(|a| a.crate_name.as_str())
+        .collect();
+    let first: Vec<&str> = entry
+        .crates
+        .iter()
+        .map(String::as_str)
+        .filter(|c| !others.contains(c))
+        .collect();
+    let alternatives = entry.alternatives.iter().map(|a| {
+        let code = sources.snippets.get(&a.snippet).map(|s| code_block(s));
+        (a.crate_name.clone(), code.unwrap_or_default())
+    });
+    let tabs = std::iter::once((first.join(" + "), main)).chain(alternatives);
+    let items = tabs.enumerate().map(|(i, (label, code))| {
+        let default = if i == 0 { " default" } else { "" };
+        format!("<TabItem value=\"{label}\" label=\"{label}\"{default}>\n\n{code}\n\n</TabItem>")
+    });
+    let items: Vec<String> = items.collect();
+    format!(
+        "<Tabs groupId=\"implementation\">\n{}\n</Tabs>",
+        items.join("\n")
+    )
+}
+
 /// The hand-written guide body with `{{snippet}}` replaced by the compiled example's source.
 fn render_body(key: &str, entry: Option<&Entry>, sources: &Sources) -> String {
     let Some(body) = sources.bodies.get(key) else {
         return String::new();
     };
-    let code = entry
-        .and_then(|e| e.snippet.as_ref())
-        .and_then(|name| sources.snippets.get(name))
-        .map(|source| format!("```rust\n{}\n```", source.trim_end()))
-        .unwrap_or_default();
+    let code = snippet_markup(entry, sources);
     format!("\n{}\n", body.replace("{{snippet}}", &code).trim_end())
+}
+
+/// MDX imports for the tabs, needed only on pages that show alternatives.
+fn imports(entry: Option<&Entry>) -> &'static str {
+    match entry {
+        Some(e) if !e.alternatives.is_empty() => {
+            "import Tabs from '@theme/Tabs';\nimport TabItem from '@theme/TabItem';\n\n"
+        }
+        _ => "",
+    }
 }
 
 fn item_page(path: String, tutorial: &Tutorial, entry: Option<&Entry>, body: String) -> Page {
@@ -76,8 +127,9 @@ fn item_page(path: String, tutorial: &Tutorial, entry: Option<&Entry>, body: Str
         .map(|r| format!("\n**Reason:** {r}\n"))
         .unwrap_or_default();
     let content = format!(
-        "---\ntitle: {}\n---\n\n**Status:** {}\n{reason}\nOpenCV tutorial: [source at 5.1.0]({BLOB}{}).\n\n## Rust crates\n\n{list}\n{body}",
+        "---\ntitle: {}\n---\n\n{}**Status:** {}\n{reason}\nOpenCV tutorial: [source at 5.1.0]({BLOB}{}).\n\n## Rust crates\n\n{list}\n{body}",
         yaml_quote(&tutorial.title),
+        imports(entry),
         status.label(),
         tutorial.source
     );
@@ -101,7 +153,7 @@ fn category_pages(catalog: &Catalog, coverage: &Coverage) -> Vec<Page> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::fixtures::{catalog, coverage, sources};
+    use crate::model::fixtures::{catalog, coverage, entry_with_alternative, sources};
     use rstest::rstest;
 
     fn find<'a>(pages: &'a [Page], path: &str) -> &'a str {
@@ -149,6 +201,32 @@ mod tests {
         let pages = pages(&catalog(), &coverage(status, &[]), &Sources::default());
         let paths: Vec<&str> = pages.iter().map(|p| p.path.as_str()).collect();
         assert_eq!(paths, ["docs/roadmap.md"]);
+    }
+
+    #[test]
+    fn alternatives_become_tabs_with_their_own_code() {
+        let mut cov = coverage(Status::Covered, &["ndarray", "oximedia-cv"]);
+        let tutorial = cov.tutorials.get_mut("tutorial_mat").unwrap();
+        *tutorial = Entry {
+            crates: vec!["ndarray".into(), "oximedia-cv".into()],
+            ..entry_with_alternative("oximedia-cv", "alt/blend")
+        };
+        let pages = pages(&catalog(), &cov, &sources());
+        let text = find(&pages, "docs/opencv/core/tutorial_mat.mdx");
+        for expected in [
+            "import Tabs from '@theme/Tabs';",
+            "<TabItem value=\"ndarray\" label=\"ndarray\" default>",
+            "<TabItem value=\"oximedia-cv\" label=\"oximedia-cv\">",
+            "fn alt() {}",
+            "fn main() {}",
+        ] {
+            assert!(text.contains(expected), "{expected}: {text}");
+        }
+    }
+
+    #[test]
+    fn no_entry_means_no_code() {
+        assert_eq!(snippet_markup(None, &sources()), "");
     }
 
     #[test]

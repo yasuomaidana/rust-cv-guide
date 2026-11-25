@@ -7,8 +7,8 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 
 | Status | Modules | Tutorials |
 |---|---|---|
-| covered | 0 | 7 |
-| partial | 0 | 1 |
+| covered | 0 | 8 |
+| partial | 0 | 0 |
 | gap | 0 | 0 |
 | not-planned | 0 | 0 |
 | unreviewed | 17 | 130 |
@@ -106,7 +106,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | Anisotropic image segmentation by a gradient structure tensor ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/anisotropic_image_segmentation/anisotropic_image_segmentation.markdown)) | unreviewed |  |
 | Basic Drawing ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/basic_geometric_drawing/basic_geometric_drawing.markdown)) | unreviewed |  |
 | [Eroding and Dilating](opencv/imgproc/tutorial_erosion_dilatation.mdx) | covered |  |
-| [Smoothing Images](opencv/imgproc/tutorial_gausian_median_blur_bilateral_filter.mdx) | partial |  |
+| [Smoothing Images](opencv/imgproc/tutorial_gausian_median_blur_bilateral_filter.mdx) | covered |  |
 | Object detection with Generalized Ballard and Guil Hough Transform ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/generalized_hough_ballard_guil/generalized_hough_ballard_guil.markdown)) | unreviewed |  |
 | Back Projection ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/back_projection/back_projection.markdown)) | unreviewed |  |
 | Histogram Calculation ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.markdown)) | unreviewed |  |

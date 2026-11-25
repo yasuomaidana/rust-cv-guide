@@ -23,7 +23,7 @@ tutorials:
   tutorial_sobel_derivatives: {status: covered, crates: [image, imageproc], snippet: imgproc_filters/sobel}
   tutorial_warp_affine: {status: unreviewed, crates: []}
   tutorial_motion_deblur_filter: {status: unreviewed, crates: []}
-  tutorial_opening_closing_hats: {status: unreviewed, crates: []}
+  tutorial_opening_closing_hats: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_morph/hats, alternatives: [{crate: oximedia-cv, snippet: oximedia/morphology}]}
   tutorial_out_of_focus_deblur_filter: {status: unreviewed, crates: []}
   tutorial_periodic_noise_removing_filter: {status: unreviewed, crates: []}
   tutorial_pyramids: {status: unreviewed, crates: []}

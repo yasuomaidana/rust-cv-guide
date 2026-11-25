@@ -152,6 +152,41 @@ pub fn draw_circles(base: &GrayImage, circles: &[(f32, f32, f32)]) -> RgbImage {
     canvas
 }
 
+/// The five operations of the morphology tutorial, each on a grey picture with a square window of `2 * radius + 1`.
+pub struct Hats {
+    pub open: fn(&GrayImage, u8) -> GrayImage,
+    pub close: fn(&GrayImage, u8) -> GrayImage,
+    pub top_hat: fn(&GrayImage, u8) -> GrayImage,
+    pub black_hat: fn(&GrayImage, u8) -> GrayImage,
+    pub gradient: fn(&GrayImage, u8) -> GrayImage,
+}
+
+/// One operation by number: 0 opening, 1 closing, 2 top hat, 3 black hat, anything else the gradient.
+pub fn hat(ops: &Hats, kind: u32, grey: &GrayImage, radius: u8) -> GrayImage {
+    let op = match kind {
+        0 => ops.open,
+        1 => ops.close,
+        2 => ops.top_hat,
+        3 => ops.black_hat,
+        _ => ops.gradient,
+    };
+    op(grey, radius)
+}
+
+/// The coin photograph and the five operations on it with a 7x7 window.
+pub fn hat_figures(ops: &Hats) -> Vec<Figure> {
+    let grey = gray_sample("coins.png");
+    let named = ["opened", "closed", "top_hat", "black_hat", "gradient"];
+    let results = named
+        .iter()
+        .enumerate()
+        .map(|(kind, name)| (*name, hat(ops, kind as u32, &grey, 3)));
+    let figures = std::iter::once(("input", grey.clone())).chain(results);
+    figures
+        .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
+        .collect()
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -231,6 +266,24 @@ mod tests {
         let drawn = draw_circles(&base, &[(10.0, 10.0, 5.0), (-30.0, 0.0, 4.0)]);
         assert_eq!(drawn.get_pixel(15, 10).0, [255, 40, 40]);
         assert_eq!(drawn.get_pixel(10, 10).0, [50, 50, 50]);
+    }
+
+    #[test]
+    fn hats_are_chosen_by_number() {
+        let flat: fn(&GrayImage, u8) -> GrayImage = |image, _| image.clone();
+        let bright: fn(&GrayImage, u8) -> GrayImage =
+            |image, _| GrayImage::from_pixel(image.width(), image.height(), Luma([255]));
+        let ops = Hats {
+            open: flat,
+            close: bright,
+            top_hat: flat,
+            black_hat: flat,
+            gradient: flat,
+        };
+        let grey = GrayImage::new(2, 2);
+        assert_eq!(hat(&ops, 1, &grey, 1).get_pixel(0, 0).0, [255]);
+        assert_eq!(hat(&ops, 9, &grey, 1).get_pixel(0, 0).0, [0]);
+        assert_eq!(hat_figures(&ops).len(), 6);
     }
 
     #[test]

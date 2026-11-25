@@ -3,7 +3,7 @@ name: Dendrite CI/CD
 
 on:
   push:
-    branches: [ develop, main, "feature/**" ]
+    branches: [ main, "feature/**" ]
   pull_request:
 
 jobs:
@@ -79,6 +79,34 @@ jobs:
       - name: 'Test with coverage floor (>= 100%)'
         run: |
           cargo llvm-cov --workspace --fail-under-lines 100
+  rust-snippets:
+    name: Rust (snippets)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy, llvm-tools-preview
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: snippets
+      - name: Format
+        working-directory: snippets
+        run: |
+          cargo fmt --all --check
+      - name: Lint (clippy, cognitive complexity limit from clippy.toml)
+        working-directory: snippets
+        run: |
+          cargo clippy --all-targets -- -D warnings -W clippy::cognitive_complexity
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: 'Test with coverage floor (>= 100%)'
+        working-directory: snippets
+        run: |
+          cargo llvm-cov --fail-under-lines 100
   rust-tools:
     name: Rust (tools)
     runs-on: ubuntu-latest

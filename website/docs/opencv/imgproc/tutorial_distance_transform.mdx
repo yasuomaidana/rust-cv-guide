@@ -1,0 +1,125 @@
+---
+title: "Image Segmentation with Distance Transform and Watershed Algorithm"
+---
+
+**Status:** covered
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/imgtrans/distance_transformation/distance_transform.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+- [imageproc](https://crates.io/crates/imageproc)
+
+## Goal
+
+Compute, for every pixel of a black and white picture, its distance to the nearest background pixel, as OpenCV's
+`distanceTransform` does. The tutorial uses it to find the cores of touching objects; here it measures the coins.
+
+## Theory
+
+The distance transform assigns each foreground pixel the distance to the nearest background pixel. Which distance depends on
+the norm: the **city block** (L1) distance counts steps along rows and columns, the **chessboard** (L∞) distance counts
+king moves, and the **Euclidean** (L2) distance is the straight line. The centre of a round object is its deepest point, so the
+largest value inside a coin is about its radius (for L2).
+
+## Code
+
+```rust
+//! OpenCV tutorial `tutorial_distance_transform` in pure Rust: how far every coin pixel is from the background.
+//! Run with `cargo run -p cvg-snippets --example distance`.
+
+use cvg_snippets::common::gray_sample;
+use image::{GrayImage, Luma};
+use imageproc::{
+    contrast::{ThresholdType, otsu_level, threshold},
+    distance_transform::{Norm, distance_transform, euclidean_squared_distance_transform},
+};
+
+/// The coin mask: bright pixels above Otsu's level are 255.
+pub fn coin_mask(grey: &GrayImage) -> GrayImage {
+    threshold(grey, otsu_level(grey), ThresholdType::Binary)
+}
+
+/// `cv::distanceTransform`: for each mask pixel, the distance to the nearest background pixel, by norm 0 (L1, city block),
+/// 1 (L2, straight line) or anything else (chessboard). `imageproc` measures the distance to the nearest foreground pixel,
+/// so the mask is inverted first.
+pub fn distances(mask: &GrayImage, kind: u32) -> Vec<f32> {
+    let background = GrayImage::from_fn(mask.width(), mask.height(), |x, y| {
+        Luma([255 - mask.get_pixel(x, y).0[0]])
+    });
+    match kind {
+        0 => distance_transform(&background, Norm::L1)
+            .as_raw()
+            .iter()
+            .map(|d| f32::from(*d))
+            .collect(),
+        1 => euclidean_squared_distance_transform(&background)
+            .as_raw()
+            .iter()
+            .map(|d| d.sqrt() as f32)
+            .collect(),
+        _ => distance_transform(&background, Norm::LInf)
+            .as_raw()
+            .iter()
+            .map(|d| f32::from(*d))
+            .collect(),
+    }
+}
+
+/// The distances scaled so the largest is 255, like the tutorial's `normalize(.., 0, 1)` before showing it.
+pub fn normalized(mask: &GrayImage, kind: u32) -> GrayImage {
+    let found = distances(mask, kind);
+    let peak = found.iter().copied().fold(1.0, f32::max);
+    GrayImage::from_fn(mask.width(), mask.height(), |x, y| {
+        Luma([(found[(y * mask.width() + x) as usize] / peak * 255.0) as u8])
+    })
+}
+
+/// The largest distance, which is how far the deepest coin pixel is from the background.
+pub fn peak(mask: &GrayImage, kind: u32) -> f32 {
+    distances(mask, kind).into_iter().fold(0.0, f32::max)
+}
+
+/// The deepest point of the coins under each norm.
+pub fn report() -> String {
+    let mask = coin_mask(&gray_sample("coins.png"));
+    let peaks: Vec<String> = [("L1", 0), ("L2", 1), ("LInf", 2)]
+        .iter()
+        .map(|(name, kind)| format!("{name} = {:.1}", peak(&mask, *kind)))
+        .collect();
+    format!("peak {}", peaks.join(", "))
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+## Explanation
+
+1. `coin_mask` thresholds the grey photo at Otsu's level, so bright coins are 255.
+2. `imageproc::distance_transform::distance_transform` measures the distance to the nearest *foreground* pixel (L1 or L∞, in 8 bits), and `euclidean_squared_distance_transform` gives the squared L2 distance. OpenCV measures to the nearest *background* pixel, so the example inverts the mask first.
+3. L2 is the square root of the squared transform; the 8-bit transforms saturate at 255, which is far more than a coin's radius.
+4. `normalized` scales the result so the largest distance is 255, as the tutorial's `normalize` does before displaying it. The page prints the deepest point under each norm, in this order: L1 ≥ L2 ≥ L∞.
+5. Tests put one background pixel at a corner and check the three distances to a pixel 3 across and 4 down (7, 5 and 4), and the scaling.
+
+## Result
+
+<LiveExample fn="distance_map" sample="coins.png" params={[{name: "kind", label: "Distance", options: ["City block (L1)", "Straight line (L2)", "Chessboard (L∞)"], value: 1}]} />
+
+Move the control, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
+
+```text
+peak L1 = 40.0, L2 = 34.0, LInf = 30.0
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::distanceTransform(bw, dist, DIST_L1, 3)` | `imageproc::distance_transform::distance_transform(&inverted, Norm::L1)` |
+| `DIST_L2` | `euclidean_squared_distance_transform(&inverted)`, then the square root |
+| `DIST_C` | `distance_transform(&inverted, Norm::LInf)` |
+| `cv::normalize(dist, dist, 0, 1, NORM_MINMAX)` | `normalized`: divide by the largest value |

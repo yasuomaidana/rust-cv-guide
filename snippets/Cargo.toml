@@ -242,3 +242,11 @@ path = "examples/imgproc_geom/warp_affine.rs"
 [[test]]
 name = "warp_affine"
 path = "tests/imgproc_geom/warp_affine.rs"
+
+[[example]]
+name = "distance"
+path = "examples/imgproc_morph/distance.rs"
+
+[[test]]
+name = "distance"
+path = "tests/imgproc_morph/distance.rs"

@@ -4,7 +4,7 @@
 //! returns RGBA pixels to draw. Choices such as "which filter" arrive as small integers from the page's controls. The
 //! modules mirror the groups under `snippets/examples/`.
 
-use cvg_snippets::common::{Outlines, draw_outlines, ink_mask, invoice_quad};
+use cvg_snippets::common::{Outlines, draw_outlines, draw_points, ink_mask, invoice_quad};
 use image::{DynamicImage, GrayImage, RgbImage};
 
 mod basics;
@@ -47,6 +47,19 @@ fn outlined(
     let grey = gray(pixels, width, height);
     let outlines = trace(&ink_mask(&grey, level.min(255) as u8));
     rgba(draw_outlines(&grey, &outlines))
+}
+
+/// The grey input with a cross on each keypoint `find(grey, threshold, max)` returns.
+fn marked(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    (threshold, max): (u32, u32),
+    find: fn(&GrayImage, u8, usize) -> Vec<(f32, f32)>,
+) -> Vec<u8> {
+    let grey = gray(pixels, width, height);
+    let points = find(&grey, threshold.min(255) as u8, max as usize);
+    rgba(draw_points(&grey, &points))
 }
 
 /// The picture with the invoice quad (pulled `shrink` of the way to its centre) straightened by `unwarp`.

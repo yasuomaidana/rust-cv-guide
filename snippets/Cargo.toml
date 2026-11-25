@@ -127,3 +127,19 @@ path = "tests/features/homography.rs"
 [[test]]
 name = "oxipix_homography"
 path = "tests/oxipix/homography.rs"
+
+[[example]]
+name = "fast"
+path = "examples/features/fast.rs"
+
+[[example]]
+name = "oxi_orb"
+path = "examples/oximedia/orb.rs"
+
+[[test]]
+name = "fast"
+path = "tests/features/fast.rs"
+
+[[test]]
+name = "oxi_orb"
+path = "tests/oximedia/orb.rs"

@@ -1,11 +1,15 @@
 //! The same live examples computed by `oximedia-cv`, shown beside the `image` + `imageproc` result.
 
-use crate::{BILATERAL_SIGMA_COLOR, gray, rgb, rgba};
+use crate::{BILATERAL_SIGMA_COLOR, gray, marked, rgb, rgba};
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/canny.rs"]
 mod canny;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/orb.rs"]
+mod orb;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/smoothing.rs"]
@@ -30,6 +34,12 @@ pub fn edges_oxi(pixels: &[u8], width: u32, height: u32, low: f32, high: f32) ->
     rgba(canny::detect_edges(&gray(pixels, width, height), low, high))
 }
 
+/// ORB-style keypoints (`threshold` on the 0 to 255 scale), the `max` strongest, marked with crosses.
+#[wasm_bindgen]
+pub fn keypoints_oxi(pixels: &[u8], width: u32, height: u32, threshold: u32, max: u32) -> Vec<u8> {
+    marked(pixels, width, height, (threshold, max), orb::keypoints)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,6 +53,11 @@ mod tests {
     #[case(3, 2.0)]
     fn smoothing_keeps_the_size(#[case] kind: u32, #[case] amount: f32) {
         assert_picture(&smooth_oxi(&pixels(), SIDE, SIDE, kind, amount));
+    }
+
+    #[test]
+    fn keypoints_run() {
+        assert_picture(&keypoints_oxi(&pixels(), SIDE, SIDE, 20, 50));
     }
 
     #[test]

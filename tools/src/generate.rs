@@ -1,7 +1,8 @@
-//! Stub pages and the status dashboard, rendered from the catalog and the coverage file.
+//! The pages of implemented tutorials, and the roadmap that lists everything else.
 
-use crate::model::{Catalog, Coverage, Entry, Sources, Status};
-use std::collections::{BTreeMap, BTreeSet};
+use crate::model::{Catalog, Coverage, Entry, Sources, Status, Tutorial};
+use crate::roadmap;
+use std::collections::BTreeSet;
 
 /// A file to write, relative to `website/`.
 pub struct Page {
@@ -9,37 +10,37 @@ pub struct Page {
     pub content: String,
 }
 
-const BLOB: &str = "https://github.com/opencv/opencv/blob/5.1.0/";
-const TREE: &str = "https://github.com/opencv/opencv/tree/5.1.0/";
+pub(crate) const BLOB: &str = "https://github.com/opencv/opencv/blob/5.1.0/";
+pub(crate) const TREE: &str = "https://github.com/opencv/opencv/tree/5.1.0/";
 
-/// Every generated page: one per module and tutorial, category labels, and `docs/status.md`.
+/// Every generated page: one per implemented tutorial, category labels for sections that have one, and the roadmap.
 pub fn pages(catalog: &Catalog, coverage: &Coverage, sources: &Sources) -> Vec<Page> {
     let mut out = Vec::new();
-    for m in &catalog.modules {
-        let path = format!("docs/opencv/modules/{}.md", m.name);
-        let url = format!("{TREE}{}", m.source);
-        out.push(item_page(
-            path,
-            &m.title,
-            "module",
-            &url,
-            coverage.modules.get(&m.name),
-            String::new(),
-        ));
-    }
-    for t in &catalog.tutorials {
+    for t in catalog
+        .tutorials
+        .iter()
+        .filter(|t| implemented(coverage, t))
+    {
         let path = format!("docs/opencv/{}/{}.md", t.section, t.id);
-        let url = format!("{BLOB}{}", t.source);
         let entry = coverage.tutorials.get(&t.id);
         let body = render_body(&format!("{}/{}", t.section, t.id), entry, sources);
-        out.push(item_page(path, &t.title, "tutorial", &url, entry, body));
+        out.push(item_page(path, t, entry, body));
     }
-    out.extend(category_pages(catalog));
-    out.push(status_page(catalog, coverage));
+    out.extend(category_pages(catalog, coverage));
+    out.push(roadmap::page(catalog, coverage));
     out
 }
 
-fn status_of(entry: Option<&Entry>) -> (Status, &[String]) {
+/// A status with compiled code and a guide page behind it, so the site shows a page for it.
+pub(crate) fn is_implemented(status: Status) -> bool {
+    matches!(status, Status::Covered | Status::Partial)
+}
+
+fn implemented(coverage: &Coverage, tutorial: &Tutorial) -> bool {
+    is_implemented(status_of(coverage.tutorials.get(&tutorial.id)).0)
+}
+
+pub(crate) fn status_of(entry: Option<&Entry>) -> (Status, &[String]) {
     entry.map_or((Status::Unreviewed, &[]), |e| {
         (e.status, e.crates.as_slice())
     })
@@ -62,14 +63,7 @@ fn render_body(key: &str, entry: Option<&Entry>, sources: &Sources) -> String {
     format!("\n{}\n", body.replace("{{snippet}}", &code).trim_end())
 }
 
-fn item_page(
-    path: String,
-    title: &str,
-    kind: &str,
-    url: &str,
-    entry: Option<&Entry>,
-    body: String,
-) -> Page {
+fn item_page(path: String, tutorial: &Tutorial, entry: Option<&Entry>, body: String) -> Page {
     let (status, crates) = status_of(entry);
     let list = if crates.is_empty() {
         "No crate named yet.".to_string()
@@ -82,20 +76,21 @@ fn item_page(
         .map(|r| format!("\n**Reason:** {r}\n"))
         .unwrap_or_default();
     let content = format!(
-        "---\ntitle: {}\n---\n\n**Status:** {}\n{reason}\nOpenCV {kind}: [source at 5.1.0]({url}).\n\n## Rust crates\n\n{list}\n{body}",
-        yaml_quote(title),
-        status.label()
+        "---\ntitle: {}\n---\n\n**Status:** {}\n{reason}\nOpenCV tutorial: [source at 5.1.0]({BLOB}{}).\n\n## Rust crates\n\n{list}\n{body}",
+        yaml_quote(&tutorial.title),
+        status.label(),
+        tutorial.source
     );
     Page { path, content }
 }
 
-fn category_pages(catalog: &Catalog) -> Vec<Page> {
-    let mut labels: BTreeSet<&str> = catalog
+fn category_pages(catalog: &Catalog, coverage: &Coverage) -> Vec<Page> {
+    let labels: BTreeSet<&str> = catalog
         .tutorials
         .iter()
+        .filter(|t| implemented(coverage, t))
         .map(|t| t.section.as_str())
         .collect();
-    labels.insert("modules");
     let page = |label: &&str| Page {
         path: format!("docs/opencv/{label}/_category_.json"),
         content: format!("{{\"label\": \"{label}\"}}\n"),
@@ -103,67 +98,10 @@ fn category_pages(catalog: &Catalog) -> Vec<Page> {
     labels.iter().map(page).collect()
 }
 
-fn tally(statuses: &[Status]) -> Vec<usize> {
-    let count = |wanted: &Status| statuses.iter().filter(|s| *s == wanted).count();
-    Status::ALL.iter().map(count).collect()
-}
-
-fn row(cells: &[String]) -> String {
-    format!("| {} |", cells.join(" | "))
-}
-
-fn status_page(catalog: &Catalog, coverage: &Coverage) -> Page {
-    let modules: Vec<Status> = catalog
-        .modules
-        .iter()
-        .map(|m| status_of(coverage.modules.get(&m.name)).0)
-        .collect();
-    let mut sections: BTreeMap<&str, Vec<Status>> = BTreeMap::new();
-    for t in &catalog.tutorials {
-        let status = status_of(coverage.tutorials.get(&t.id)).0;
-        sections.entry(t.section.as_str()).or_default().push(status);
-    }
-    let all: Vec<Status> = sections.values().flatten().copied().collect();
-    let mut lines = vec![
-        "---\ntitle: Coverage status\n---\n".to_string(),
-        "Generated by `cvg-tools generate` from `catalog/coverage.yaml`. Do not edit by hand.\n"
-            .to_string(),
-        "| Status | Modules | Tutorials |\n|---|---|---|".to_string(),
-    ];
-    let (m, t) = (tally(&modules), tally(&all));
-    for (i, status) in Status::ALL.iter().enumerate() {
-        lines.push(row(&[
-            status.label().into(),
-            m[i].to_string(),
-            t[i].to_string(),
-        ]));
-    }
-    lines.push(row(&[
-        "**Total**".into(),
-        modules.len().to_string(),
-        all.len().to_string(),
-    ]));
-    let heads: Vec<&str> = Status::ALL.iter().map(|s| s.label()).collect();
-    lines.push(format!(
-        "\n## Tutorials by section\n\n| Section | Total | {} |",
-        heads.join(" | ")
-    ));
-    lines.push(format!("|---|---|{}", "---|".repeat(heads.len())));
-    for (name, statuses) in &sections {
-        let mut cells = vec![name.to_string(), statuses.len().to_string()];
-        cells.extend(tally(statuses).iter().map(|n| n.to_string()));
-        lines.push(row(&cells));
-    }
-    Page {
-        path: "docs/status.md".into(),
-        content: lines.join("\n") + "\n",
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::fixtures::{catalog, coverage, entry, sources};
+    use crate::model::fixtures::{catalog, coverage, sources};
     use rstest::rstest;
 
     fn find<'a>(pages: &'a [Page], path: &str) -> &'a str {
@@ -171,7 +109,6 @@ mod tests {
     }
 
     #[rstest]
-    #[case("docs/opencv/modules/core.md", "**Status:** covered")]
     #[case("docs/opencv/core/tutorial_mat.md", "title: \"The \\\"Mat\\\" class\"")]
     #[case(
         "docs/opencv/core/tutorial_mat.md",
@@ -182,14 +119,12 @@ mod tests {
         "blob/5.1.0/doc/tutorials/core/mat.markdown"
     )]
     #[case("docs/opencv/core/_category_.json", "\"label\": \"core\"")]
-    #[case("docs/opencv/modules/_category_.json", "\"label\": \"modules\"")]
     #[case("docs/opencv/core/tutorial_mat.md", "**Reason:** shown below")]
     #[case(
         "docs/opencv/core/tutorial_mat.md",
         "Body.\n\n```rust\nfn main() {}\n```"
     )]
-    #[case("docs/status.md", "| covered | 1 | 1 |")]
-    #[case("docs/status.md", "| core | 1 | 1 | 0 | 0 | 0 | 0 |")]
+    #[case("docs/roadmap.md", "| covered | 1 | 1 |")]
     fn renders_expected_text(#[case] path: &str, #[case] expected: &str) {
         let mut cov = coverage(Status::Covered, &["ndarray"]);
         let tutorial = cov.tutorials.get_mut("tutorial_mat").unwrap();
@@ -203,13 +138,24 @@ mod tests {
         );
     }
 
+    #[rstest]
+    #[case(Status::Unreviewed)]
+    #[case(Status::Gap)]
+    #[case(Status::NotPlanned)]
+    fn only_implemented_tutorials_get_pages(#[case] status: Status) {
+        let pages = pages(&catalog(), &coverage(status, &[]), &Sources::default());
+        let paths: Vec<&str> = pages.iter().map(|p| p.path.as_str()).collect();
+        assert_eq!(paths, ["docs/roadmap.md"]);
+    }
+
     #[test]
-    fn missing_entries_render_as_unreviewed_without_crates() {
-        let mut cov = coverage(Status::Gap, &[]);
-        cov.tutorials.clear();
-        cov.modules.insert("core".into(), entry(Status::Gap, &[]));
-        let pages = pages(&catalog(), &cov, &Sources::default());
+    fn a_page_without_crates_says_so() {
+        let pages = pages(
+            &catalog(),
+            &coverage(Status::Partial, &[]),
+            &Sources::default(),
+        );
         let text = find(&pages, "docs/opencv/core/tutorial_mat.md");
-        assert!(text.contains("**Status:** unreviewed") && text.contains("No crate named yet."));
+        assert!(text.contains("No crate named yet.") && text.contains("**Status:** partial"));
     }
 }

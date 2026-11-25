@@ -1,0 +1,136 @@
+---
+title: "Template Matching"
+---
+
+**Status:** partial
+
+**Reason:** Four of OpenCV's six methods and no mask; the zero-mean (CCOEFF) methods are missing
+
+OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/histograms/template_matching/template_matching.markdown).
+
+## Rust crates
+
+- [image](https://crates.io/crates/image)
+- [imageproc](https://crates.io/crates/imageproc)
+
+## Goal
+
+Find where a small patch occurs in a bigger picture, as OpenCV's `matchTemplate` does. The page cuts a patch out of a photograph
+and looks for it in a copy of the photograph under different light.
+
+## Theory
+
+Template matching slides the template over every position of the picture and scores how well they agree there. The score
+decides which position is best:
+
+- **Sum of squared errors** (SSE) adds up the squared differences; small is good. It is fooled by a change of brightness, because every pixel then differs.
+- **Normalised** versions divide by the energy of the two patches, so they do not depend on overall brightness and contrast.
+- **Cross-correlation** multiplies the template with the picture; large is good. Raw, it grows wherever the picture is bright, so it prefers bright places over similar ones. Normalised, it measures similarity of shape.
+
+## Code
+
+```rust
+//! OpenCV tutorial `tutorial_template_matching` in pure Rust: find a small patch inside a picture.
+//! Run with `cargo run -p cvg-snippets --example template_matching`.
+
+use cvg_snippets::common::gray_sample;
+use image::{GrayImage, imageops};
+use imageproc::template_matching::{MatchTemplateMethod, find_extremes, match_template};
+
+/// The methods of the page, in the order its menu lists them.
+pub const METHODS: [MatchTemplateMethod; 4] = [
+    MatchTemplateMethod::SumOfSquaredErrors,
+    MatchTemplateMethod::SumOfSquaredErrorsNormalized,
+    MatchTemplateMethod::CrossCorrelation,
+    MatchTemplateMethod::CrossCorrelationNormalized,
+];
+
+/// A `size` x `size` patch cut from the middle of the picture, a little above the centre, and where its top left corner is.
+pub fn cut_template(grey: &GrayImage, size: u32) -> (GrayImage, (u32, u32)) {
+    let corner = (
+        (grey.width() - size) / 2,
+        (grey.height() * 2 / 5).saturating_sub(size / 2),
+    );
+    (
+        imageops::crop_imm(grey, corner.0, corner.1, size, size).to_image(),
+        corner,
+    )
+}
+
+/// The same scene seen under a different light: slightly blurred and brighter, so the match is not a trivial copy.
+pub fn relit(grey: &GrayImage) -> GrayImage {
+    imageops::brighten(&imageops::blur(grey, 1.5), 25)
+}
+
+/// `cv::matchTemplate` and `minMaxLoc`: slides the template over the picture and returns the top left corner of the best
+/// match. Error measures are best at their minimum, correlations at their maximum.
+pub fn best_match(
+    search: &GrayImage,
+    template: &GrayImage,
+    method: MatchTemplateMethod,
+) -> (u32, u32) {
+    let scores = match_template(search, template, method);
+    let extremes = find_extremes(&scores);
+    match method {
+        MatchTemplateMethod::SumOfSquaredErrors
+        | MatchTemplateMethod::SumOfSquaredErrorsNormalized => extremes.min_value_location,
+        _ => extremes.max_value_location,
+    }
+}
+
+/// Size of the patch the page starts with.
+pub const SIZE: u32 = 40;
+
+/// Where the patch was cut, and where each method finds it in the relit picture.
+pub fn report() -> String {
+    let photo = gray_sample("chelsea.png");
+    let (template, corner) = cut_template(&photo, SIZE);
+    let search = relit(&photo);
+    let names = ["sse", "sse_normed", "ccorr", "ccorr_normed"];
+    let found = METHODS
+        .iter()
+        .zip(names)
+        .map(|(method, name)| format!("{name} = {:?}", best_match(&search, &template, *method)));
+    format!(
+        "template = {corner:?}\n{}",
+        found.collect::<Vec<_>>().join("\n")
+    )
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+## Explanation
+
+1. `cut_template` crops a `size × size` patch from the middle of the photo and remembers its top left corner.
+2. `relit` blurs the photo a little and brightens it, so the match is not a trivial copy.
+3. `match_template(search, template, method)` returns a score for every position the template fits at; `find_extremes` is `minMaxLoc` and gives the best one. For the two error measures the best score is the minimum, for the correlations the maximum.
+4. For the page's settings the patch was cut at (205, 100). The error methods and the normalised correlation find it within a pixel in the relit copy, and the raw correlation lands at (411, 235), a bright corner of the picture: it measures how much light overlaps, not how well the shapes agree.
+5. Tests check that every method but the raw correlation finds the exact corner in an untouched copy, that both normalised methods survive the change of light, and that the patch is cut where it says. `imageproc` has four of OpenCV's six methods (no zero-mean `CCOEFF`) and its matching is a plain sliding window, so a large template on a large picture is slow.
+
+## Result
+
+<LiveExample fn="find_patch" label="Relit copy, best match boxed" sample="chelsea.png" params={[{name: "method", label: "Method", options: ["Squared error", "Squared error (normalised)", "Cross-correlation", "Cross-correlation (normalised)"], value: 3}, {name: "size", label: "Patch size", min: 16, max: 80, step: 4, value: 40}]} />
+
+Try the raw cross-correlation and see the box jump to a bright area. Move the controls, or use your own image: the code above runs
+in your browser as WebAssembly. For the sample photo and the settings this page starts with, the code prints the numbers
+below, and a test asserts this exact text:
+
+```text
+template = (205, 100)
+sse = (204, 100)
+sse_normed = (204, 100)
+ccorr = (411, 235)
+ccorr_normed = (205, 101)
+```
+
+## OpenCV to Rust
+
+| OpenCV 5.1 | Rust |
+|---|---|
+| `cv::matchTemplate(img, templ, result, TM_SQDIFF)` | `imageproc::template_matching::match_template(&img, &templ, MatchTemplateMethod::SumOfSquaredErrors)` |
+| `TM_SQDIFF_NORMED` | `SumOfSquaredErrorsNormalized` |
+| `TM_CCORR` / `TM_CCORR_NORMED` | `CrossCorrelation` / `CrossCorrelationNormalized` |
+| `cv::minMaxLoc(result, &min, &max, &minLoc, &maxLoc)` | `imageproc::template_matching::find_extremes(&scores)` |

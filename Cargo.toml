@@ -5,3 +5,7 @@ resolver = "2"
 # oximedia-cv's Hough transform is a triple loop; unoptimised it takes minutes in tests.
 [profile.dev.package.oximedia-cv]
 opt-level = 3
+
+# Template matching is a sliding-window sum; unoptimised it takes tens of seconds in tests.
+[profile.dev.package.imageproc]
+opt-level = 3

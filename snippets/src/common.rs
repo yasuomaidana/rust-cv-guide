@@ -240,6 +240,19 @@ pub fn on_canvas(width: u32, height: u32, picture: &RgbImage) -> RgbImage {
     })
 }
 
+/// The grey picture dimmed, with a red rectangle with its top left corner at `(x, y)`.
+pub fn draw_box(base: &GrayImage, (x, y): (u32, u32), (width, height): (u32, u32)) -> RgbImage {
+    RgbImage::from_fn(base.width(), base.height(), |px, py| {
+        let on_border = (px >= x && px <= x + width && py >= y && py <= y + height)
+            && (px - x < 2 || x + width - px < 2 || py - y < 2 || y + height - py < 2);
+        if on_border {
+            Rgb([255, 40, 40])
+        } else {
+            Rgb([base.get_pixel(px, py).0[0] / 2; 3])
+        }
+    })
+}
+
 /// What a contour example prints: how many outlines it found and how many points they have in total.
 pub fn outline_report(outlines: &Outlines) -> String {
     let points: usize = outlines.iter().map(Vec::len).sum();
@@ -362,6 +375,14 @@ mod tests {
             ([9, 9, 9], [0, 0, 0])
         );
         assert_eq!(on_canvas(1, 1, &small).dimensions(), (1, 1));
+    }
+
+    #[test]
+    fn boxes_are_outlined_in_red() {
+        let base = GrayImage::from_pixel(20, 20, Luma([100]));
+        let drawn = draw_box(&base, (5, 5), (8, 6));
+        assert_eq!(drawn.get_pixel(5, 8).0, [255, 40, 40]);
+        assert_eq!(drawn.get_pixel(9, 8).0, [50, 50, 50]);
     }
 
     #[test]

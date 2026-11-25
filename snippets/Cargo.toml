@@ -250,3 +250,11 @@ path = "examples/imgproc_morph/distance.rs"
 [[test]]
 name = "distance"
 path = "tests/imgproc_morph/distance.rs"
+
+[[example]]
+name = "template_matching"
+path = "examples/imgproc_geom/template_matching.rs"
+
+[[test]]
+name = "template_matching"
+path = "tests/imgproc_geom/template_matching.rs"

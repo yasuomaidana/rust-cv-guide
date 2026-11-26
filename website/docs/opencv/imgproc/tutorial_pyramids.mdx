@@ -2,6 +2,9 @@
 title: "Image Pyramids"
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 **Status:** covered
 
 OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/imgproc/pyramids/pyramids.markdown).
@@ -10,25 +13,29 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
+- [oximedia-cv](https://crates.io/crates/oximedia-cv)
 
 ## Goal
 
 Build an image pyramid: shrink a picture by half again and again with `pyrDown`, and enlarge it with `pyrUp`, as in the OpenCV
-tutorial.
+tutorial. Both `image` + `imageproc` and `oximedia-cv` are shown side by side.
 
 ## Theory
 
-A pyramid keeps several resolutions of one picture. Going down, each level is the previous one blurred and then thinned to
-every second row and column; the blur is what stops the thinning from creating aliasing. Going up doubles each side, which can
-only invent detail by interpolation, so down then up gives a blurred copy of the original, not the original.
+A pyramid keeps several resolutions of one picture. Going down, each level is the previous one blurred/averaged and thinned to
+half the resolution (`div_ceil(2)`). Going up doubles each side by bilinear interpolation, so down then up gives a smooth
+approximation of the original rather than recovering lost high-frequency detail.
 
 ## Code
+
+<Tabs groupId="implementation">
+<TabItem value="image + imageproc" label="image + imageproc" default>
 
 ```rust
 //! OpenCV tutorial `tutorial_pyramids` in pure Rust: `pyrDown` and `pyrUp`.
 //! Run with `cargo run -p cvg-snippets --example pyramids`.
 
-use cvg_snippets::common::{Figure, describe, rgb_figures, sample};
+use cvg_snippets::common::{Figure, pyramid_report, rgb_figures, sample};
 use image::{RgbImage, imageops};
 use imageproc::filter::separable_filter_equal;
 
@@ -79,16 +86,7 @@ pub fn figures() -> Vec<Figure> {
 
 /// Describes one pixel of each figure, then lists their sizes.
 pub fn report() -> String {
-    let figures = figures();
-    let sizes: Vec<String> = figures
-        .iter()
-        .map(|(_, picture)| format!("{}x{}", picture.width(), picture.height()))
-        .collect();
-    format!(
-        "{}\nsizes = {}",
-        describe(&figures, 50, 30),
-        sizes.join(", ")
-    )
+    pyramid_report(&figures())
 }
 
 pub fn main() {
@@ -96,20 +94,82 @@ pub fn main() {
 }
 ```
 
+</TabItem>
+<TabItem value="oximedia-cv" label="oximedia-cv">
+
+```rust
+//! OpenCV tutorial `tutorial_pyramids` using `oximedia-cv::image::resize::{ImagePyramid, resize_image}`.
+//! Run with `cargo run -p cvg-snippets --example oxi_pyramids`.
+
+use cvg_snippets::common::{Figure, chelsea_variants, pyramid_report};
+use image::RgbImage;
+use oximedia_cv::image::resize::{ImagePyramid, ResizeConfig, ResizeMethod, resize_image};
+
+/// Downsamples once with `ImagePyramid::gaussian` (Area resampling, `div_ceil(2)` dimensions).
+pub fn pyr_down(input: &RgbImage) -> RgbImage {
+    let (w, h) = input.dimensions();
+    let pyramid = ImagePyramid::gaussian(input.as_raw(), w, h, 3, 2).expect("non-empty image");
+    let level = pyramid.level(1).expect("level 1");
+    RgbImage::from_raw(level.width, level.height, level.data.clone()).expect("rgb buffer")
+}
+
+/// Doubles each side with bilinear interpolation via `resize_image`.
+pub fn pyr_up(input: &RgbImage) -> RgbImage {
+    let (w, h) = input.dimensions();
+    let config = ResizeConfig::new(w * 2, h * 2, ResizeMethod::Bilinear, 3);
+    let data = resize_image(input.as_raw(), w, h, &config).expect("valid resize");
+    RgbImage::from_raw(w * 2, h * 2, data).expect("rgb buffer")
+}
+
+/// Goes down `levels` steps using `ImagePyramid::gaussian`, then back up if `back` is true.
+pub fn pyramid(input: &RgbImage, levels: u32, back: bool) -> RgbImage {
+    let (w, h) = input.dimensions();
+    let built = ImagePyramid::gaussian(input.as_raw(), w, h, 3, levels as usize + 1)
+        .expect("non-empty image");
+    let top = built.levels.last().expect("at least level 0");
+    let mut current =
+        RgbImage::from_raw(top.width, top.height, top.data.clone()).expect("rgb buffer");
+    if back {
+        for _ in 0..levels {
+            current = pyr_up(&current);
+        }
+    }
+    current
+}
+
+/// The photo and three pyramid levels down, plus level 3 brought back up.
+pub fn figures() -> Vec<Figure> {
+    chelsea_variants(
+        [("down1", 1), ("down2", 2), ("down3", 3), ("up3", -3)],
+        |img, step: i32| pyramid(img, step.unsigned_abs(), step < 0),
+    )
+}
+
+/// Describes one pixel of each figure and lists their sizes.
+pub fn report() -> String {
+    pyramid_report(&figures())
+}
+
+pub fn main() {
+    println!("{}", report());
+}
+```
+
+</TabItem>
+</Tabs>
+
 ## Explanation
 
-1. `separable_filter_equal(input, &BINOMIAL)` blurs rows and columns with the 5-tap kernel `[1, 4, 6, 4, 1] / 16`, the Gaussian approximation `pyrDown` uses.
-2. `RgbImage::from_fn(w.div_ceil(2), h.div_ceil(2), ..)` keeps every second pixel, so a side of 451 becomes 226 (OpenCV's `(w + 1) / 2`).
-3. `pyr_up` doubles each side with bilinear interpolation (`FilterType::Triangle`). OpenCV inserts zero rows and columns and blurs; both produce a smooth enlargement, but the pixel values differ slightly.
-4. Because each side is rounded up on the way down, down three times and up three times gives 456 × 304 for a 451 × 300 photo, not the original size. The live example crops the result to the input's size.
-5. Tests check the sizes (rounding up, doubling) and that a flat picture survives down and up unchanged.
+1. In `imageproc`, `separable_filter_equal(input, &BINOMIAL)` blurs with `[1, 4, 6, 4, 1] / 16` before subsampling every second pixel, and `imageops::resize(..., FilterType::Triangle)` doubles each side.
+2. In `oximedia-cv`, `ImagePyramid::gaussian` builds multi-scale levels using `ResizeMethod::Area` (`div_ceil(2)`), and `resize_image(..., ResizeMethod::Bilinear)` enlarges each level back up.
+3. Because each side is rounded up on the way down, down three times and up three times gives 456 × 304 for a 451 × 300 photo. The live example crops the result to the input's size.
 
 ## Result
 
-<LiveExample fn="pyramid" sample="chelsea.png" params={[{name: "levels", label: "Levels", min: 1, max: 4, step: 1, value: 2}, {name: "back", label: "Result", options: ["Down only (smaller, top left)", "Down then back up (blurred)"], value: 0}]} />
+<LiveExample fn="pyramid" label="image + imageproc" alt={{fn: "pyramid_oxi", label: "oximedia-cv"}} sample="chelsea.png" params={[{name: "levels", label: "Levels", min: 1, max: 4, step: 1, value: 2}, {name: "back", label: "Result", options: ["Down only (smaller, top left)", "Down then back up (blurred)"], value: 0}]} />
 
-Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
-settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
+Move the controls, or use your own image: both implementations run in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(50,30) = [110, 71, 42]
@@ -126,5 +186,5 @@ sizes = 451x300, 226x150, 113x75, 57x38, 456x304
 
 | OpenCV 5.1 | Rust |
 |---|---|
-| `cv::pyrDown(src, dst)` | `pyr_down`: `separable_filter_equal` with `[1, 4, 6, 4, 1] / 16`, then every second pixel |
-| `cv::pyrUp(src, dst)` | `pyr_up`: `imageops::resize(.., FilterType::Triangle)` to twice the size |
+| `cv::pyrDown(src, dst)` | `separable_filter_equal` + subsample (`imageproc`), or `oximedia_cv::image::resize::ImagePyramid::gaussian` |
+| `cv::pyrUp(src, dst)` | `imageops::resize(.., FilterType::Triangle)` or `oximedia_cv::image::resize::resize_image(.., ResizeMethod::Bilinear)` |

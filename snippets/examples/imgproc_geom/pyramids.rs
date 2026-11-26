@@ -1,7 +1,7 @@
 //! OpenCV tutorial `tutorial_pyramids` in pure Rust: `pyrDown` and `pyrUp`.
 //! Run with `cargo run -p cvg-snippets --example pyramids`.
 
-use cvg_snippets::common::{Figure, describe, rgb_figures, sample};
+use cvg_snippets::common::{Figure, pyramid_report, rgb_figures, sample};
 use image::{RgbImage, imageops};
 use imageproc::filter::separable_filter_equal;
 
@@ -52,16 +52,7 @@ pub fn figures() -> Vec<Figure> {
 
 /// Describes one pixel of each figure, then lists their sizes.
 pub fn report() -> String {
-    let figures = figures();
-    let sizes: Vec<String> = figures
-        .iter()
-        .map(|(_, picture)| format!("{}x{}", picture.width(), picture.height()))
-        .collect();
-    format!(
-        "{}\nsizes = {}",
-        describe(&figures, 50, 30),
-        sizes.join(", ")
-    )
+    pyramid_report(&figures())
 }
 
 pub fn main() {

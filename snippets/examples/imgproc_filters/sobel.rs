@@ -1,8 +1,8 @@
 //! OpenCV tutorial `tutorial_sobel_derivatives` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example sobel`.
 
-use cvg_snippets::common::{Figure, describe, sample};
-use image::{DynamicImage, GrayImage, ImageBuffer, Luma};
+use cvg_snippets::common::{Figure, SobelOps, describe, sobel_figures};
+use image::{GrayImage, ImageBuffer, Luma};
 use imageproc::gradients::{horizontal_sobel, sobel_gradients, vertical_sobel};
 
 /// `cv::convertScaleAbs`: absolute value, saturated to 0..=255.
@@ -30,17 +30,12 @@ pub fn magnitude(input: &GrayImage) -> GrayImage {
     to_u8(&sobel_gradients(input))
 }
 
+/// The x, y, and magnitude functions bundled for `cvg-live`.
+pub const OPS: SobelOps = (grad_x, grad_y, magnitude);
+
 /// The photo's x and y Sobel derivatives and the gradient magnitude.
 pub fn figures() -> Vec<Figure> {
-    let input = DynamicImage::ImageRgb8(sample("building.jpg")).to_luma8();
-    [
-        ("grad_x", grad_x(&input)),
-        ("grad_y", grad_y(&input)),
-        ("magnitude", magnitude(&input)),
-        ("input", input),
-    ]
-    .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
-    .to_vec()
+    sobel_figures(OPS)
 }
 
 /// Describes one pixel of each figure.

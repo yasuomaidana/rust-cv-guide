@@ -1,4 +1,4 @@
-//! Tests for `examples/oximedia/quality.rs`: the printed numbers, and agreement with the `image`-only PSNR.
+//! Tests for `examples/oximedia/quality.rs`: the printed numbers, and agreement with the pure-Rust `image` version.
 
 #![allow(dead_code)]
 
@@ -20,19 +20,27 @@ fn main_prints_the_report() {
     example::main();
 }
 
-/// The two PSNR computations agree to a hundredth of a dB, blurred or not.
+/// Both PSNR and SSIM agree closely between pure Rust and `oximedia-cv`.
 #[test]
-fn psnr_agrees_with_the_image_only_version() {
+fn psnr_and_ssim_agree_with_the_image_only_version() {
     let photo = gray_sample("building.jpg");
     for sigma in [1.0, 2.0, 4.0] {
         let blurred = image_version::degrade(&photo, sigma);
-        let (ours, theirs) = (
+        let (ours_p, theirs_p) = (
             example::psnr(&photo, &blurred),
             image_version::psnr(&photo, &blurred),
         );
+        let (ours_s, theirs_s) = (
+            example::ssim(&photo, &blurred),
+            image_version::ssim(&photo, &blurred),
+        );
         assert!(
-            (ours - theirs).abs() < 0.01,
-            "sigma {sigma}: {ours} against {theirs}"
+            (ours_p - theirs_p).abs() < 0.01,
+            "sigma {sigma}: {ours_p} against {theirs_p}"
+        );
+        assert!(
+            (ours_s - theirs_s).abs() < 0.005,
+            "sigma {sigma}: {ours_s} against {theirs_s}"
         );
     }
 }

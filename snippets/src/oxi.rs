@@ -9,7 +9,7 @@ use oximedia_cv::{
 };
 
 /// Runs a byte-level operation on a grey image; the output has the same size.
-fn run(image: &GrayImage, op: impl FnOnce(&[u8], u32, u32) -> CvResult<Vec<u8>>) -> GrayImage {
+pub fn run(image: &GrayImage, op: impl FnOnce(&[u8], u32, u32) -> CvResult<Vec<u8>>) -> GrayImage {
     let (width, height) = image.dimensions();
     let bytes = op(image.as_raw(), width, height).expect("a non-empty grey image");
     GrayImage::from_raw(width, height, bytes).expect("same size as the input")
@@ -66,6 +66,28 @@ pub fn frame_of(image: &GrayImage) -> VideoFrame {
     frame
 }
 
+/// Wraps an `RgbImage` as a planar 4:4:4 `VideoFrame` (one full-resolution plane per R, G, B channel).
+pub fn rgb_frame(image: &RgbImage) -> VideoFrame {
+    let (width, height) = image.dimensions();
+    let len = (width * height) as usize;
+    let mut channels = [
+        Vec::with_capacity(len),
+        Vec::with_capacity(len),
+        Vec::with_capacity(len),
+    ];
+    for p in image.pixels() {
+        channels[0].push(p[0]);
+        channels[1].push(p[1]);
+        channels[2].push(p[2]);
+    }
+    let mut frame = VideoFrame::new(PixelFormat::Yuv444p, width, height);
+    frame.planes = channels
+        .into_iter()
+        .map(|data| Plane::with_dimensions(data, width as usize, width, height))
+        .collect();
+    frame
+}
+
 /// Mean absolute difference per pixel between two grey images of the same size, from 0 (equal) to 255.
 pub fn mean_abs_diff(a: &GrayImage, b: &GrayImage) -> f64 {
     let total: u64 = a
@@ -111,6 +133,9 @@ mod tests {
         assert_eq!((frame.width, frame.height, frame.planes.len()), (6, 4, 3));
         assert_eq!(frame.planes[0].data.len(), 24);
         assert_eq!(frame.planes[1].data, vec![128; 6]);
+        let rgb = rgb_frame(&RgbImage::from_pixel(3, 2, Rgb([1, 2, 3])));
+        assert_eq!((rgb.width, rgb.height, rgb.planes.len()), (3, 2, 3));
+        assert_eq!(rgb.planes[2].data, vec![3; 6]);
     }
 
     #[test]

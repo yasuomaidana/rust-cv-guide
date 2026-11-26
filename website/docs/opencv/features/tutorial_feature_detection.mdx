@@ -19,29 +19,41 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 
 ## Goal
 
-Find keypoints in a photograph: places that can be found again in another picture of the same scene. Two crates do it,
-`imageproc` (FAST corners) and `oximedia-cv` (an ORB-style detector that also computes binary descriptors, so keypoints can
-be matched). The page shows both and runs both on the same image. The two are different detectors, not two versions of one.
+Find keypoints in a photograph: places that can be found again in another picture of the same scene. Both `imageproc`
+and `oximedia-cv` implement **FAST-9** corners and **ORB-style** keypoints + binary descriptors, so the page lets you
+choose the **same algorithm** on both crates and tune their inputs either together or independently.
 
 ## Theory
 
-A good keypoint is distinctive and repeatable. FAST looks at 16 pixels on a circle around each pixel and calls it a corner
-when a run of them is all brighter or all darker than the centre by a threshold; it is very fast and gives many corners.
-ORB-style detectors add a descriptor: a short string of bits, each the result of comparing two pixels around the keypoint,
-so two keypoints are the same when their bit strings are close in Hamming distance. That is what makes matching possible.
+A good keypoint is distinctive and repeatable. **FAST-9** looks at 16 pixels on a circle around each pixel and calls it
+a corner when 9 consecutive ring pixels are all brighter or all darker than the centre by a threshold; it is very fast and
+gives many corners. **ORB-style** detectors add orientation and a 256-bit binary **BRIEF** descriptor so two views can be
+matched by Hamming distance.
 
 ## Code
+
+Both crates expose the matching algorithm pair:
+
+- **FAST-9**: `imageproc::corners::corners_fast9` beside `oximedia_cv::detect::corner::FastDetector` (with non-maximum suppression).
+- **ORB-style**: `imageproc::corners::oriented_fast` + `binary_descriptors::brief` beside `oximedia_cv::feature_extract::OrbExtractor` + `match_descriptors`.
 
 <Tabs groupId="implementation">
 <TabItem value="image + imageproc" label="image + imageproc" default>
 
 ```rust
-//! OpenCV tutorial `tutorial_feature_detection` in pure Rust: corner keypoints with FAST.
+//! OpenCV tutorial `tutorial_feature_detection` in pure Rust (`imageproc`):
+//! supports both FAST-9 corners and ORB-style oriented FAST + BRIEF descriptors.
 //! Run with `cargo run -p cvg-snippets --example fast`.
 
-use cvg_snippets::common::gray_sample;
-use image::GrayImage;
-use imageproc::corners::corners_fast9;
+use cvg_snippets::common::{FeatureAlgorithm, gray_sample};
+use image::{GrayImage, imageops};
+use imageproc::binary_descriptors::brief::{TestPair, brief};
+use imageproc::binary_descriptors::match_binary_descriptors;
+use imageproc::corners::{corners_fast9, oriented_fast};
+use imageproc::point::Point;
+use std::collections::BTreeMap;
+
+pub type Algorithm = FeatureAlgorithm;
 
 /// The `max` strongest FAST-9 corners whose ring differs from the centre by more than `threshold` levels.
 pub fn keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
@@ -51,16 +63,93 @@ pub fn keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)
     corners.iter().map(|c| (c.x as f32, c.y as f32)).collect()
 }
 
+/// Deterministic 256-pair BRIEF sampling pattern inside the 31×31 patch.
+fn brief_pairs() -> Vec<TestPair> {
+    let mut state: u64 = 0x517c_c1b7_2722_0a95;
+    let mut next = || -> u32 {
+        state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1);
+        ((state >> 32) as u32) % 31
+    };
+    (0..256)
+        .map(|_| TestPair {
+            p0: Point::new(next(), next()),
+            p1: Point::new(next(), next()),
+        })
+        .collect()
+}
+
+/// ORB-style oriented FAST-9 keypoints (`edge_radius = 18`, keeping >= 17 px margin for BRIEF's 31×31 patch).
+pub fn orb_keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    if input.width() <= 36 || input.height() <= 36 {
+        return Vec::new();
+    }
+    oriented_fast(input, Some(threshold), max, 18, Some(1))
+        .into_iter()
+        .map(|c| (c.corner.x as f32, c.corner.y as f32))
+        .collect()
+}
+
+/// Dispatches either FAST-9 or ORB-style keypoint detection with the shared `(threshold, max)` controls.
+pub fn detect(input: &GrayImage, algo: Algorithm, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    algo.run(input, threshold, max, keypoints, orb_keypoints)
+}
+
+/// Extracts ORB-style keypoints and 256-bit BRIEF descriptors using a fixed sampling pattern.
+pub fn orb_extract(
+    input: &GrayImage,
+    threshold: u8,
+    max: usize,
+    pairs: &[TestPair],
+) -> Vec<imageproc::binary_descriptors::brief::BriefDescriptor> {
+    if input.width() <= 36 || input.height() <= 36 {
+        return Vec::new();
+    }
+    let pts: Vec<Point<u32>> = oriented_fast(input, Some(threshold), max, 18, Some(1))
+        .into_iter()
+        .map(|c| Point::new(c.corner.x, c.corner.y))
+        .collect();
+    let pairs_vec = pairs.to_vec();
+    brief(input, &pts, 256, Some(&pairs_vec))
+        .map(|(descs, _)| descs)
+        .unwrap_or_default()
+}
+
+/// Matches ORB-style BRIEF descriptors against a shifted crop and returns the most-voted `(dx, dy)` shift.
+pub fn orb_recovered_shift(
+    input: &GrayImage,
+    dx: u32,
+    dy: u32,
+    max: usize,
+) -> Option<((i32, i32), usize)> {
+    let moved =
+        imageops::crop_imm(input, dx, dy, input.width() - dx, input.height() - dy).to_image();
+    let pairs = brief_pairs();
+    let first = orb_extract(input, THRESHOLD, max, &pairs);
+    let second = orb_extract(&moved, THRESHOLD, max, &pairs);
+    let mut votes: BTreeMap<(i32, i32), usize> = BTreeMap::new();
+    for (a, b) in match_binary_descriptors(&first, &second, 32, Some(7)) {
+        let shift = (
+            a.corner.x as i32 - b.corner.x as i32,
+            a.corner.y as i32 - b.corner.y as i32,
+        );
+        *votes.entry(shift).or_default() += 1;
+    }
+    votes.into_iter().max_by_key(|(_, count)| *count)
+}
+
 /// Settings the page starts with.
 pub const THRESHOLD: u8 = 20;
 pub const MAX: usize = 300;
 
-/// How many corners the building photo has above the threshold, and how many the page keeps.
+/// Counts FAST-9 corners and ORB-style keypoints on the building photo.
 pub fn report() -> String {
     let photo = gray_sample("building.jpg");
     let all = keypoints(&photo, THRESHOLD, usize::MAX).len();
     let kept = keypoints(&photo, THRESHOLD, MAX).len();
-    format!("corners = {all}\nkept = {kept}")
+    let orb_kept = orb_keypoints(&photo, THRESHOLD, MAX).len();
+    format!("corners = {all}\nkept = {kept}\norb_kept = {orb_kept}")
 }
 
 pub fn main() {
@@ -72,16 +161,19 @@ pub fn main() {
 <TabItem value="oximedia-cv" label="oximedia-cv">
 
 ```rust
-//! OpenCV tutorial `tutorial_feature_detection` and `tutorial_feature_description` with `oximedia-cv`'s ORB-style extractor:
-//! keypoints, binary descriptors, and matching between two views.
+//! OpenCV tutorial `tutorial_feature_detection` and `tutorial_feature_description` with `oximedia-cv`:
+//! supports both FAST-9 (`FastDetector`) and ORB-style (`OrbExtractor`) beside `imageproc`.
 //! Run with `cargo run -p cvg-snippets --example oxi_orb`.
 
-use cvg_snippets::common::gray_sample;
+use cvg_snippets::common::{FeatureAlgorithm, gray_sample};
 use image::{GrayImage, imageops};
+use oximedia_cv::detect::corner::{CornerDetector, FastDetector};
 use oximedia_cv::feature_extract::{OrbExtractor, match_descriptors};
 use std::collections::BTreeMap;
 
-/// Grey levels as the 0 to 1 floats the extractor takes.
+pub type Algorithm = FeatureAlgorithm;
+
+/// Grey levels as the 0 to 1 floats `OrbExtractor` takes.
 fn unit(image: &GrayImage) -> Vec<f32> {
     image
         .as_raw()
@@ -90,7 +182,21 @@ fn unit(image: &GrayImage) -> Vec<f32> {
         .collect()
 }
 
-/// Keypoints and their binary descriptors; `threshold` is on the 0 to 255 scale.
+/// FAST-9 corners via `oximedia_cv::detect::corner::FastDetector`, keeping the `max` strongest.
+pub fn fast_keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    let detector = FastDetector::new().with_threshold(threshold).with_nms(true);
+    let mut corners = detector
+        .detect(input.as_raw(), input.width(), input.height())
+        .unwrap_or_default();
+    corners.sort_by(|a, b| b.response.total_cmp(&a.response));
+    corners.truncate(max);
+    corners
+        .into_iter()
+        .map(|c| (c.x as f32, c.y as f32))
+        .collect()
+}
+
+/// ORB-style keypoints and their binary descriptors; `threshold` is on the 0 to 255 scale.
 fn extract(
     input: &GrayImage,
     threshold: u8,
@@ -111,9 +217,14 @@ fn extract(
     (points.iter().map(|k| (k.x, k.y)).collect(), descriptors)
 }
 
-/// The `max` strongest keypoints.
+/// The `max` strongest ORB-style keypoints.
 pub fn keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
     extract(input, threshold, max).0
+}
+
+/// Dispatches either FAST-9 or ORB-style keypoint detection with the shared `(threshold, max)` controls.
+pub fn detect(input: &GrayImage, algo: Algorithm, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    algo.run(input, threshold, max, fast_keypoints, keypoints)
 }
 
 /// Matches the picture against a copy cropped by `(dx, dy)` and returns the shift most matches agree on, with how many do.
@@ -142,12 +253,13 @@ pub fn recovered_shift(
 pub const THRESHOLD: u8 = 20;
 pub const MAX: usize = 300;
 
-/// How many keypoints the building photo gives, and the shift recovered by matching it against a copy cropped by (12, 7).
+/// Reports FAST-9 and ORB-style counts on the building photo plus the matched shift.
 pub fn report() -> String {
     let photo = gray_sample("building.jpg");
-    let found = keypoints(&photo, THRESHOLD, MAX).len();
+    let fast_found = fast_keypoints(&photo, THRESHOLD, MAX).len();
+    let orb_found = keypoints(&photo, THRESHOLD, MAX).len();
     let shift = recovered_shift(&photo, 12, 7, MAX);
-    format!("keypoints = {found}\nshift = {shift:?}")
+    format!("fast = {fast_found}\nkeypoints = {orb_found}\nshift = {shift:?}")
 }
 
 pub fn main() {
@@ -160,31 +272,29 @@ pub fn main() {
 
 ## Explanation
 
-1. `corners_fast9(&image, threshold)` returns every FAST-9 corner with a score; the example keeps the `max` strongest.
-2. `OrbExtractor { max_features, fast_threshold }.extract(..)` takes grey levels as floats from 0 to 1 and returns keypoints and 256-bit descriptors. Its keypoints come from a scale-space blob detector, so they are not the same places as FAST's corners.
-3. `match_descriptors(&a, &b, max_distance)` pairs each descriptor of `a` with its nearest in `b` by Hamming distance. The example crops the photo by (12, 7), matches the two views, and takes the shift most matches agree on: it recovers (12, 7) from 127 matches.
-4. The descriptors are not rotation invariant, so this matching works for translated views, not rotated ones.
-5. The tests check what the two detectors share: after the picture is shifted, at least 95 % of the keypoints of either are found again at the shifted place.
+1. Selecting **FAST-9** runs `corners_fast9` (`imageproc`) beside `FastDetector::new().with_threshold(..).with_nms(true)` (`oximedia-cv`), keeping the `max` strongest corners.
+2. Selecting **ORB (keypoints + descriptors)** runs `oriented_fast` (`imageproc`) beside `OrbExtractor` (`oximedia-cv`). Note that `OrbExtractor` finds scale-space blobs internally, while `oriented_fast` scores FAST-9 corners with intensity-centroid orientation.
+3. Both examples also match 256-bit binary descriptors against a shifted crop `(12, 7)` and recover the exact translation shift by majority vote.
+4. Use the **Sync parameters** checkbox in the live demo below to compare both crates on identical inputs, or uncheck it to pick a different algorithm, threshold, or keypoint cap per crate.
 
 ## Result
 
-<LiveExample fn="corners" label="image + imageproc (FAST)" alt={{fn: "keypoints_oxi", label: "oximedia-cv (ORB-style)"}} sample="building.jpg" params={[{name: "threshold", label: "Threshold", min: 5, max: 80, step: 1, value: 20}, {name: "max", label: "Keypoints kept", min: 20, max: 1000, step: 10, value: 300}]} />
+<LiveExample fn="features_detect" label="image + imageproc" alt={{fn: "features_detect_oxi", label: "oximedia-cv"}} sample="building.jpg" params={[{name: "algo", label: "Algorithm", options: ["FAST-9", "ORB (keypoints + descriptors)"], value: 0}, {name: "threshold", label: "Threshold", min: 5, max: 80, step: 1, value: 20}, {name: "max", label: "Keypoints kept", min: 20, max: 1000, step: 10, value: 300}]} altParams={[{name: "algo", label: "Algorithm", options: ["FAST-9", "ORB (keypoints + descriptors)"], value: 0}, {name: "threshold", label: "Threshold", min: 5, max: 80, step: 1, value: 20}, {name: "max", label: "Keypoints kept", min: 20, max: 1000, step: 10, value: 300}]} />
 
-The same threshold slider drives both, but it means different things (grey levels around the centre for FAST, contrast for the
-ORB-style detector). Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the
-sample photo and the settings this page starts with, the FAST code prints the numbers below, and a test asserts this exact
-text (the ORB-style code keeps 300 keypoints and recovers the shift `(12, 7)` from 127 matches):
+Move the controls, or use your own image: both implementations run in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text (`oximedia-cv` keeps `300` FAST-9 corners, `300` ORB keypoints, and recovers `shift = Some(((12, 7), 127))`):
 
 ```text
 corners = 19164
 kept = 300
+orb_kept = 300
 ```
 
 ## OpenCV to Rust
 
 | OpenCV 5.1 | Rust |
 |---|---|
-| `cv::FAST(img, keypoints, threshold)` | `imageproc::corners::corners_fast9` |
-| `cv::ORB::create(n)->detectAndCompute(..)` | `oximedia_cv::feature_extract::OrbExtractor::extract` |
-| `cv::BFMatcher(NORM_HAMMING).match(..)` | `oximedia_cv::feature_extract::match_descriptors` |
+| `cv::FAST(img, keypoints, threshold)` | `imageproc::corners::corners_fast9` or `oximedia_cv::detect::corner::FastDetector` |
+| `cv::ORB::create(n)->detectAndCompute(..)` | `imageproc::corners::oriented_fast` + `brief`, or `oximedia_cv::feature_extract::OrbExtractor::extract` |
+| `cv::BFMatcher(NORM_HAMMING).match(..)` | `imageproc::binary_descriptors::match_binary_descriptors` or `oximedia_cv::feature_extract::match_descriptors` |
 | `cv::drawKeypoints` | `common::draw_points`, a few lines |

@@ -6,6 +6,18 @@ use std::path::Path;
 /// A named picture an example produces; `describe` prints a pixel of each.
 pub type Figure = (&'static str, DynamicImage);
 
+/// Single-argument greyscale image transform function pointer.
+pub type GrayOp = fn(&GrayImage) -> GrayImage;
+
+/// Radius-parameterized morphological transform function pointer.
+pub type MorphOp = fn(&GrayImage, u8) -> GrayImage;
+
+/// The mask, erode, and dilate functions bundled for `cvg-live`.
+pub type MorphOps = (GrayOp, MorphOp, MorphOp);
+
+/// The x, y, and magnitude Sobel functions bundled for `cvg-live`.
+pub type SobelOps = (GrayOp, GrayOp, GrayOp);
+
 /// Loads one of the photographs in `snippets/assets/` (see `ATTRIBUTION.md` there for sources and licences).
 pub fn sample(name: &str) -> RgbImage {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -73,6 +85,107 @@ pub fn edge_figures(photo: &str, detect: impl Fn(&GrayImage) -> GrayImage) -> Ve
 /// A sample photograph as a grey image.
 pub fn gray_sample(name: &str) -> GrayImage {
     DynamicImage::ImageRgb8(sample(name)).to_luma8()
+}
+
+/// Mean absolute per-byte difference between two equal-length buffers.
+pub fn mean_abs_diff(a: &[u8], b: &[u8]) -> f64 {
+    assert_eq!(a.len(), b.len());
+    if a.is_empty() {
+        return 0.0;
+    }
+    a.iter()
+        .zip(b)
+        .map(|(x, y)| f64::from(x.abs_diff(*y)))
+        .sum::<f64>()
+        / a.len() as f64
+}
+
+/// The grey photo and the named greyscale transform applied to it.
+pub fn luma_pair_figures(photo: &str, name: &'static str, op: GrayOp) -> Vec<Figure> {
+    let input = gray_sample(photo);
+    let output = op(&input);
+    vec![
+        ("input", DynamicImage::ImageLuma8(input)),
+        (name, DynamicImage::ImageLuma8(output)),
+    ]
+}
+
+/// Describes one pixel of each figure at `(50, 30)`, then lists every figure's size.
+pub fn pyramid_report(figures: &[Figure]) -> String {
+    let sizes: Vec<String> = figures
+        .iter()
+        .map(|(_, picture)| format!("{}x{}", picture.width(), picture.height()))
+        .collect();
+    format!(
+        "{}\nsizes = {}",
+        describe(figures, 50, 30),
+        sizes.join(", ")
+    )
+}
+
+/// Keeps pixels where `mask` is non-zero and blacks out all others.
+pub fn mask_keep(input: &RgbImage, mask: &GrayImage) -> RgbImage {
+    RgbImage::from_fn(input.width(), input.height(), |x, y| {
+        if mask.get_pixel(x, y).0[0] > 0 {
+            *input.get_pixel(x, y)
+        } else {
+            Rgb([0, 0, 0])
+        }
+    })
+}
+
+/// The `building.jpg` x/y Sobel derivatives, gradient magnitude, and greyscale input.
+pub fn sobel_figures((gx, gy, mag): SobelOps) -> Vec<Figure> {
+    let input = gray_sample("building.jpg");
+    [
+        ("grad_x", gx(&input)),
+        ("grad_y", gy(&input)),
+        ("magnitude", mag(&input)),
+        ("input", input),
+    ]
+    .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
+    .to_vec()
+}
+
+/// The `coins.png` binary, Otsu, and `ToZero` threshold comparison figures.
+pub fn threshold_figures<K>(
+    binarize: fn(&GrayImage, Option<u8>, K) -> GrayImage,
+    binary: K,
+    otsu: K,
+    to_zero: K,
+) -> Vec<Figure> {
+    let input = gray_sample("coins.png");
+    [
+        ("input", input.clone()),
+        ("binary", binarize(&input, Some(100), binary)),
+        ("otsu", binarize(&input, None, otsu)),
+        ("to_zero", binarize(&input, None, to_zero)),
+    ]
+    .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
+    .to_vec()
+}
+
+/// Runs `op` across `cases` on `chelsea.png` and returns `rgb_figures`.
+pub fn chelsea_variants<T, const N: usize>(
+    cases: [(&'static str, T); N],
+    mut op: impl FnMut(&RgbImage, T) -> RgbImage,
+) -> Vec<Figure> {
+    let input = sample("chelsea.png");
+    let results = cases.map(|(name, arg)| (name, op(&input, arg)));
+    rgb_figures(input, results)
+}
+
+/// The coin mask, eroded and dilated with a 5x5 square (radius 2).
+pub fn morph_figures((coin_mask, shrink, grow): MorphOps) -> Vec<Figure> {
+    let grey = gray_sample("coins.png");
+    let mask = coin_mask(&grey);
+    [
+        ("input", mask.clone()),
+        ("eroded", shrink(&mask, 2)),
+        ("dilated", grow(&mask, 2)),
+    ]
+    .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
+    .to_vec()
 }
 
 /// Blurs away speckle, then keeps what is darker than `level` as 255 on 0: the ink of a scanned page, the mask the contour examples trace.
@@ -295,6 +408,56 @@ pub fn gradient(width: u32, height: u32) -> RgbImage {
     })
 }
 
+/// Selectable feature detector shared by both `imageproc` and `oximedia-cv` examples.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FeatureAlgorithm {
+    /// FAST-9 corner detector.
+    Fast,
+    /// ORB-style detector + binary descriptors.
+    Orb,
+}
+
+impl FeatureAlgorithm {
+    /// Converts a UI dropdown index (`0` = FAST-9, `1` = ORB-style) into a `FeatureAlgorithm`.
+    pub fn from_index(index: u32) -> Self {
+        match index {
+            0 => Self::Fast,
+            _ => Self::Orb,
+        }
+    }
+
+    /// Dispatches between the `fast` and `orb` detectors for a shared `(threshold, max)` budget.
+    pub fn run(
+        self,
+        input: &GrayImage,
+        threshold: u8,
+        max: usize,
+        fast: fn(&GrayImage, u8, usize) -> Vec<(f32, f32)>,
+        orb: fn(&GrayImage, u8, usize) -> Vec<(f32, f32)>,
+    ) -> Vec<(f32, f32)> {
+        match self {
+            Self::Fast => fast(input, threshold, max),
+            Self::Orb => orb(input, threshold, max),
+        }
+    }
+}
+
+/// Counts white (`255`) pixels per figure, one line per figure.
+pub fn white_pixel_report(figures: Vec<Figure>) -> String {
+    figures
+        .into_iter()
+        .map(|(name, picture)| {
+            let white = picture
+                .to_luma8()
+                .pixels()
+                .filter(|p| p.0[0] == 255)
+                .count();
+            format!("{name}: {white} white pixels")
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// 64-bit FNV-1a hash, for golden-output tests.
 pub fn fnv1a(bytes: &[u8]) -> u64 {
     bytes.iter().fold(0xcbf2_9ce4_8422_2325, |hash, byte| {
@@ -414,6 +577,44 @@ mod tests {
             names(edge_figures("building.jpg", GrayImage::clone)),
             ["input", "edges"]
         );
+        assert_eq!(
+            names(morph_figures((
+                GrayImage::clone,
+                |img, _| img.clone(),
+                |img, _| img.clone(),
+            ))),
+            ["input", "eroded", "dilated"]
+        );
+        assert_eq!(
+            names(luma_pair_figures("building.jpg", "out", GrayImage::clone)),
+            ["input", "out"]
+        );
+        assert_eq!(mean_abs_diff(&[], &[]), 0.0);
+        assert_eq!(mean_abs_diff(&[10, 20], &[12, 16]), 3.0);
+        let pyr = vec![("p", DynamicImage::ImageRgb8(gradient(60, 40)))];
+        assert!(pyramid_report(&pyr).ends_with("sizes = 60x40"));
+        let img = RgbImage::from_pixel(2, 1, Rgb([7, 8, 9]));
+        let mut mask = GrayImage::new(2, 1);
+        mask.put_pixel(0, 0, Luma([255]));
+        let kept = mask_keep(&img, &mask);
+        assert_eq!(kept.get_pixel(0, 0).0, [7, 8, 9]);
+        assert_eq!(kept.get_pixel(1, 0).0, [0, 0, 0]);
+        assert_eq!(
+            names(sobel_figures((
+                GrayImage::clone,
+                GrayImage::clone,
+                GrayImage::clone,
+            ))),
+            ["grad_x", "grad_y", "magnitude", "input"]
+        );
+        assert_eq!(
+            names(threshold_figures(|i, _, _| i.clone(), 0u8, 0u8, 1u8)),
+            ["input", "binary", "otsu", "to_zero"]
+        );
+        assert_eq!(
+            names(chelsea_variants([("a", 1u8)], |i, _| i.clone())),
+            ["input", "a"]
+        );
     }
 
     #[rstest]
@@ -455,5 +656,24 @@ mod tests {
     #[test]
     fn empty_gradient_has_no_pixels() {
         assert_eq!(gradient(0, 0).dimensions(), (0, 0));
+    }
+
+    #[test]
+    fn feature_algorithm_and_white_count_work() {
+        let img = GrayImage::from_pixel(4, 4, Luma([255]));
+        let pick_zero = |_: &GrayImage, _: u8, _: usize| vec![(0.0, 0.0)];
+        let pick_one = |_: &GrayImage, _: u8, _: usize| vec![(1.0, 1.0)];
+        assert_eq!(
+            FeatureAlgorithm::from_index(0).run(&img, 10, 5, pick_zero, pick_one),
+            vec![(0.0, 0.0)]
+        );
+        assert_eq!(
+            FeatureAlgorithm::from_index(1).run(&img, 10, 5, pick_zero, pick_one),
+            vec![(1.0, 1.0)]
+        );
+        assert_eq!(
+            white_pixel_report(vec![("mask", DynamicImage::ImageLuma8(img))]),
+            "mask: 16 white pixels"
+        );
     }
 }

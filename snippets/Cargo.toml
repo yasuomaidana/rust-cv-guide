@@ -266,3 +266,75 @@ path = "examples/imgproc_color/in_range.rs"
 [[test]]
 name = "in_range"
 path = "tests/imgproc_color/in_range.rs"
+
+[[example]]
+name = "oxi_adding_images"
+path = "examples/oximedia_core/adding_images.rs"
+
+[[test]]
+name = "oxi_adding_images"
+path = "tests/oximedia_core/adding_images.rs"
+
+[[example]]
+name = "oxi_erosion"
+path = "examples/oximedia_imgproc/erosion.rs"
+
+[[test]]
+name = "oxi_erosion"
+path = "tests/oximedia_imgproc/erosion.rs"
+
+[[example]]
+name = "oxi_sobel"
+path = "examples/oximedia_imgproc/sobel.rs"
+
+[[test]]
+name = "oxi_sobel"
+path = "tests/oximedia_imgproc/sobel.rs"
+
+[[example]]
+name = "oxi_equalize"
+path = "examples/oximedia_imgproc/equalize.rs"
+
+[[test]]
+name = "oxi_equalize"
+path = "tests/oximedia_imgproc/equalize.rs"
+
+[[example]]
+name = "oxi_filter2d"
+path = "examples/oximedia_imgproc/filter2d.rs"
+
+[[test]]
+name = "oxi_filter2d"
+path = "tests/oximedia_imgproc/filter2d.rs"
+
+[[example]]
+name = "oxi_pyramids"
+path = "examples/oximedia_imgproc/pyramids.rs"
+
+[[test]]
+name = "oxi_pyramids"
+path = "tests/oximedia_imgproc/pyramids.rs"
+
+[[example]]
+name = "oxi_warp_affine"
+path = "examples/oximedia_imgproc/warp_affine.rs"
+
+[[test]]
+name = "oxi_warp_affine"
+path = "tests/oximedia_imgproc/warp_affine.rs"
+
+[[example]]
+name = "oxi_in_range"
+path = "examples/oximedia_imgproc/in_range.rs"
+
+[[test]]
+name = "oxi_in_range"
+path = "tests/oximedia_imgproc/in_range.rs"
+
+[[example]]
+name = "oxipix_threshold"
+path = "examples/oxipix/threshold.rs"
+
+[[test]]
+name = "oxipix_threshold"
+path = "tests/oxipix/threshold.rs"

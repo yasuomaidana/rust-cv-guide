@@ -1,4 +1,4 @@
-//! Features module: the perspective transform of the homography tutorial.
+//! Features module: perspective transform and selectable FAST-9 / ORB feature detection.
 
 use crate::{marked, straightened};
 use wasm_bindgen::prelude::*;
@@ -17,24 +17,27 @@ pub fn unwarp(pixels: &[u8], width: u32, height: u32, shrink: f32) -> Vec<u8> {
     straightened(pixels, width, height, shrink, homography::unwarp)
 }
 
-/// FAST corners: the `max` strongest whose ring differs from the centre by more than `threshold` levels, marked with crosses.
+/// Feature keypoints (`algo`: 0 = FAST-9, 1 = ORB-style) via `imageproc`, marked with crosses.
 #[wasm_bindgen]
-pub fn corners(pixels: &[u8], width: u32, height: u32, threshold: u32, max: u32) -> Vec<u8> {
-    marked(pixels, width, height, (threshold, max), fast::keypoints)
+pub fn features_detect(px: &[u8], w: u32, h: u32, algo: u32, thresh: u32, max: u32) -> Vec<u8> {
+    marked(px, w, h, algo, thresh, max, fast::detect)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::testing::{SIDE, assert_picture, pixels};
+    use rstest::rstest;
 
     #[test]
     fn unwarping_keeps_the_size() {
         assert_picture(&unwarp(&pixels(), SIDE, SIDE, 0.1));
     }
 
-    #[test]
-    fn corners_keep_the_size() {
-        assert_picture(&corners(&pixels(), SIDE, SIDE, 20, 50));
+    #[rstest]
+    #[case(0)]
+    #[case(1)]
+    fn features_detect_keeps_the_size(#[case] algo: u32) {
+        assert_picture(&features_detect(&pixels(), SIDE, SIDE, algo, 20, 50));
     }
 }

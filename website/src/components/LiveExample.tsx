@@ -23,12 +23,16 @@ type Props = {
   /** Second photo for examples that combine two images; it is resized to the first one's size. */
   second?: string;
   params?: Param[];
+  /** Optional independent controls for `alt.fn`; when omitted, `params` drives both. */
+  altParams?: Param[];
   /** Caption of the output of `fn`; defaults to "Output". */
   label?: string;
   /** A second implementation of the same job (another crate), run on the same pixels and controls and drawn beside the first. */
   alt?: {fn: string; label: string};
   /** An exported function that returns text, called with the same arguments and shown under the pictures (numbers such as PSNR). */
   readout?: {fn: string; label: string};
+  /** Optional second readout function for comparing metrics and timings side by side. */
+  altReadout?: {fn: string; label: string};
 };
 
 const MAX_SIDE = 640;
@@ -101,6 +105,8 @@ const bytes = (data: ImageData) => new Uint8Array(data.data.buffer);
 /** How long one solution took, or why it could not run. */
 type Outcome = {ms: number} | {error: string};
 type Outcomes = {main?: Outcome; alt?: Outcome};
+type ReadoutResult = {text: string; ms: number} | {error: string};
+type Readouts = {main?: ReadoutResult; alt?: ReadoutResult};
 
 const describe = (failure: unknown) => String(failure instanceof Error ? failure.message : failure);
 
@@ -123,9 +129,44 @@ function runOne(call: Call, name: string, canvas: HTMLCanvasElement | null): Out
   }
 }
 
-/** The text an exported function returns, or why there is none. */
-function readoutOf(call: Call, name: string): string {
-  return typeof call.wasm[name] === 'function' ? String(invoke(call, name)) : `no export "${name}"`;
+/** Runs a text readout export and times it independently. */
+function readoutOf(call: Call, name: string): ReadoutResult {
+  if (typeof call.wasm[name] !== 'function') {
+    return {error: `no export "${name}"`};
+  }
+  try {
+    const started = performance.now();
+    const text = String(invoke(call, name));
+    return {text, ms: Math.round(performance.now() - started)};
+  } catch (failure) {
+    return {error: `"${name}" failed: ${describe(failure)}`};
+  }
+}
+
+function evaluateRun(
+  wasm: Wasm,
+  pictures: Pictures,
+  fn: string,
+  extra: {altFn?: string; readoutFn?: string; altReadoutFn?: string},
+  canvases: {input: HTMLCanvasElement | null; output: HTMLCanvasElement | null; altOutput: HTMLCanvasElement | null},
+  mainValues: number[],
+  altValues: number[],
+) {
+  const {first, other} = pictures;
+  const images = other ? [bytes(first), bytes(other)] : [bytes(first)];
+  const mainCall: Call = {wasm, images, size: first, values: mainValues};
+  const altCall: Call = {wasm, images, size: first, values: altValues};
+  show(canvases.input, first);
+  return {
+    outcomes: {
+      main: runOne(mainCall, fn, canvases.output),
+      alt: extra.altFn ? runOne(altCall, extra.altFn, canvases.altOutput) : undefined,
+    },
+    readouts: {
+      main: extra.readoutFn ? readoutOf(mainCall, extra.readoutFn) : undefined,
+      alt: extra.altReadoutFn ? readoutOf(altCall, extra.altReadoutFn) : undefined,
+    },
+  };
 }
 
 /** Runs the wasm function whenever the pictures or the controls change and draws both canvases, timing each one on its own. */
@@ -133,36 +174,42 @@ function useRun(
   base: string,
   version: string,
   fn: string,
-  extra: {altFn?: string; readoutFn?: string},
+  extra: {altFn?: string; readoutFn?: string; altReadoutFn?: string},
   pictures: Pictures | undefined,
-  values: number[],
+  mainValues: number[],
+  altValues: number[],
 ) {
-  const {altFn, readoutFn} = extra;
   const input = useRef<HTMLCanvasElement>(null);
   const output = useRef<HTMLCanvasElement>(null);
   const altOutput = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('Loading…');
   const [outcomes, setOutcomes] = useState<Outcomes>({});
-  const [readout, setReadout] = useState('');
+  const [readouts, setReadouts] = useState<Readouts>({});
   useEffect(() => {
     if (!pictures) return;
     let cancelled = false;
-    const {first, other} = pictures;
     loadWasm(base, version)
       .then((wasm) => {
         if (cancelled) return;
-        const call: Call = {wasm, images: other ? [bytes(first), bytes(other)] : [bytes(first)], size: first, values};
-        show(input.current, first);
-        setOutcomes({main: runOne(call, fn, output.current), alt: altFn ? runOne(call, altFn, altOutput.current) : undefined});
-        if (readoutFn) setReadout(readoutOf(call, readoutFn));
+        const next = evaluateRun(
+          wasm,
+          pictures,
+          fn,
+          extra,
+          {input: input.current, output: output.current, altOutput: altOutput.current},
+          mainValues,
+          altValues,
+        );
+        setOutcomes(next.outcomes);
+        setReadouts(next.readouts);
         setStatus('Computed in your browser');
       })
       .catch((failure) => setStatus(`Could not run the example: ${describe(failure)}`));
     return () => {
       cancelled = true;
     };
-  }, [base, version, fn, altFn, readoutFn, pictures, values]);
-  return {input, output, altOutput, status, outcomes, readout};
+  }, [base, version, fn, extra.altFn, extra.readoutFn, extra.altReadoutFn, pictures, mainValues, altValues]);
+  return {input, output, altOutput, status, outcomes, readouts};
 }
 
 /** The caption of one output with its own time (or the reason it did not run). */
@@ -200,6 +247,63 @@ function Control({param, value, onChange}: {param: Param; value: number; onChang
   );
 }
 
+function ControlRow({params, values, onChange}: {params: Param[]; values: number[]; onChange: (i: number, v: number) => void}) {
+  return (
+    <div className={styles.controls}>
+      {params.map((param, index) => (
+        <Control key={param.name} param={param} value={values[index]} onChange={(v) => onChange(index, v)} />
+      ))}
+    </div>
+  );
+}
+
+function ReadoutBody({result}: {result?: ReadoutResult}) {
+  if (!result) return <>…</>;
+  if ('error' in result) return <span className={styles.failure}>{result.error}</span>;
+  return <>{result.text}</>;
+}
+
+function ReadoutCard({label, result}: {label: string; result?: ReadoutResult}) {
+  return (
+    <div className={styles.readoutCard}>
+      <div className={styles.readoutHeader}>
+        <strong>{label}</strong>
+        {result && 'ms' in result && <span className={styles.timing}> · {result.ms} ms</span>}
+      </div>
+      <div className={styles.readoutValue}>
+        <ReadoutBody result={result} />
+      </div>
+    </div>
+  );
+}
+
+function ReadoutCards({
+  readoutSpec,
+  altReadoutSpec,
+  readouts,
+}: {
+  readoutSpec?: {fn: string; label: string};
+  altReadoutSpec?: {fn: string; label: string};
+  readouts: Readouts;
+}) {
+  if (!readoutSpec) return null;
+  if (!altReadoutSpec) {
+    const r = readouts.main;
+    return (
+      <p className={styles.readout}>
+        <strong>{readoutSpec.label}:</strong> <ReadoutBody result={r} />
+        {r && 'ms' in r && <span className={styles.timing}> · {r.ms} ms</span>}
+      </p>
+    );
+  }
+  return (
+    <div className={styles.readoutGrid}>
+      <ReadoutCard label={readoutSpec.label} result={readouts.main} />
+      <ReadoutCard label={altReadoutSpec.label} result={readouts.alt} />
+    </div>
+  );
+}
+
 function Footer({status, second, onFile, onReset}: {status: string; second: boolean; onFile: (f?: File) => void; onReset: () => void}) {
   return (
     <div className={styles.footer}>
@@ -216,18 +320,22 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function Live({fn, sample, second, params = [], label = 'Output', alt, readout: readoutSpec}: Props) {
+function Live({fn, sample, second, params = [], altParams, label = 'Output', alt, readout: readoutSpec, altReadout}: Props) {
   const base = useBaseUrl('/');
   const version = String(useDocusaurusContext().siteConfig.customFields?.buildTime ?? '');
   const [values, setValues] = useState(params.map((p) => p.value));
+  const [altValues, setAltValues] = useState((altParams ?? params).map((p) => p.value));
+  const [synced, setSynced] = useState(Boolean(altParams && params.length === altParams.length));
   const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {input, output, altOutput, status, outcomes, readout} = useRun(
+  const effectiveAltValues = altParams ? (synced ? values : altValues) : values;
+  const {input, output, altOutput, status, outcomes, readouts} = useRun(
     base,
     version,
     fn,
-    {altFn: alt?.fn, readoutFn: readoutSpec?.fn},
+    {altFn: alt?.fn, readoutFn: readoutSpec?.fn, altReadoutFn: altReadout?.fn},
     pictures,
     values,
+    effectiveAltValues,
   );
 
   const upload = async (file?: File) => {
@@ -239,16 +347,39 @@ function Live({fn, sample, second, params = [], label = 'Output', alt, readout: 
       URL.revokeObjectURL(url);
     }
   };
-  const change = (index: number, value: number) =>
+  const changeMain = (index: number, value: number) =>
     setValues((current) => current.map((old, i) => (i === index ? value : old)));
+  const changeAlt = (index: number, value: number) =>
+    setAltValues((current) => current.map((old, i) => (i === index ? value : old)));
+  const toggleSync = (next: boolean) => {
+    setSynced(next);
+    if (next) setAltValues(values);
+  };
 
   return (
     <div className={styles.live}>
-      <div className={styles.controls}>
-        {params.map((param, index) => (
-          <Control key={param.name} param={param} value={values[index]} onChange={(value) => change(index, value)} />
-        ))}
-      </div>
+      {altParams && alt && (
+        <div className={styles.syncBar}>
+          <label>
+            <input type="checkbox" checked={synced} onChange={(e) => toggleSync(e.target.checked)} /> Sync parameters
+            between {label} and {alt.label}
+          </label>
+        </div>
+      )}
+      {altParams && alt && !synced ? (
+        <div className={styles.splitControls}>
+          <div className={styles.controlGroup}>
+            <div className={styles.groupTitle}>{label}</div>
+            <ControlRow params={params} values={values} onChange={changeMain} />
+          </div>
+          <div className={styles.controlGroup}>
+            <div className={styles.groupTitle}>{alt.label}</div>
+            <ControlRow params={altParams} values={altValues} onChange={changeAlt} />
+          </div>
+        </div>
+      ) : (
+        <ControlRow params={params} values={values} onChange={changeMain} />
+      )}
       <div className={styles.pictures}>
         <figure>
           <canvas ref={input} />
@@ -265,11 +396,7 @@ function Live({fn, sample, second, params = [], label = 'Output', alt, readout: 
           </figure>
         )}
       </div>
-      {readoutSpec && (
-        <p className={styles.readout}>
-          <strong>{readoutSpec.label}:</strong> {readout}
-        </p>
-      )}
+      <ReadoutCards readoutSpec={readoutSpec} altReadoutSpec={altReadout} readouts={readouts} />
       <Footer status={error ?? status} second={Boolean(second)} onFile={(f) => void upload(f)} onReset={() => void reload()} />
     </div>
   );

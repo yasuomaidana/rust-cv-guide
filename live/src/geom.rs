@@ -27,11 +27,8 @@ pub fn pyramid(pixels: &[u8], width: u32, height: u32, levels: u32, back: u32) -
 /// The picture turned `degrees` clockwise and scaled by `scale`, both about its centre; what falls outside is black.
 #[wasm_bindgen]
 pub fn rotate_scale(pixels: &[u8], width: u32, height: u32, degrees: f32, scale: f32) -> Vec<u8> {
-    rgba(warp_affine::rotate_scale(
-        &rgb(pixels, width, height),
-        degrees,
-        scale,
-    ))
+    let image = rgb(pixels, width, height);
+    rgba(warp_affine::rotate_scale(&image, degrees, scale))
 }
 
 /// Cuts a `size` pixel patch from the middle of the picture, looks for it in a relit copy with method `method` (0 to 3), and

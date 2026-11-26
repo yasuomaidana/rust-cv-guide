@@ -2,7 +2,7 @@
 ## Goal
 
 Turn a grey-level photograph into a black-and-white one (and a "keep the bright part" one) by thresholding, the way
-`cv::threshold` does, and let Otsu's method choose the level.
+`cv::threshold` does, and let Otsu's method choose the level. Both `imageproc` and `oxipix` (`otsu_threshold`) are shown side by side.
 
 ## Theory
 
@@ -13,22 +13,24 @@ image whose histogram has two humps, such as bright coins on a darker background
 
 ## Code
 
+`imageproc::contrast` ships both `otsu_level` and all five `ThresholdType` modes. `oxipix::vectorize` provides
+`otsu_threshold`; unified 5-mode `threshold(...)` helpers in **oxipix** are tracked in `OXI-89` (so the `oxipix` tab pairs
+`oxipix::vectorize::otsu_threshold` with the five pixel comparisons).
+
 {{snippet}}
 
 ## Explanation
 
 1. `sample("coins.png")` loads a photograph of coins. `to_luma8` makes it a grey image, as `cv::imread(..., IMREAD_GRAYSCALE)` would.
-2. `otsu_level` computes the level from the histogram (`THRESH_OTSU` in OpenCV).
+2. `otsu_level` (`imageproc`) and `otsu_threshold` (`oxipix`) compute the threshold from the histogram (`THRESH_OTSU` in OpenCV).
 3. `threshold(&input, level, ThresholdType::Binary)` is `cv::threshold(..., THRESH_BINARY)`. Note the comparison is strictly greater than the level.
-4. `ThresholdType::ToZero` keeps the original values above the level.
-
-`image`'s grey conversion uses Rec. 709 weights, while OpenCV uses the older 0.299/0.587/0.114 weights, so a colour photo can come out a few levels different.
+4. `ThresholdType::ToZero` keeps the original values above the level. Tests verify exact pixel parity across all five modes.
 
 ## Result
 
-<LiveExample fn="binarize" sample="coins.png" params={[{name: "kind", label: "Type", options: ["Binary", "Binary inverted", "Truncate", "To zero", "To zero inverted", "Binary at Otsu level"], value: 5}, {name: "level", label: "Level (ignored for Otsu)", min: 0, max: 255, step: 1, value: 100}]} />
+<LiveExample fn="binarize" label="image + imageproc" alt={{fn: "binarize_oxipix", label: "oxipix (Otsu + modes)"}} sample="coins.png" params={[{name: "kind", label: "Type", options: ["Binary", "Binary inverted", "Truncate", "To zero", "To zero inverted", "Binary at Otsu level"], value: 5}, {name: "level", label: "Level (ignored for Otsu)", min: 0, max: 255, step: 1, value: 100}]} />
 
-Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+Move the controls, or use your own image: both implementations run in your browser as WebAssembly. For the sample photo and the
 settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
 
 ```text
@@ -44,6 +46,6 @@ The background pixel sits below both levels, so the binary results are 0 and `To
 
 | OpenCV 5.1 | Rust |
 |---|---|
-| `cv::threshold(src, dst, T, 255, THRESH_BINARY)` | `imageproc::contrast::threshold(&img, T, ThresholdType::Binary)` |
+| `cv::threshold(src, dst, T, 255, THRESH_BINARY)` | `imageproc::contrast::threshold(&img, T, ThresholdType::Binary)` (`oxipix` unified modes tracked in `OXI-89`) |
 | `THRESH_BINARY_INV`, `THRESH_TRUNC`, `THRESH_TOZERO`, `THRESH_TOZERO_INV` | `ThresholdType::{BinaryInverted, Truncate, ToZero, ToZeroInverted}` |
-| `THRESH_OTSU` | `imageproc::contrast::otsu_level(&img)`, then `threshold` |
+| `THRESH_OTSU` | `imageproc::contrast::otsu_level` or `oxipix::vectorize::otsu_threshold` |

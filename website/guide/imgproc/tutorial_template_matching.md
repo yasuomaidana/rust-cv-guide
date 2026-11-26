@@ -15,6 +15,10 @@ decides which position is best:
 
 ## Code
 
+:::note oximedia / oxipix status
+Neither `oximedia-cv` 0.2.1 nor `oxipix` 0.1.0 currently implements template matching. An **oxipix** feature ticket (`OXI-92`) has been opened to expose `match_template` covering `SqDiff`, `CCorr`, and `CCoeff` (including normalised variants).
+:::
+
 {{snippet}}
 
 ## Explanation

@@ -20,18 +20,9 @@ pub fn blend(first: &[u8], second: &[u8], width: u32, height: u32, alpha: f32) -
 
 /// `dst = alpha * src + beta`, saturated.
 #[wasm_bindgen]
-pub fn contrast_brightness(
-    pixels: &[u8],
-    width: u32,
-    height: u32,
-    alpha: f32,
-    beta: f32,
-) -> Vec<u8> {
-    rgba(basic_linear_transform::linear_transform(
-        &rgb(pixels, width, height),
-        alpha,
-        beta,
-    ))
+pub fn contrast_brightness(px: &[u8], w: u32, h: u32, alpha: f32, beta: f32) -> Vec<u8> {
+    let img = rgb(px, w, h);
+    rgba(basic_linear_transform::linear_transform(&img, alpha, beta))
 }
 
 #[cfg(test)]

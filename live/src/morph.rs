@@ -1,6 +1,6 @@
 //! Image processing: morphological operations.
 
-use crate::{gray, rgba};
+use crate::{gray, morph_op, rgba};
 use cvg_snippets::common::hat;
 use wasm_bindgen::prelude::*;
 
@@ -18,13 +18,8 @@ mod distance;
 
 /// Erodes (`kind` 0) or dilates (anything else) the Otsu mask of the image with a square of the given radius.
 #[wasm_bindgen]
-pub fn morphology(pixels: &[u8], width: u32, height: u32, kind: u32, radius: u32) -> Vec<u8> {
-    let mask = erosion::coin_mask(&gray(pixels, width, height));
-    let radius = radius.min(255) as u8;
-    rgba(match kind {
-        0 => erosion::shrink(&mask, radius),
-        _ => erosion::grow(&mask, radius),
-    })
+pub fn morphology(px: &[u8], w: u32, h: u32, kind: u32, radius: u32) -> Vec<u8> {
+    morph_op(px, w, h, kind, radius, erosion::OPS)
 }
 
 /// One of opening (0), closing (1), top hat (2), black hat (3) or gradient (anything else) with a square window of `radius`.

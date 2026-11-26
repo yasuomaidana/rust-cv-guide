@@ -4,29 +4,29 @@ tutorials:
   tutorial_anisotropic_image_segmentation_by_a_gst: {status: unreviewed, crates: []}
   tutorial_basic_geometric_drawing: {status: unreviewed, crates: []}
   tutorial_gausian_median_blur_bilateral_filter: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_filters/smoothing, alternatives: [{crate: oximedia-cv, snippet: oximedia/smoothing}]}
-  tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc], snippet: imgproc_morph/erosion}
+  tutorial_erosion_dilatation: {status: covered, crates: [image, imageproc, oximedia-cv, oxipix], snippet: imgproc_morph/erosion, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/erosion}]}
   tutorial_generalized_hough_ballard_guil: {status: unreviewed, crates: []}
   tutorial_back_projection: {status: unreviewed, crates: []}
   tutorial_histogram_calculation: {status: unreviewed, crates: []}
   tutorial_histogram_comparison: {status: unreviewed, crates: []}
-  tutorial_histogram_equalization: {status: covered, crates: [image, imageproc], snippet: imgproc_color/equalize}
+  tutorial_histogram_equalization: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_color/equalize, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/equalize}]}
   tutorial_template_matching: {status: partial, crates: [image, imageproc], snippet: imgproc_geom/template_matching, reason: "Four of OpenCV's six methods (with mask support); the zero-mean (CCOEFF) methods are missing"}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
   tutorial_canny_detector: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_edges/canny, alternatives: [{crate: oximedia-cv, snippet: oximedia/canny}]}
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}
   tutorial_distance_transform: {status: covered, crates: [image, imageproc], snippet: imgproc_morph/distance}
-  tutorial_filter_2d: {status: covered, crates: [image, imageproc], snippet: imgproc_filters/filter2d}
+  tutorial_filter_2d: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_filters/filter2d, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/filter2d}]}
   tutorial_hough_circle: {status: partial, crates: [image, imageproc, oximedia-cv], snippet: oximedia/hough_circles, reason: "imageproc has no circle Hough transform, so only oximedia-cv is shown; it votes per radius with no gradient direction, so it is slower and less selective than OpenCV's HOUGH_GRADIENT"}
   tutorial_hough_lines: {status: partial, crates: [image, imageproc, oximedia-cv], snippet: imgproc_edges/hough_lines, alternatives: [{crate: oximedia-cv, snippet: oximedia/hough_lines}], reason: "Standard Hough transform only; no probabilistic HoughLinesP with segments"}
   tutorial_laplace_operator: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_filters/laplace, alternatives: [{crate: oximedia-cv, snippet: oximedia/laplacian}]}
   tutorial_remap: {status: unreviewed, crates: []}
-  tutorial_sobel_derivatives: {status: covered, crates: [image, imageproc], snippet: imgproc_filters/sobel}
-  tutorial_warp_affine: {status: partial, crates: [image, imageproc], snippet: imgproc_geom/warp_affine, reason: "Rotation and scaling about the centre; the three-point getAffineTransform demo is not shown"}
+  tutorial_sobel_derivatives: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_filters/sobel, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/sobel}]}
+  tutorial_warp_affine: {status: partial, crates: [image, imageproc, oximedia-cv], snippet: imgproc_geom/warp_affine, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/warp_affine}], reason: "Rotation and scaling about the centre; the three-point getAffineTransform demo is not shown"}
   tutorial_motion_deblur_filter: {status: unreviewed, crates: []}
   tutorial_opening_closing_hats: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_morph/hats, alternatives: [{crate: oximedia-cv, snippet: oximedia/morphology}]}
   tutorial_out_of_focus_deblur_filter: {status: unreviewed, crates: []}
   tutorial_periodic_noise_removing_filter: {status: unreviewed, crates: []}
-  tutorial_pyramids: {status: covered, crates: [image, imageproc], snippet: imgproc_geom/pyramids}
+  tutorial_pyramids: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_geom/pyramids, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/pyramids}]}
   tutorial_random_generator_and_text: {status: unreviewed, crates: []}
   tutorial_bounding_rects_circles: {status: unreviewed, crates: []}
   tutorial_bounding_rotated_ellipses: {status: unreviewed, crates: []}
@@ -34,5 +34,5 @@ tutorials:
   tutorial_hull: {status: unreviewed, crates: []}
   tutorial_moments: {status: unreviewed, crates: []}
   tutorial_point_polygon_test: {status: unreviewed, crates: []}
-  tutorial_threshold: {status: covered, crates: [image, imageproc], snippet: imgproc_color/threshold}
-  tutorial_threshold_inRange: {status: covered, crates: [image], snippet: imgproc_color/in_range}
+  tutorial_threshold: {status: covered, crates: [image, imageproc, oxipix], snippet: imgproc_color/threshold, alternatives: [{crate: oxipix, snippet: oxipix/threshold}]}
+  tutorial_threshold_inRange: {status: covered, crates: [image, oximedia-cv], snippet: imgproc_color/in_range, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/in_range}]}

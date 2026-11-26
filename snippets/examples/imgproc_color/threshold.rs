@@ -1,8 +1,8 @@
 //! OpenCV tutorial `tutorial_threshold` in pure Rust.
 //! Run with `cargo run -p cvg-snippets --example threshold`.
 
-use cvg_snippets::common::{Figure, describe, sample};
-use image::{DynamicImage, GrayImage};
+use cvg_snippets::common::{Figure, describe, threshold_figures};
+use image::GrayImage;
 use imageproc::contrast::{ThresholdType, otsu_level, threshold};
 
 /// `cv::threshold`: split at `level`, or at the level Otsu's method picks when `level` is `None`.
@@ -12,15 +12,12 @@ pub fn binarize(input: &GrayImage, level: Option<u8>, kind: ThresholdType) -> Gr
 
 /// The coins, split at a fixed level and at the level Otsu's method picks, plus the `ToZero` variant.
 pub fn figures() -> Vec<Figure> {
-    let input: GrayImage = DynamicImage::ImageRgb8(sample("coins.png")).to_luma8();
-    [
-        ("input", input.clone()),
-        ("binary", binarize(&input, Some(100), ThresholdType::Binary)),
-        ("otsu", binarize(&input, None, ThresholdType::Binary)),
-        ("to_zero", binarize(&input, None, ThresholdType::ToZero)),
-    ]
-    .map(|(name, picture)| (name, DynamicImage::ImageLuma8(picture)))
-    .to_vec()
+    threshold_figures(
+        binarize,
+        ThresholdType::Binary,
+        ThresholdType::Binary,
+        ThresholdType::ToZero,
+    )
 }
 
 /// Describes one pixel of each figure.

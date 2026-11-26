@@ -2,7 +2,7 @@
 ## Goal
 
 Stretch the grey levels of a flat-looking photograph across the whole 0..=255 range with histogram equalisation, as
-`cv::equalizeHist` does.
+`cv::equalizeHist` does. Both `imageproc` and `oximedia-cv` implement it side by side.
 
 ## Theory
 
@@ -17,14 +17,14 @@ crowded levels and raises the contrast of hazy images.
 ## Explanation
 
 1. The building photo is converted to grey, because equalisation works on a single channel. (For colour, equalise the luminance and keep the chroma.)
-2. `equalize_histogram` builds the histogram, computes the cumulative distribution and remaps every pixel through it.
+2. Both `imageproc::contrast::equalize_histogram` and `oximedia_cv::image::histogram_ext::equalize_histogram` build the histogram, compute the cumulative distribution and remap every pixel through it (differing only slightly in rounding/minimum-CDF normalisation).
 
 ## Result
 
-<LiveExample fn="equalize_histogram" sample="building.jpg" params={[]} />
+<LiveExample fn="equalize_histogram" label="image + imageproc" alt={{fn: "equalize_oxi", label: "oximedia-cv"}} sample="building.jpg" params={[]} />
 
-Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
-settings this page starts with, the code prints the numbers below, and a test asserts this exact text:
+Move the controls, or use your own image: both implementations run in your browser as WebAssembly. For the sample photo and the
+settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text:
 
 ```text
 input(100,60) = 153
@@ -37,5 +37,5 @@ The hazy sky and the dark facade now use more of the grey range, so the structur
 
 | OpenCV 5.1 | Rust |
 |---|---|
-| `cv::equalizeHist(src, dst)` | `imageproc::contrast::equalize_histogram(&gray)` |
-| `cv::calcHist` | `imageproc::stats::histogram` |
+| `cv::equalizeHist(src, dst)` | `imageproc::contrast::equalize_histogram(&gray)` or `oximedia_cv::image::histogram_ext::equalize_histogram` |
+| `cv::calcHist` | `imageproc::stats::histogram` or `oximedia_cv::image::Histogram::compute` |

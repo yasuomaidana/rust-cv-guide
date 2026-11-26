@@ -4,7 +4,9 @@
 //! returns RGBA pixels to draw. Choices such as "which filter" arrive as small integers from the page's controls. The
 //! modules mirror the groups under `snippets/examples/`.
 
-use cvg_snippets::common::{Outlines, draw_outlines, draw_points, ink_mask, invoice_quad};
+use cvg_snippets::common::{
+    FeatureAlgorithm, Outlines, draw_outlines, draw_points, ink_mask, invoice_quad,
+};
 use cvg_snippets::vis::{ConsensusResult, draw_matches, shifted_view};
 use image::{DynamicImage, GrayImage, RgbImage};
 
@@ -52,17 +54,59 @@ fn outlined(
     rgba(draw_outlines(&grey, &outlines))
 }
 
-/// The grey input with a cross on each keypoint `find(grey, threshold, max)` returns.
+type FeatureFinder = fn(&GrayImage, FeatureAlgorithm, u8, usize) -> Vec<(f32, f32)>;
+
+/// The grey input with a cross on each keypoint `find(grey, algo, threshold, max)` returns.
 fn marked(
     pixels: &[u8],
     width: u32,
     height: u32,
-    (threshold, max): (u32, u32),
-    find: fn(&GrayImage, u8, usize) -> Vec<(f32, f32)>,
+    algo: u32,
+    threshold: u32,
+    max: u32,
+    find: FeatureFinder,
 ) -> Vec<u8> {
     let grey = gray(pixels, width, height);
-    let points = find(&grey, threshold.min(255) as u8, max as usize);
+    let points = find(
+        &grey,
+        FeatureAlgorithm::from_index(algo),
+        threshold.min(255) as u8,
+        max as usize,
+    );
     rgba(draw_points(&grey, &points))
+}
+
+/// Runs erosion (`kind` 0) or dilation on an Otsu mask from `pixels`.
+fn morph_op(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    kind: u32,
+    radius: u32,
+    (mask_fn, shrink_fn, grow_fn): cvg_snippets::common::MorphOps,
+) -> Vec<u8> {
+    let mask = mask_fn(&gray(pixels, width, height));
+    let radius = radius.min(255) as u8;
+    rgba(match kind {
+        0 => shrink_fn(&mask, radius),
+        _ => grow_fn(&mask, radius),
+    })
+}
+
+/// Runs Sobel x (`kind` 0), y (`kind` 1), or gradient magnitude on `pixels`.
+fn sobel_op(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    kind: u32,
+    (gx, gy, mag): cvg_snippets::common::SobelOps,
+) -> Vec<u8> {
+    let image = gray(pixels, width, height);
+    rgba(match kind {
+        0 => gx(&image),
+        1 => gy(&image),
+        _ => mag(&image),
+    })
 }
 
 /// The picture with the invoice quad (pulled `shrink` of the way to its centre) straightened by `unwarp`.

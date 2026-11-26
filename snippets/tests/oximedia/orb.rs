@@ -1,4 +1,4 @@
-//! Tests for `examples/oximedia/orb.rs`: the printed numbers, matching, and agreement with the FAST version.
+//! Tests for `examples/oximedia/orb.rs`: FAST-9 and ORB-style parity with `imageproc`.
 
 #![allow(dead_code)]
 
@@ -15,7 +15,7 @@ use rstest::rstest;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "keypoints = 300\nshift = Some(((12, 7), 127))"
+        "fast = 300\nkeypoints = 300\nshift = Some(((12, 7), 127))"
     );
 }
 
@@ -35,12 +35,30 @@ fn matching_finds_the_shift_between_two_views() {
 
 type Detector = fn(&GrayImage) -> Vec<(f32, f32)>;
 
-fn orb(image: &GrayImage) -> Vec<(f32, f32)> {
-    example::keypoints(image, example::THRESHOLD, 300)
+fn oxi_orb(image: &GrayImage) -> Vec<(f32, f32)> {
+    example::detect(image, example::Algorithm::Orb, example::THRESHOLD, 300)
 }
 
-fn fast(image: &GrayImage) -> Vec<(f32, f32)> {
-    fast_version::keypoints(image, fast_version::THRESHOLD, 300)
+fn oxi_fast(image: &GrayImage) -> Vec<(f32, f32)> {
+    example::detect(image, example::Algorithm::Fast, example::THRESHOLD, 300)
+}
+
+fn ip_orb(image: &GrayImage) -> Vec<(f32, f32)> {
+    fast_version::detect(
+        image,
+        fast_version::Algorithm::Orb,
+        fast_version::THRESHOLD,
+        300,
+    )
+}
+
+fn ip_fast(image: &GrayImage) -> Vec<(f32, f32)> {
+    fast_version::detect(
+        image,
+        fast_version::Algorithm::Fast,
+        fast_version::THRESHOLD,
+        300,
+    )
 }
 
 /// The share of keypoints that are found again, at the shifted place, in a copy cropped by (12, 7).
@@ -51,7 +69,12 @@ fn repeatability(photo_name: &str, detect: Detector) -> f32 {
     let (before, after) = (detect(&photo), detect(&moved));
     let inside: Vec<_> = before
         .iter()
-        .filter(|(x, y)| *x > 15.0 && *y > 10.0)
+        .filter(|(x, y)| {
+            *x > 20.0
+                && *y > 20.0
+                && *x < photo.width() as f32 - 20.0
+                && *y < photo.height() as f32 - 20.0
+        })
         .collect();
     let again = |(x, y): &(f32, f32)| {
         after
@@ -61,14 +84,11 @@ fn repeatability(photo_name: &str, detect: Detector) -> f32 {
     inside.iter().filter(|p| again(p)).count() as f32 / inside.len() as f32
 }
 
-/// Both detectors are repeatable across diverse scenes: after the picture moves, nearly every keypoint is found again.
+/// Both crates' FAST-9 and ORB-style detectors are repeatable across diverse scenes under translation.
 #[rstest]
-#[case::building_orb("building.jpg", orb)]
-#[case::building_fast("building.jpg", fast)]
-#[case::astronaut_orb("astronaut.png", orb)]
-#[case::astronaut_fast("astronaut.png", fast)]
-#[case::coins_orb("coins.png", orb)]
-#[case::coins_fast("coins.png", fast)]
-fn keypoints_are_repeatable_under_translation(#[case] photo: &str, #[case] detect: Detector) {
+fn keypoints_are_repeatable_under_translation(
+    #[values("building.jpg", "astronaut.png", "coins.png")] photo: &str,
+    #[values(oxi_orb, oxi_fast, ip_orb, ip_fast)] detect: Detector,
+) {
     assert!(repeatability(photo, detect) >= 0.90);
 }

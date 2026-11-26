@@ -1,6 +1,6 @@
 //! Image processing: smoothing and derivative filters.
 
-use crate::{gray, rgb, rgba};
+use crate::{gray, rgb, rgba, sobel_op};
 use wasm_bindgen::prelude::*;
 
 #[allow(dead_code)]
@@ -34,13 +34,8 @@ pub fn smooth(pixels: &[u8], width: u32, height: u32, kind: u32, amount: f32) ->
 
 /// Sobel x derivative (`kind` 0), y derivative (1) or gradient magnitude (anything else), as 8-bit grey.
 #[wasm_bindgen]
-pub fn sobel_gradient(pixels: &[u8], width: u32, height: u32, kind: u32) -> Vec<u8> {
-    let image = gray(pixels, width, height);
-    rgba(match kind {
-        0 => sobel::grad_x(&image),
-        1 => sobel::grad_y(&image),
-        _ => sobel::magnitude(&image),
-    })
+pub fn sobel_gradient(px: &[u8], w: u32, h: u32, kind: u32) -> Vec<u8> {
+    sobel_op(px, w, h, kind, sobel::OPS)
 }
 
 /// The Laplacian of the grey picture smoothed with a Gaussian of spread `sigma`, scaled so the strongest response is 255.

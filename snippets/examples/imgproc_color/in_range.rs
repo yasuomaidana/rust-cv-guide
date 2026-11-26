@@ -1,7 +1,7 @@
 //! OpenCV tutorial `tutorial_threshold_inRange` in pure Rust: pick the pixels whose colour is in a range, in HSV.
 //! Run with `cargo run -p cvg-snippets --example in_range`.
 
-use cvg_snippets::common::sample;
+use cvg_snippets::common::{mask_keep, sample};
 use image::{GrayImage, Luma, Rgb, RgbImage};
 
 /// `cv::cvtColor(.., COLOR_RGB2HSV)` for one pixel: hue in degrees (0 to 360), saturation and value from 0 to 1.
@@ -56,13 +56,7 @@ pub fn in_range(input: &RgbImage, range: Range) -> GrayImage {
 
 /// `cv::bitwise_and(src, src, dst, mask)`: the picture where the mask is set, black elsewhere.
 pub fn keep(input: &RgbImage, mask: &GrayImage) -> RgbImage {
-    RgbImage::from_fn(input.width(), input.height(), |x, y| {
-        if mask.get_pixel(x, y).0[0] > 0 {
-            *input.get_pixel(x, y)
-        } else {
-            Rgb([0, 0, 0])
-        }
-    })
+    mask_keep(input, mask)
 }
 
 /// The red pane of the logo: hues from 345 through 0 to 15 degrees, clearly coloured and not dark.

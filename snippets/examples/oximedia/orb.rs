@@ -1,13 +1,16 @@
-//! OpenCV tutorial `tutorial_feature_detection` and `tutorial_feature_description` with `oximedia-cv`'s ORB-style extractor:
-//! keypoints, binary descriptors, and matching between two views.
+//! OpenCV tutorial `tutorial_feature_detection` and `tutorial_feature_description` with `oximedia-cv`:
+//! supports both FAST-9 (`FastDetector`) and ORB-style (`OrbExtractor`) beside `imageproc`.
 //! Run with `cargo run -p cvg-snippets --example oxi_orb`.
 
-use cvg_snippets::common::gray_sample;
+use cvg_snippets::common::{FeatureAlgorithm, gray_sample};
 use image::{GrayImage, imageops};
+use oximedia_cv::detect::corner::{CornerDetector, FastDetector};
 use oximedia_cv::feature_extract::{OrbExtractor, match_descriptors};
 use std::collections::BTreeMap;
 
-/// Grey levels as the 0 to 1 floats the extractor takes.
+pub type Algorithm = FeatureAlgorithm;
+
+/// Grey levels as the 0 to 1 floats `OrbExtractor` takes.
 fn unit(image: &GrayImage) -> Vec<f32> {
     image
         .as_raw()
@@ -16,7 +19,21 @@ fn unit(image: &GrayImage) -> Vec<f32> {
         .collect()
 }
 
-/// Keypoints and their binary descriptors; `threshold` is on the 0 to 255 scale.
+/// FAST-9 corners via `oximedia_cv::detect::corner::FastDetector`, keeping the `max` strongest.
+pub fn fast_keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    let detector = FastDetector::new().with_threshold(threshold).with_nms(true);
+    let mut corners = detector
+        .detect(input.as_raw(), input.width(), input.height())
+        .unwrap_or_default();
+    corners.sort_by(|a, b| b.response.total_cmp(&a.response));
+    corners.truncate(max);
+    corners
+        .into_iter()
+        .map(|c| (c.x as f32, c.y as f32))
+        .collect()
+}
+
+/// ORB-style keypoints and their binary descriptors; `threshold` is on the 0 to 255 scale.
 fn extract(
     input: &GrayImage,
     threshold: u8,
@@ -37,9 +54,14 @@ fn extract(
     (points.iter().map(|k| (k.x, k.y)).collect(), descriptors)
 }
 
-/// The `max` strongest keypoints.
+/// The `max` strongest ORB-style keypoints.
 pub fn keypoints(input: &GrayImage, threshold: u8, max: usize) -> Vec<(f32, f32)> {
     extract(input, threshold, max).0
+}
+
+/// Dispatches either FAST-9 or ORB-style keypoint detection with the shared `(threshold, max)` controls.
+pub fn detect(input: &GrayImage, algo: Algorithm, threshold: u8, max: usize) -> Vec<(f32, f32)> {
+    algo.run(input, threshold, max, fast_keypoints, keypoints)
 }
 
 /// Matches the picture against a copy cropped by `(dx, dy)` and returns the shift most matches agree on, with how many do.
@@ -68,12 +90,13 @@ pub fn recovered_shift(
 pub const THRESHOLD: u8 = 20;
 pub const MAX: usize = 300;
 
-/// How many keypoints the building photo gives, and the shift recovered by matching it against a copy cropped by (12, 7).
+/// Reports FAST-9 and ORB-style counts on the building photo plus the matched shift.
 pub fn report() -> String {
     let photo = gray_sample("building.jpg");
-    let found = keypoints(&photo, THRESHOLD, MAX).len();
+    let fast_found = fast_keypoints(&photo, THRESHOLD, MAX).len();
+    let orb_found = keypoints(&photo, THRESHOLD, MAX).len();
     let shift = recovered_shift(&photo, 12, 7, MAX);
-    format!("keypoints = {found}\nshift = {shift:?}")
+    format!("fast = {fast_found}\nkeypoints = {orb_found}\nshift = {shift:?}")
 }
 
 pub fn main() {

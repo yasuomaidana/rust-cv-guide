@@ -5,6 +5,42 @@
   margin: 1rem 0;
 }
 
+.syncBar {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.syncBar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.splitControls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.controlGroup {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-global-radius);
+  padding: 0.65rem 0.75rem;
+}
+
+.controlGroup .controls {
+  margin-bottom: 0;
+}
+
+.groupTitle {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -70,6 +106,31 @@
 
 .readout {
   margin: 0.75rem 0 0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+}
+
+.readoutGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.readoutCard {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-global-radius);
+  padding: 0.65rem 0.75rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.readoutHeader {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 0.25rem;
+}
+
+.readoutValue {
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.9rem;
 }

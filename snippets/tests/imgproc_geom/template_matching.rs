@@ -55,3 +55,25 @@ fn the_patch_is_cut_where_it_says() {
     assert_eq!(corner, (40, 30));
     assert_eq!(template.get_pixel(0, 0), picture.get_pixel(40, 30));
 }
+
+#[rstest]
+#[case(12, 18, 24, 16, (12, 18), (24, 16))]
+#[case(95, 90, 20, 30, (80, 70), (20, 30))]
+#[case(0, 0, 1, 200, (0, 0), (4, 100))]
+fn crop_template_clamps_custom_regions(
+    #[case] x: u32,
+    #[case] y: u32,
+    #[case] w: u32,
+    #[case] h: u32,
+    #[case] expected_corner: (u32, u32),
+    #[case] expected_dims: (u32, u32),
+) {
+    let picture = GrayImage::from_fn(100, 100, |px, py| Luma([(px + py) as u8]));
+    let (patch, corner) = example::crop_template(&picture, x, y, w, h);
+    assert_eq!(corner, expected_corner);
+    assert_eq!(patch.dimensions(), expected_dims);
+    assert_eq!(
+        patch.get_pixel(0, 0),
+        picture.get_pixel(expected_corner.0, expected_corner.1)
+    );
+}

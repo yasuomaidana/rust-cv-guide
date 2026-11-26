@@ -30,9 +30,9 @@ Neither `oximedia-cv` 0.2.1 nor `oxipix` 0.1.0 currently implements template mat
 
 ## Result
 
-<LiveExample fn="find_patch" label="Relit copy, best match boxed" sample="chelsea.png" params={[{name: "method", label: "Method", options: ["Squared error", "Squared error (normalised)", "Cross-correlation", "Cross-correlation (normalised)"], value: 3}, {name: "size", label: "Patch size", min: 16, max: 80, step: 4, value: 40}]} />
+<LiveExample fn="find_patch" label="Relit copy, best match boxed" sample="chelsea.png" selectableRegion={{width: 40, height: 40}} params={[{name: "method", label: "Method", options: ["Squared error", "Squared error (normalised)", "Cross-correlation", "Cross-correlation (normalised)"], value: 3}]} />
 
-Try the raw cross-correlation and see the box jump to a bright area. Move the controls, or use your own image: the code above runs
+Drag a rectangle (or click to recenter) directly on the **Input** image above to pick any template patch, or switch the matching method. Move the controls or upload your own image: the code runs
 in your browser as WebAssembly. For the sample photo and the settings this page starts with, the code prints the numbers
 below, and a test asserts this exact text:
 

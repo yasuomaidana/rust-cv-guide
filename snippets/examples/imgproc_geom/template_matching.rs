@@ -13,16 +13,23 @@ pub const METHODS: [MatchTemplateMethod; 4] = [
     MatchTemplateMethod::CrossCorrelationNormalized,
 ];
 
+/// Crops a rectangular `(w x h)` patch at `(x, y)`, clamped cleanly inside `grey`.
+pub fn crop_template(grey: &GrayImage, x: u32, y: u32, w: u32, h: u32) -> (GrayImage, (u32, u32)) {
+    let tw = w.clamp(4, grey.width().max(4)).min(grey.width());
+    let th = h.clamp(4, grey.height().max(4)).min(grey.height());
+    let tx = x.min(grey.width().saturating_sub(tw));
+    let ty = y.min(grey.height().saturating_sub(th));
+    (
+        imageops::crop_imm(grey, tx, ty, tw, th).to_image(),
+        (tx, ty),
+    )
+}
+
 /// A `size` x `size` patch cut from the middle of the picture, a little above the centre, and where its top left corner is.
 pub fn cut_template(grey: &GrayImage, size: u32) -> (GrayImage, (u32, u32)) {
-    let corner = (
-        (grey.width() - size) / 2,
-        (grey.height() * 2 / 5).saturating_sub(size / 2),
-    );
-    (
-        imageops::crop_imm(grey, corner.0, corner.1, size, size).to_image(),
-        corner,
-    )
+    let x = grey.width().saturating_sub(size) / 2;
+    let y = (grey.height() * 2 / 5).saturating_sub(size / 2);
+    crop_template(grey, x, y, size, size)
 }
 
 /// The same scene seen under a different light: slightly blurred and brighter, so the match is not a trivial copy.

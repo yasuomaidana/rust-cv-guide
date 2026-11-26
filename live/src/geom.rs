@@ -31,18 +31,28 @@ pub fn rotate_scale(pixels: &[u8], width: u32, height: u32, degrees: f32, scale:
     rgba(warp_affine::rotate_scale(&image, degrees, scale))
 }
 
-/// Cuts a `size` pixel patch from the middle of the picture, looks for it in a relit copy with method `method` (0 to 3), and
-/// draws a red box where it is found.
+/// Crops a `(rw x rh)` patch at `(rx, ry)` (clamped to bounds), looks for it in a relit copy with method `method` (0 to 3),
+/// and draws a red box where it is found.
+#[allow(clippy::too_many_arguments)]
 #[wasm_bindgen]
-pub fn find_patch(pixels: &[u8], width: u32, height: u32, method: u32, size: u32) -> Vec<u8> {
+pub fn find_patch(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    method: u32,
+    rx: u32,
+    ry: u32,
+    rw: u32,
+    rh: u32,
+) -> Vec<u8> {
     let grey = gray(pixels, width, height);
-    let size = size.clamp(4, width.min(height) / 2);
-    let (template, _) = template_matching::cut_template(&grey, size);
+    let (template, _) = template_matching::crop_template(&grey, rx, ry, rw, rh);
+    let (tw, th) = template.dimensions();
     let search = template_matching::relit(&grey);
     let methods = template_matching::METHODS;
     let corner =
         template_matching::best_match(&search, &template, methods[method as usize % methods.len()]);
-    rgba(draw_box(&search, corner, (size, size)))
+    rgba(draw_box(&search, corner, (tw, th)))
 }
 
 #[cfg(test)]
@@ -51,9 +61,16 @@ mod tests {
     use crate::testing::{SIDE, assert_picture, pixels};
     use rstest::rstest;
 
-    #[test]
-    fn the_patch_is_found_and_boxed() {
-        assert_picture(&find_patch(&pixels(), SIDE, SIDE, 3, 8));
+    #[rstest]
+    #[case(0, 0, 8, 8)]
+    #[case(3, 5, 10, 6)]
+    fn the_patch_is_found_and_boxed(
+        #[case] x: u32,
+        #[case] y: u32,
+        #[case] w: u32,
+        #[case] h: u32,
+    ) {
+        assert_picture(&find_patch(&pixels(), SIDE, SIDE, 3, x, y, w, h));
     }
 
     #[test]

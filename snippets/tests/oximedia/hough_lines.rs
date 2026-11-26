@@ -36,13 +36,17 @@ fn finds_a_vertical_edge_where_it_is(#[case] lines: fn(&GrayImage, u32) -> Vec<(
     );
 }
 
-/// Most strong lines are found by both: at least 60 % of the `imageproc` lines have an oximedia line within 10 pixels and 10 degrees.
-#[test]
-fn finds_most_of_the_lines_the_imageproc_version_finds() {
+/// Most strong lines are found by both across vote thresholds: at least 60 % of the `imageproc` lines have an
+/// oximedia line within 10 pixels and 10 degrees, and no vertical line is duplicated across `theta = 0 / PI`.
+#[rstest]
+#[case(100)]
+#[case(150)]
+#[case(200)]
+fn finds_most_of_the_lines_the_imageproc_version_finds(#[case] votes: u32) {
     let photo = gray_sample("building.jpg");
     let (ours, theirs) = (
-        example::lines(&photo, 150),
-        imageproc_version::lines(&photo, 150),
+        example::lines(&photo, votes),
+        imageproc_version::lines(&photo, votes),
     );
     let close = |(r, t): &(f32, f32), (r2, t2): &(f32, f32)| {
         (r - r2).abs() <= 10.0 && (t - t2).abs() <= 10.0_f32.to_radians()
@@ -53,7 +57,12 @@ fn finds_most_of_the_lines_the_imageproc_version_finds() {
         .count();
     assert!(
         matched * 10 >= theirs.len() * 6,
-        "{matched} of {}",
-        theirs.len()
+        "votes={votes}: {matched} of {} (ours={})",
+        theirs.len(),
+        ours.len()
+    );
+    assert!(
+        ours.iter()
+            .all(|&(_, theta)| theta < std::f32::consts::PI - 1e-3)
     );
 }

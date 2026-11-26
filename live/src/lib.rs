@@ -7,6 +7,7 @@
 use cvg_snippets::common::{
     FeatureAlgorithm, Outlines, draw_outlines, draw_points, ink_mask, invoice_quad,
 };
+use cvg_snippets::vis::{ConsensusResult, draw_matches, shifted_view};
 use image::{DynamicImage, GrayImage, RgbImage};
 
 mod app;
@@ -118,6 +119,39 @@ fn straightened(
 ) -> Vec<u8> {
     let photo = rgb(pixels, width, height);
     rgba(unwarp(&photo, &invoice_quad(width, height, shrink)))
+}
+
+type Matcher = fn(&GrayImage, &GrayImage, u8, usize, u32) -> ConsensusResult;
+
+/// Side-by-side feature matches between `pixels` and a cropped copy shifted by `(dx, dy)`.
+fn matched_shifted(
+    pixels: &[u8],
+    width: u32,
+    height: u32,
+    dx: u32,
+    dy: u32,
+    max_dist: u32,
+    matcher: Matcher,
+) -> Vec<u8> {
+    let left = gray(pixels, width, height);
+    let right = shifted_view(&left, dx, dy, 0);
+    let (_, pairs) = matcher(&left, &right, 20, 250, max_dist);
+    rgba(draw_matches(&left, &right, &pairs, (width, height)))
+}
+
+/// Side-by-side feature matches between two distinct images of the same canvas size.
+fn matched_pair(
+    first: &[u8],
+    second: &[u8],
+    width: u32,
+    height: u32,
+    max_dist: u32,
+    matcher: Matcher,
+) -> Vec<u8> {
+    let left = gray(first, width, height);
+    let right = gray(second, width, height);
+    let (_, pairs) = matcher(&left, &right, 20, 250, max_dist);
+    rgba(draw_matches(&left, &right, &pairs, (width, height)))
 }
 
 #[cfg(test)]

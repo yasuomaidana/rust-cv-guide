@@ -4,7 +4,7 @@ Every photograph used by an example is listed here with its source and licence. 
 
 | File | Source | Licence |
 |---|---|---|
-| `LinuxLogo.jpg`, `WindowsLogo.jpg`, `building.jpg` | [opencv/opencv `samples/data`](https://github.com/opencv/opencv/tree/4.x/samples/data) | Apache-2.0 (the OpenCV repository licence) |
+| `LinuxLogo.jpg`, `WindowsLogo.jpg`, `building.jpg`, `box.png`, `box_in_scene.png` | [opencv/opencv `samples/data`](https://github.com/opencv/opencv/tree/5.1.0/samples/data) | Apache-2.0 (the OpenCV repository licence) |
 | `astronaut.png` | Eileen Collins, [NASA Great Images](https://flic.kr/p/r9qvLn), via scikit-image `data` | Public domain (NASA) |
 | `chelsea.png` | Stefan van der Walt, via scikit-image `data` | CC0 1.0 |
 | `coffee.png` | Rachel Michetti (Pikolo Espresso Bar), via scikit-image `data` | CC0 1.0 |

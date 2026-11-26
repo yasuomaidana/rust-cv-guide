@@ -1,6 +1,9 @@
 //! The same live examples computed by `oximedia-cv`, shown beside the `image` + `imageproc` result.
 
-use crate::{BILATERAL_SIGMA_COLOR, gray, marked, morph_op, rgb, rgba, sobel_op};
+use crate::{
+    BILATERAL_SIGMA_COLOR, gray, marked, matched_pair, matched_shifted, morph_op, rgb, rgba,
+    sobel_op,
+};
 use cvg_snippets::common::{draw_circles, draw_lines, hat, on_canvas};
 use wasm_bindgen::prelude::*;
 
@@ -11,6 +14,10 @@ mod canny;
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/orb.rs"]
 mod orb;
+
+#[allow(dead_code)]
+#[path = "../../snippets/examples/oximedia/orb_match.rs"]
+mod orb_match;
 
 #[allow(dead_code)]
 #[path = "../../snippets/examples/oximedia/hough_circles.rs"]
@@ -182,6 +189,18 @@ pub fn lines_oxi(pixels: &[u8], width: u32, height: u32, votes: u32) -> Vec<u8> 
     rgba(draw_lines(&grey, &hough_lines::lines(&grey, votes)))
 }
 
+/// ORB-style descriptor matches against a shifted copy, by oximedia.
+#[wasm_bindgen]
+pub fn match_features_oxi(p: &[u8], w: u32, h: u32, dx: u32, dy: u32, d: u32) -> Vec<u8> {
+    matched_shifted(p, w, h, dx, dy, d, orb_match::match_two)
+}
+
+/// ORB-style descriptor matches between two separate images `a` and `b`.
+#[wasm_bindgen]
+pub fn match_pair_oxi(a: &[u8], b: &[u8], w: u32, h: u32, d: u32) -> Vec<u8> {
+    matched_pair(a, b, w, h, d, orb_match::match_two)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -216,6 +235,8 @@ mod tests {
             0.5,
             0.4,
         ));
+        assert_picture(&match_features_oxi(&pixels(), SIDE, SIDE, 2, 2, 24));
+        assert_picture(&match_pair_oxi(&pixels(), &pixels(), SIDE, SIDE, 24));
     }
 
     #[rstest]

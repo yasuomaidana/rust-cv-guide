@@ -62,8 +62,8 @@ fn ip_fast(image: &GrayImage) -> Vec<(f32, f32)> {
 }
 
 /// The share of keypoints that are found again, at the shifted place, in a copy cropped by (12, 7).
-fn repeatability(detect: Detector) -> f32 {
-    let photo = gray_sample("building.jpg");
+fn repeatability(photo_name: &str, detect: Detector) -> f32 {
+    let photo = gray_sample(photo_name);
     let moved =
         imageops::crop_imm(&photo, 12, 7, photo.width() - 12, photo.height() - 7).to_image();
     let (before, after) = (detect(&photo), detect(&moved));
@@ -84,12 +84,11 @@ fn repeatability(detect: Detector) -> f32 {
     inside.iter().filter(|p| again(p)).count() as f32 / inside.len() as f32
 }
 
-/// Both crates' FAST-9 and ORB-style detectors are repeatable under translation.
+/// Both crates' FAST-9 and ORB-style detectors are repeatable across diverse scenes under translation.
 #[rstest]
-#[case::oxi_orb(oxi_orb)]
-#[case::oxi_fast(oxi_fast)]
-#[case::ip_orb(ip_orb)]
-#[case::ip_fast(ip_fast)]
-fn keypoints_are_repeatable_under_translation(#[case] detect: Detector) {
-    assert!(repeatability(detect) >= 0.90);
+fn keypoints_are_repeatable_under_translation(
+    #[values("building.jpg", "astronaut.png", "coins.png")] photo: &str,
+    #[values(oxi_orb, oxi_fast, ip_orb, ip_fast)] detect: Detector,
+) {
+    assert!(repeatability(photo, detect) >= 0.90);
 }

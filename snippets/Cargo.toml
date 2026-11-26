@@ -136,16 +136,32 @@ name = "fast"
 path = "examples/features/fast.rs"
 
 [[example]]
+name = "brief_match"
+path = "examples/features/brief_match.rs"
+
+[[example]]
 name = "oxi_orb"
 path = "examples/oximedia/orb.rs"
+
+[[example]]
+name = "oxi_orb_match"
+path = "examples/oximedia/orb_match.rs"
 
 [[test]]
 name = "fast"
 path = "tests/features/fast.rs"
 
 [[test]]
+name = "brief_match"
+path = "tests/features/brief_match.rs"
+
+[[test]]
 name = "oxi_orb"
 path = "tests/oximedia/orb.rs"
+
+[[test]]
+name = "oxi_orb_match"
+path = "tests/oximedia/orb_match.rs"
 
 [[example]]
 name = "oxi_hough_circles"

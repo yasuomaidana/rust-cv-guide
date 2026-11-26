@@ -10,7 +10,7 @@ tutorials:
   tutorial_histogram_calculation: {status: unreviewed, crates: []}
   tutorial_histogram_comparison: {status: unreviewed, crates: []}
   tutorial_histogram_equalization: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_color/equalize, alternatives: [{crate: oximedia-cv, snippet: oximedia_imgproc/equalize}]}
-  tutorial_template_matching: {status: partial, crates: [image, imageproc], snippet: imgproc_geom/template_matching, reason: "Four of OpenCV's six methods and no mask; the zero-mean (CCOEFF) methods are missing"}
+  tutorial_template_matching: {status: partial, crates: [image, imageproc], snippet: imgproc_geom/template_matching, reason: "Four of OpenCV's six methods (with mask support); the zero-mean (CCOEFF) methods are missing"}
   tutorial_hitOrMiss: {status: unreviewed, crates: []}
   tutorial_canny_detector: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: imgproc_edges/canny, alternatives: [{crate: oximedia-cv, snippet: oximedia/canny}]}
   tutorial_copyMakeBorder: {status: unreviewed, crates: []}

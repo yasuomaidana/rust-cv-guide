@@ -195,15 +195,3 @@ The background pixel sits below both levels, so the binary results are 0 and `To
 | `cv::threshold(src, dst, T, 255, THRESH_BINARY)` | `imageproc::contrast::threshold(&img, T, ThresholdType::Binary)` (`oxipix` unified modes tracked in `OXI-89`) |
 | `THRESH_BINARY_INV`, `THRESH_TRUNC`, `THRESH_TOZERO`, `THRESH_TOZERO_INV` | `ThresholdType::{BinaryInverted, Truncate, ToZero, ToZeroInverted}` |
 | `THRESH_OTSU` | `imageproc::contrast::otsu_level` or `oxipix::vectorize::otsu_threshold` |
-
-## Performance comparison
-
-| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
-|---|---|---|---|---|---|
-| Otsu binary threshold | 384x303 grey | 0.072 ms | 0.045 ms | 0.163 ms | 3.62x |
-
-:::warning Performance difference
-
-- **Otsu binary threshold:** The oxipix threshold helper runs a per-pixel GrayImage::from_fn wrapper over otsu_threshold (~3.6x slower than imageproc's tight slice loop; native slice thresholding tracked in OXI-89).
-
-:::

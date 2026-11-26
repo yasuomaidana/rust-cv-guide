@@ -17,16 +17,17 @@ lines. A threshold on the number of votes decides which peaks count, and a neigh
 ## Explanation
 
 1. `canny(input, 50.0, 150.0)` gives the edges (the same step in both versions).
-2. `imageproc::hough::detect_lines` takes the edge image and `LineDetectionOptions`: the votes needed and a suppression radius, which keeps only the strongest bucket in each neighbourhood. Its angles are whole degrees.
-3. `oximedia_cv::hough_transform::hough_lines` takes the coordinates of the edge pixels and a `HoughLineConfig` (angle step, distance step, votes, maximum lines). It returns every bucket above the threshold, strongest first, so a real line appears several times; the example keeps a line only if no stronger one is within 8 pixels and 8 degrees, the same neighbourhood `imageproc` suppresses.
-4. Both use the same `(ρ, θ)` convention, so the shared `draw_lines` draws either result.
-5. Tests check that both find the vertical edge of a half-dark half-bright picture where it is (`ρ = 50`, `θ = 0`), and that at least 60 % of the lines `imageproc` finds on the photo are also found by `oximedia-cv` (within 10 pixels and 10 degrees).
+2. `imageproc::hough::detect_lines` takes the edge image and `LineDetectionOptions`: the votes needed and a suppression radius (`8`, a `17×17` block), keeping only strict local maxima. Its angles are whole degrees `0°..=179°`.
+3. `oximedia_cv::hough_transform::HoughAccumulator` votes edge pixels into `(theta_idx, rho_idx)` bins. Calling the higher-level `hough_lines()` helper alone diverges from `imageproc` for three reasons: it includes a duplicate `θ = π` (`180°`) row without wrap-around, caps raw pre-suppression bins at `max_lines`, and returns un-suppressed vote shoulders.
+4. To align the two outputs, the example votes into `HoughAccumulator`, excludes the duplicate `t_idx = 180` row, applies `17×17` local-maximum suppression (`is_peak`, wrapping across `θ = π`), and runs `suppress_lines` with antipodal equivalence `(ρ, θ) ≡ (-ρ, θ ± π)`.
+5. Any remaining small count difference comes from sub-pixel `ρ` binning: `imageproc` truncates `r as i32` toward zero (creating a double-wide bin at `ρ = 0`), whereas `oximedia-cv` offsets by fractional `diag = sqrt(w² + h²)` and floors.
+6. Tests verify both find a synthetic vertical edge at `(ρ = 50, θ = 0)` with no `θ = π` duplicate, and match across vote thresholds `100`, `150`, and `200`.
 
 ## Result
 
-<LiveExample fn="lines" label="image + imageproc" alt={{fn: "lines_oxi", label: "oximedia-cv"}} sample="building.jpg" params={[{name: "votes", label: "Votes needed", min: 60, max: 400, step: 10, value: 150}]} />
+<LiveExample fn="lines" label="image + imageproc" alt={{fn: "lines_oxi", label: "oximedia-cv"}} sample="building.jpg" samples={[{file: "building.jpg", label: "Building"}, {file: "invoice.png", label: "Invoice"}, {file: "invoice_photo.png", label: "Invoice photo"}]} params={[{name: "votes", label: "Votes needed", min: 60, max: 400, step: 10, value: 150}]} />
 
-Move the control, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
+Move the control, switch samples, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the
 settings this page starts with, the `imageproc` code prints the number below, and a test asserts this exact text
 (`oximedia-cv` finds 11 lines):
 
@@ -39,5 +40,5 @@ lines = 13
 | OpenCV 5.1 | Rust |
 |---|---|
 | `cv::Canny(src, edges, 50, 150)` | `imageproc::edges::canny` |
-| `cv::HoughLines(edges, lines, 1, CV_PI/180, votes)` | `imageproc::hough::detect_lines`, or `oximedia_cv::hough_transform::hough_lines` |
+| `cv::HoughLines(edges, lines, 1, CV_PI/180, votes)` | `imageproc::hough::detect_lines`, or `oximedia_cv::hough_transform::HoughAccumulator` |
 | `cv::line` over the polar lines | `common::draw_lines`, a few lines |

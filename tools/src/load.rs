@@ -1,5 +1,6 @@
 //! Reads the catalog, the per-section coverage files and the hand-written sources from disk.
 
+use crate::benchmarks::Benchmarks;
 use crate::model::{Coverage, Sources};
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
@@ -11,10 +12,19 @@ pub fn at<E: Display>(path: &Path) -> impl Fn(E) -> String + '_ {
     move |e| format!("{}: {e}", path.display())
 }
 
-/// Parses one YAML file under `catalog/`.
+/// Parses one YAML/JSON file under `catalog/`.
 pub fn yaml<T: DeserializeOwned>(path: &Path) -> Result<T, String> {
     let text = fs::read_to_string(path).map_err(at(path))?;
     serde_yaml_ng::from_str(&text).map_err(at(path))
+}
+
+/// Loads `catalog/benchmarks.json`, returning an empty catalog if the file does not exist yet.
+pub fn benchmarks(root: &Path) -> Result<Benchmarks, String> {
+    let path = root.join("catalog/benchmarks.json");
+    if !path.is_file() {
+        return Ok(Benchmarks::default());
+    }
+    yaml(&path)
 }
 
 /// Files in `dir` with the given extension, sorted; a missing directory has none.
@@ -144,6 +154,7 @@ mod tests {
     fn missing_directories_are_empty() {
         let dir = tempfile::tempdir().unwrap();
         assert!(coverage(dir.path()).unwrap().modules.is_empty());
+        assert!(benchmarks(dir.path()).unwrap().benchmarks.is_empty());
         let found = sources(dir.path()).unwrap();
         assert!(found.bodies.is_empty() && found.snippets.is_empty());
     }
@@ -151,6 +162,8 @@ mod tests {
     #[test]
     fn sources_read_bodies_and_snippets() {
         let dir = tempfile::tempdir().unwrap();
+        write(dir.path(), "catalog/benchmarks.json", "{}\n");
+        assert!(benchmarks(dir.path()).unwrap().benchmarks.is_empty());
         write(dir.path(), "website/guide/core/tutorial_mat.md", "body");
         write(dir.path(), "website/guide/core/notes.txt", "ignored");
         write(dir.path(), "website/guide/TEMPLATE.md", "not in a section");

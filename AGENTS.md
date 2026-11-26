@@ -53,3 +53,9 @@ Orchestrators run `dendrite session checkpoint` after each finished ticket and b
 ```bash
 dendrite session checkpoint [--worktree dir] [--decision "..."]... [--next "DEN-XXX"]... [--note "..."]
 ```
+
+## Guide Parity & Incremental Benchmarks Rule
+- **Dual-solution policy**: Every new tutorial or feature must attempt both a pure-Rust (`image`/`imageproc`) solution and an `oximedia-cv`/`oxipix` solution side by side (sharing input parameters where comparable).
+- **Missing feature tickets**: When `oximedia-cv`/`oxipix` lacks a feature, file a request on `oxipix` via `dendrite chronos request oxipix --synapse cv-guide-oxipix` and record `oxipix_ticket: OXI-<id>` in `catalog/coverage/*.yaml` (enforced by `cvg-tools check`).
+- **Incremental performance reference**: Every new feature must run `comparisons/opencv` (`bench_cpp` + `cargo run --release`) and update `catalog/benchmarks.json` with OpenCV vs pure Rust vs `oximedia-cv`/`oxipix` timings (enforced by `cvg-tools check`).
+- **Divergence warnings & upstream reporting**: Any benchmark row diverging by `>= 3.0x` between Rust and `oximedia`/`oxipix` (or `>= 20.0x` vs OpenCV) must include a root-cause `warning_note` in `catalog/benchmarks.json` (rendered automatically as a `:::warning Performance difference` admonition on the tutorial page), and a reproduction + solution issue must be filed upstream on `cool-japan/oximedia` (when inside `oximedia`) or on `oxipix` (when outside).

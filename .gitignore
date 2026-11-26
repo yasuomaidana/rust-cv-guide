@@ -9,3 +9,4 @@ coverage.out
 *.tmp
 bin/
 .venv/
+comparisons/opencv/bench_cpp

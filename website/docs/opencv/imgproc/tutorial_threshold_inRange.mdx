@@ -238,3 +238,9 @@ green pane (190,95) = [0, 0, 0]
 | `cv::cvtColor(src, hsv, COLOR_BGR2HSV)` | `rgb_to_hsv` (pure Rust) or `oximedia_cv::image::convert::rgb_to_hsv` |
 | `cv::inRange(hsv, lo, hi, mask)` | `in_range`, with the wrap-around for red (`oxipix` tracked in `OXI-90`) |
 | `cv::bitwise_and(src, src, dst, mask)` | `keep` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| HSV red range mask | 320x240 RGB | 0.125 ms | 0.194 ms | 0.449 ms | 2.31x |

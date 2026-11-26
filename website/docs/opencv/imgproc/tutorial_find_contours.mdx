@@ -159,3 +159,9 @@ points = 930
 | `cv::findContours(.., RETR_LIST, CHAIN_APPROX_NONE)` | `imageproc::contours::find_contours`, or `oxipix::vectorize::trace_moore_neighbor_contours` |
 | `cv::approxPolyDP(c, eps, true)` | `imageproc::geometry::approximate_polygon_dp` or `oxipix::vectorize::simplify_rdp` |
 | `cv::drawContours` | `common::draw_outlines`, a few lines of line drawing |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Find contours + approxPolyDP | 560x420 mask | 0.158 ms | 0.539 ms | 0.290 ms | 0.54x |

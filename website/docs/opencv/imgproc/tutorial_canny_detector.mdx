@@ -128,3 +128,9 @@ The window edges and floor lines come out as thin connected curves, and the smoo
 | `cv::blur` / `cv::GaussianBlur` | `imageproc::filter::gaussian_blur_f32` |
 | `cv::Canny(src, dst, low, high)` | `imageproc::edges::canny(&gray, low, high)`, or `CannyEdge::new(low, high, sigma).detect(..)` from `oximedia-cv` |
 | `cv::cvtColor(.., COLOR_BGR2GRAY)` | `DynamicImage::to_luma8` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Gaussian blur + Canny (50/150) | 640x480 grey | 2.565 ms | 20.491 ms | 22.498 ms | 1.10x |

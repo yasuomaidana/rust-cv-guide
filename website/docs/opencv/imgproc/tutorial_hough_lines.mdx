@@ -184,3 +184,9 @@ lines = 13
 | `cv::Canny(src, edges, 50, 150)` | `imageproc::edges::canny` |
 | `cv::HoughLines(edges, lines, 1, CV_PI/180, votes)` | `imageproc::hough::detect_lines`, or `oximedia_cv::hough_transform::HoughAccumulator` |
 | `cv::line` over the polar lines | `common::draw_lines`, a few lines |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Canny + standard Hough lines | 640x480 grey | 11.952 ms | 22.122 ms | 42.990 ms | 1.94x |

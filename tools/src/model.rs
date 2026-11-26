@@ -79,6 +79,9 @@ pub struct Entry {
     /// Name of `snippets/examples/<snippet>.rs` (`<group>/<name>`), the compiled example the page shows.
     #[serde(default)]
     pub snippet: Option<String>,
+    /// Tracking ticket on `oxipix` (`OXI-<id>`) when `oximedia-cv`/`oxipix` lacks full native coverage.
+    #[serde(default)]
+    pub oxipix_ticket: Option<String>,
     /// Other crates that do the same job, each with its own compiled example.
     #[serde(default)]
     pub alternatives: Vec<Alternative>,
@@ -127,6 +130,7 @@ pub(crate) mod fixtures {
             crates: crates.iter().map(|c| c.to_string()).collect(),
             reason: None,
             snippet: None,
+            oxipix_ticket: None,
             alternatives: Vec::new(),
         }
     }
@@ -136,6 +140,7 @@ pub(crate) mod fixtures {
         Entry {
             reason: Some("why".into()),
             snippet: Some("core/blend".into()),
+            oxipix_ticket: Some("OXI-1".into()),
             ..entry(status, &["ndarray"])
         }
     }

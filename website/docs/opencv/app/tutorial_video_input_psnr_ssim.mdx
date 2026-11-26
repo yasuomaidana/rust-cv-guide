@@ -228,3 +228,16 @@ ssim = 0.8152
 | `cv::PSNR(a, b)` (`getPSNR` in the tutorial) | `psnr` above (`image`), or `oximedia_cv::quality::psnr::calculate_buffer_psnr` |
 | the tutorial's `getMSSIM(a, b)` | `ssim` above (`image`), or `oximedia_cv::quality::ssim::calculate_ssim` (luma plane) |
 | `cv::GaussianBlur` (to degrade) | `image::imageops::blur` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| PSNR | 640x480 grey | 0.147 ms | 0.389 ms | 0.400 ms | 1.03x |
+| SSIM (11x11 Gaussian) | 640x480 grey | 3.087 ms | 6.541 ms | 100.723 ms | 15.40x |
+
+:::warning Performance difference
+
+- **SSIM (11x11 Gaussian):** oximedia-cv's SSIM (15.4x slower than pure Rust separable SSIM, 32.6x slower than OpenCV) runs a non-separable 2D 11x11 window loop with per-tap bounds checks per pixel instead of 5 separable 1D passes (cool-japan/oximedia#31).
+
+:::

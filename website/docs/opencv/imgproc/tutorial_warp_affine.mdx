@@ -155,3 +155,9 @@ both(300,200) = [224, 215, 215]
 | `cv::getRotationMatrix2D(center, angle, scale)` | `Projection` (`imageproc`) or `AffineTransform` (`oximedia-cv`) composed around `(cx, cy)` |
 | `cv::warpAffine(src, dst, M, size)` | `imageproc::geometric_transformations::warp` or `oximedia_cv::transform::affine::warp_affine_image` |
 | `cv::getAffineTransform(src, dst)` | `Projection::from_control_points` (four pairs) |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Rotate 30 deg + scale 0.6 | 512x512 RGB | 0.264 ms | 2.748 ms | 1.881 ms | 0.68x |

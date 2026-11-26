@@ -143,3 +143,9 @@ edges(430,300) = 40
 | `cv::GaussianBlur(src, dst, Size(3, 3), 0)` | `imageproc::filter::gaussian_blur_f32`, or `oximedia_cv::image::GaussianBlur` |
 | `cv::Laplacian(gray, dst, CV_16S, 3)` | `imageproc::filter::laplacian_filter`, or `oximedia_cv::image::LaplacianEdge` |
 | `cv::convertScaleAbs` | the absolute value, scaled to 255 (see above) |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Gaussian blur + Laplacian edge | 640x480 grey | 0.681 ms | 3.545 ms | 5.816 ms | 1.64x |

@@ -297,3 +297,10 @@ orb_kept = 300
 | `cv::ORB::create(n)->detectAndCompute(..)` | `imageproc::corners::oriented_fast` + `brief`, or `oximedia_cv::feature_extract::OrbExtractor::extract` |
 | `cv::BFMatcher(NORM_HAMMING).match(..)` | `imageproc::binary_descriptors::match_binary_descriptors` or `oximedia_cv::feature_extract::match_descriptors` |
 | `cv::drawKeypoints` | `common::draw_points`, a few lines |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| FAST-9 keypoints (t=30, max=250) | 640x480 grey | 0.571 ms | 2.343 ms | 7.002 ms | 2.99x |
+| ORB keypoints (t=30, max=250) | 640x480 grey | 6.603 ms | 2.464 ms | 3.935 ms | 1.60x |

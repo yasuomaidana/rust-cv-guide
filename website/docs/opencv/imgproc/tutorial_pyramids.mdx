@@ -188,3 +188,15 @@ sizes = 451x300, 226x150, 113x75, 57x38, 456x304
 |---|---|
 | `cv::pyrDown(src, dst)` | `separable_filter_equal` + subsample (`imageproc`), or `oximedia_cv::image::resize::ImagePyramid::gaussian` |
 | `cv::pyrUp(src, dst)` | `imageops::resize(.., FilterType::Triangle)` or `oximedia_cv::image::resize::resize_image(.., ResizeMethod::Bilinear)` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| 3-level pyrDown | 451x300 RGB | 0.045 ms | 1.822 ms | 0.878 ms | 0.48x |
+
+:::warning Performance difference
+
+- **3-level pyrDown:** Pure Rust imageops::resize(Gaussian) is 40.5x slower than OpenCV pyrDown (and 2.1x slower than oximedia-cv pyr_down) because it runs a full variable-radius Gaussian resampler rather than a fixed 5-tap separable pyramid downsample.
+
+:::

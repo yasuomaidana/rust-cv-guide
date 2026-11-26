@@ -9,9 +9,15 @@
 - **RustCV** is catalogued only (native camera/GUI facade, no wasm, no processing of its own).
 - Every example has a live WebAssembly demo on its page.
 
-## Definition of done (decided 2026-11-24)
+## Definition of done (decided 2026-11-24, updated 2026-11-25)
 
-The examples are the coverage tests. A tutorial is not finished until `cvg-tools check` proves it: tested example, page numbers asserted by the test, live wasm export, tested alternatives, no orphan examples (RUSTCVGUID-138).
+The examples are the coverage tests. Every new tutorial or feature must:
+1. Attempt **both** a pure-Rust (`image` / `imageproc`) solution and an **`oximedia-cv` / `oxipix`** solution side by side with shared input controls where both exist.
+2. When `oximedia-cv` / `oxipix` lacks the capability, file a tracking ticket on `oxipix` (`dendrite chronos request oxipix --synapse cv-guide-oxipix`) and record `oxipix_ticket: OXI-<id>` on the entry in `catalog/coverage/*.yaml`.
+3. Update `catalog/benchmarks.json` (`comparisons/opencv`) incrementally with OpenCV 5.1.0 vs pure-Rust vs `oximedia-cv`/`oxipix` release timings.
+4. When a backend is significantly slower (`>= 3x` between Rust and `oximedia`/`oxipix`, or `>= 20x` vs OpenCV), record a root-cause `warning_note` in `catalog/benchmarks.json` (which `cvg-tools generate` renders automatically as a `:::warning Performance difference` admonition on the tutorial page) and file an upstream issue on `cool-japan/oximedia` (when inside `oximedia`) or on `oxipix` (when outside).
+
+A tutorial is not finished until `cvg-tools check` proves all of the above: tested example, page numbers asserted by the test, live wasm export, tested alternatives, `oxipix_ticket` or `oximedia-cv`/`oxipix` crate, incremental `catalog/benchmarks.json` entry with `warning_note` for divergent rows, and no orphan examples (`RUSTCVGUID-138`, `RUSTCVGUID-152`, `RUSTCVGUID-5`).
 
 ## oximedia features
 

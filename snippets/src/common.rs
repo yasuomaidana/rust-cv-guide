@@ -203,26 +203,38 @@ pub fn ink_mask(input: &GrayImage, level: u8) -> GrayImage {
 /// Closed outlines as pixel coordinates, as both contour examples produce them.
 pub type Outlines = Vec<Vec<(f32, f32)>>;
 
+/// Converts a grey image to RGB dimmed by `divisor`, ready for coloured overlays.
+pub fn dim_gray(base: &GrayImage, divisor: u8) -> RgbImage {
+    let div = divisor.max(1);
+    RgbImage::from_fn(base.width(), base.height(), |x, y| {
+        let Luma([level]) = *base.get_pixel(x, y);
+        Rgb([level / div; 3])
+    })
+}
+
+/// Draws a 1-pixel line segment from `from` to `to` clipped to `canvas`.
+pub fn draw_line_mut(canvas: &mut RgbImage, from: (f32, f32), to: (f32, f32), color: Rgb<u8>) {
+    let (w, h) = (canvas.width() as f32, canvas.height() as f32);
+    let steps = (to.0 - from.0)
+        .abs()
+        .max((to.1 - from.1).abs())
+        .ceil()
+        .max(1.0);
+    for step in 0..=steps as u32 {
+        let t = step as f32 / steps;
+        let (x, y) = (from.0 + (to.0 - from.0) * t, from.1 + (to.1 - from.1) * t);
+        if x >= 0.0 && y >= 0.0 && x < w && y < h {
+            canvas.put_pixel(x as u32, y as u32, color);
+        }
+    }
+}
+
 /// The grey picture dimmed, with each outline drawn on it in red.
 pub fn draw_outlines(base: &GrayImage, outlines: &Outlines) -> RgbImage {
-    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
-        let Luma([level]) = *base.get_pixel(x, y);
-        Rgb([level / 3; 3])
-    });
+    let mut canvas = dim_gray(base, 3);
     for outline in outlines {
-        for (from, to) in outline.iter().zip(outline.iter().cycle().skip(1)) {
-            let steps = (to.0 - from.0)
-                .abs()
-                .max((to.1 - from.1).abs())
-                .ceil()
-                .max(1.0);
-            for step in 0..=steps as u32 {
-                let t = step as f32 / steps;
-                let (x, y) = (from.0 + (to.0 - from.0) * t, from.1 + (to.1 - from.1) * t);
-                if x >= 0.0 && y >= 0.0 && x < base.width() as f32 && y < base.height() as f32 {
-                    canvas.put_pixel(x as u32, y as u32, Rgb([255, 40, 40]));
-                }
-            }
+        for (&from, &to) in outline.iter().zip(outline.iter().cycle().skip(1)) {
+            draw_line_mut(&mut canvas, from, to, Rgb([255, 40, 40]));
         }
     }
     canvas
@@ -230,10 +242,7 @@ pub fn draw_outlines(base: &GrayImage, outlines: &Outlines) -> RgbImage {
 
 /// The grey picture dimmed, with a small red cross on each point.
 pub fn draw_points(base: &GrayImage, points: &[(f32, f32)]) -> RgbImage {
-    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
-        let Luma([level]) = *base.get_pixel(x, y);
-        Rgb([level / 2; 3])
-    });
+    let mut canvas = dim_gray(base, 2);
     for (x, y) in points {
         for step in -2_i32..=2 {
             for (px, py) in [(*x as i32 + step, *y as i32), (*x as i32, *y as i32 + step)] {
@@ -248,10 +257,7 @@ pub fn draw_points(base: &GrayImage, points: &[(f32, f32)]) -> RgbImage {
 
 /// The grey picture dimmed, with each `(x, y, radius)` circle drawn as a red ring.
 pub fn draw_circles(base: &GrayImage, circles: &[(f32, f32, f32)]) -> RgbImage {
-    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
-        let Luma([level]) = *base.get_pixel(x, y);
-        Rgb([level / 2; 3])
-    });
+    let mut canvas = dim_gray(base, 2);
     for (cx, cy, radius) in circles {
         let steps = (radius * 8.0).max(16.0) as u32;
         for step in 0..steps {
@@ -305,10 +311,7 @@ pub type Lines = Vec<(f32, f32)>;
 
 /// The grey picture dimmed, with each line drawn across it in red.
 pub fn draw_lines(base: &GrayImage, lines: &Lines) -> RgbImage {
-    let mut canvas = RgbImage::from_fn(base.width(), base.height(), |x, y| {
-        let Luma([level]) = *base.get_pixel(x, y);
-        Rgb([level / 2; 3])
-    });
+    let mut canvas = dim_gray(base, 2);
     let reach = (base.width() + base.height()) as i32 * 2;
     for (rho, theta) in lines {
         let (sin, cos) = theta.sin_cos();
@@ -323,12 +326,17 @@ pub fn draw_lines(base: &GrayImage, lines: &Lines) -> RgbImage {
     canvas
 }
 
-/// Keeps a line only when no stronger kept line (the input is strongest first) is within `rho_gap` pixels and `theta_gap` radians.
+/// Keeps a line only when no stronger kept line (the input is strongest first) is within `rho_gap` pixels and `theta_gap` radians,
+/// accounting for the polar equivalence `(rho, theta) == (-rho, theta +- PI)`.
 pub fn suppress_lines(strongest_first: &Lines, rho_gap: f32, theta_gap: f32) -> Lines {
     let mut kept: Lines = Vec::new();
     for (rho, theta) in strongest_first {
-        let near =
-            |(r, t): &(f32, f32)| (rho - r).abs() <= rho_gap && (theta - t).abs() <= theta_gap;
+        let near = |(r, t): &(f32, f32)| {
+            let direct = (rho - r).abs() <= rho_gap && (theta - t).abs() <= theta_gap;
+            let antipodal = (rho + r).abs() <= rho_gap
+                && ((theta - t).abs() - std::f32::consts::PI).abs() <= theta_gap;
+            direct || antipodal
+        };
         if !kept.iter().any(near) {
             kept.push((*rho, *theta));
         }
@@ -354,16 +362,10 @@ pub fn on_canvas(width: u32, height: u32, picture: &RgbImage) -> RgbImage {
 }
 
 /// The grey picture dimmed, with a red rectangle with its top left corner at `(x, y)`.
-pub fn draw_box(base: &GrayImage, (x, y): (u32, u32), (width, height): (u32, u32)) -> RgbImage {
-    RgbImage::from_fn(base.width(), base.height(), |px, py| {
-        let on_border = (px >= x && px <= x + width && py >= y && py <= y + height)
-            && (px - x < 2 || x + width - px < 2 || py - y < 2 || y + height - py < 2);
-        if on_border {
-            Rgb([255, 40, 40])
-        } else {
-            Rgb([base.get_pixel(px, py).0[0] / 2; 3])
-        }
-    })
+pub fn draw_box(base: &GrayImage, corner: (u32, u32), size: (u32, u32)) -> RgbImage {
+    let mut canvas = dim_gray(base, 2);
+    crate::vis::draw_rect_mut(&mut canvas, corner, size, Rgb([255, 40, 40]), 2);
+    canvas
 }
 
 /// What a contour example prints: how many outlines it found and how many points they have in total.
@@ -521,8 +523,18 @@ mod tests {
         let drawn = draw_lines(&base, &vec![(10.0, 0.0)]);
         assert_eq!(drawn.get_pixel(10, 5).0, [255, 40, 40]);
         assert_eq!(drawn.get_pixel(3, 5).0, [50, 50, 50]);
-        let thinned = suppress_lines(&vec![(10.0, 0.5), (11.0, 0.52), (40.0, 0.5)], 2.0, 0.1);
-        assert_eq!(thinned, vec![(10.0, 0.5), (40.0, 0.5)]);
+        let thinned = suppress_lines(
+            &vec![
+                (10.0, 0.5),
+                (11.0, 0.52),
+                (50.0, 0.01),
+                (-50.0, std::f32::consts::PI - 0.01),
+                (40.0, 0.5),
+            ],
+            2.0,
+            0.1,
+        );
+        assert_eq!(thinned, vec![(10.0, 0.5), (50.0, 0.01), (40.0, 0.5)]);
         let points = edge_points(&GrayImage::from_fn(3, 3, |x, y| {
             Luma([if x == y { 255 } else { 0 }])
         }));

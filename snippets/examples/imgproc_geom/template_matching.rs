@@ -2,8 +2,13 @@
 //! Run with `cargo run -p cvg-snippets --example template_matching`.
 
 use cvg_snippets::common::gray_sample;
-use image::{GrayImage, imageops};
-use imageproc::template_matching::{MatchTemplateMethod, find_extremes, match_template};
+use image::{GrayImage, Luma, imageops};
+use imageproc::{
+    definitions::Image,
+    template_matching::{
+        MatchTemplateMethod, find_extremes, match_template, match_template_with_mask,
+    },
+};
 
 /// The methods of the page, in the order its menu lists them.
 pub const METHODS: [MatchTemplateMethod; 4] = [
@@ -32,44 +37,97 @@ pub fn cut_template(grey: &GrayImage, size: u32) -> (GrayImage, (u32, u32)) {
     crop_template(grey, x, y, size, size)
 }
 
-/// The same scene seen under a different light: slightly blurred and brighter, so the match is not a trivial copy.
-pub fn relit(grey: &GrayImage) -> GrayImage {
-    imageops::brighten(&imageops::blur(grey, 1.5), 25)
+/// The same scene seen under a different light: slightly blurred and brightened by `brighten` levels.
+pub fn relit(grey: &GrayImage, brighten: i32) -> GrayImage {
+    imageops::brighten(&imageops::blur(grey, 1.5), brighten)
 }
 
-/// `cv::matchTemplate` and `minMaxLoc`: slides the template over the picture and returns the top left corner of the best
-/// match. Error measures are best at their minimum, correlations at their maximum.
+/// Elliptical mask of `width` x `height`: 255 inside the inscribed ellipse and 0 in the corners.
+pub fn elliptical_mask(width: u32, height: u32) -> GrayImage {
+    let cx = (width as f32 - 1.0) / 2.0;
+    let cy = (height as f32 - 1.0) / 2.0;
+    let rx_sq = (width as f32 / 2.0).powi(2).max(1.0);
+    let ry_sq = (height as f32 / 2.0).powi(2).max(1.0);
+    GrayImage::from_fn(width, height, |x, y| {
+        let dx = (x as f32 - cx).powi(2) * ry_sq;
+        let dy = (y as f32 - cy).powi(2) * rx_sq;
+        Luma([if dx + dy <= rx_sq * ry_sq { 255 } else { 0 }])
+    })
+}
+
+/// Circular mask of `size` x `size`: 255 inside the inscribed circle and 0 in the corners.
+pub fn circular_mask(size: u32) -> GrayImage {
+    elliptical_mask(size, size)
+}
+
+/// `cv::matchTemplate`: slides `template` over `search` (with an optional inscribed elliptical mask) and returns the score grid.
+pub fn match_scores(
+    search: &GrayImage,
+    template: &GrayImage,
+    method: MatchTemplateMethod,
+    masked: bool,
+) -> Image<Luma<f32>> {
+    if masked {
+        let mask = elliptical_mask(template.width(), template.height());
+        match_template_with_mask(search, template, method, &mask)
+    } else {
+        match_template(search, template, method)
+    }
+}
+
+/// Error measures are best at their minimum; correlations are best at their maximum.
+pub fn is_error_method(method: MatchTemplateMethod) -> bool {
+    matches!(
+        method,
+        MatchTemplateMethod::SumOfSquaredErrors | MatchTemplateMethod::SumOfSquaredErrorsNormalized
+    )
+}
+
+/// `cv::minMaxLoc`: returns the top-left corner and score of the best match in `scores`.
+pub fn best_match_in(scores: &Image<Luma<f32>>, method: MatchTemplateMethod) -> ((u32, u32), f32) {
+    let extremes = find_extremes(scores);
+    if is_error_method(method) {
+        (extremes.min_value_location, extremes.min_value)
+    } else {
+        (extremes.max_value_location, extremes.max_value)
+    }
+}
+
+/// Convenience wrapper for matching without a mask.
 pub fn best_match(
     search: &GrayImage,
     template: &GrayImage,
     method: MatchTemplateMethod,
 ) -> (u32, u32) {
-    let scores = match_template(search, template, method);
-    let extremes = find_extremes(&scores);
-    match method {
-        MatchTemplateMethod::SumOfSquaredErrors
-        | MatchTemplateMethod::SumOfSquaredErrorsNormalized => extremes.min_value_location,
-        _ => extremes.max_value_location,
-    }
+    best_match_in(&match_scores(search, template, method, false), method).0
 }
 
-/// Size of the patch the page starts with.
+/// Size and brightness shift the page starts with.
 pub const SIZE: u32 = 40;
+pub const BRIGHTEN: i32 = 50;
 
-/// Where the patch was cut, and where each method finds it in the relit picture.
+/// Where the patch was cut, and where each method (plus masked normalised correlation) finds it in the relit picture.
 pub fn report() -> String {
     let photo = gray_sample("chelsea.png");
     let (template, corner) = cut_template(&photo, SIZE);
-    let search = relit(&photo);
+    let search = relit(&photo, BRIGHTEN);
     let names = ["sse", "sse_normed", "ccorr", "ccorr_normed"];
-    let found = METHODS
+    let mut lines: Vec<String> = METHODS
         .iter()
         .zip(names)
-        .map(|(method, name)| format!("{name} = {:?}", best_match(&search, &template, *method)));
-    format!(
-        "template = {corner:?}\n{}",
-        found.collect::<Vec<_>>().join("\n")
-    )
+        .map(|(method, name)| format!("{name} = {:?}", best_match(&search, &template, *method)))
+        .collect();
+    let masked = best_match_in(
+        &match_scores(
+            &search,
+            &template,
+            MatchTemplateMethod::CrossCorrelationNormalized,
+            true,
+        ),
+        MatchTemplateMethod::CrossCorrelationNormalized,
+    );
+    lines.push(format!("ccorr_normed_masked = {:?}", masked.0));
+    format!("template = {corner:?}\n{}", lines.join("\n"))
 }
 
 pub fn main() {

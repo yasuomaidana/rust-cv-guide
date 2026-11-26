@@ -185,10 +185,10 @@ This point lies on a horizontal ledge: the x derivative is small and the y deriv
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Sobel X derivative | 640x480 grey | 0.335 ms | 3.863 ms | 0.788 ms | 0.20x |
+| Sobel X derivative | 640x480 grey | 0.142 ms | 3.855 ms | 0.782 ms | 0.20x |
 
 :::warning Performance difference
 
-- **Sobel X derivative:** Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (11.5x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice.
+- **Sobel X derivative:** Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (27.2x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice.
 
 :::

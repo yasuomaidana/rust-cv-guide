@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import {defaultRegion, Region, RegionOverlay, RegionSpec, Size} from './RegionOverlay';
+import {InputFigure, RegionSpec, useRegion, withRegion} from './RegionOverlay';
 import styles from './LiveExample.module.css';
 
 /** A control above the pictures. With `options` it is a drop-down whose value is the option's index. */
@@ -16,11 +16,18 @@ export type Param = {
   options?: string[];
 };
 
+type SampleOption = {
+  file: string;
+  label: string;
+};
+
 type Props = {
   /** Exported function of the `cvg-live` crate, called as `fn(pixels, [secondPixels,] width, height, ...params)`. */
   fn: string;
   /** Photo in `snippets/assets`, served from `/samples/`. */
   sample: string;
+  /** Optional list of sample photos the reader can switch between (defaults to `sample` alone). */
+  samples?: SampleOption[];
   /** Second photo for examples that combine two images; it is resized to the first one's size. */
   second?: string;
   params?: Param[];
@@ -250,13 +257,111 @@ function Control({param, value, onChange}: {param: Param; value: number; onChang
   );
 }
 
-function ControlRow({params, values, onChange}: {params: Param[]; values: number[]; onChange: (i: number, v: number) => void}) {
+function SamplePicker({
+  samples,
+  value,
+  onChange,
+}: {
+  samples?: SampleOption[];
+  value: string;
+  onChange: (file: string) => void;
+}) {
+  if (!samples || samples.length <= 1) return null;
+  return (
+    <label className={styles.control}>
+      <span>Sample image</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        {samples.map((s) => (
+          <option key={s.file} value={s.file}>
+            {s.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ControlRow({
+  params,
+  values,
+  onChange,
+  leading,
+}: {
+  params: Param[];
+  values: number[];
+  onChange: (i: number, v: number) => void;
+  leading?: React.ReactNode;
+}) {
   return (
     <div className={styles.controls}>
+      {leading}
       {params.map((param, index) => (
         <Control key={param.name} param={param} value={values[index]} onChange={(v) => onChange(index, v)} />
       ))}
     </div>
+  );
+}
+
+function ControlsSection({
+  samples,
+  activeSample,
+  onSampleChange,
+  params,
+  altParams,
+  label,
+  alt,
+  values,
+  altValues,
+  synced,
+  onToggleSync,
+  onChangeMain,
+  onChangeAlt,
+}: {
+  samples?: SampleOption[];
+  activeSample: string;
+  onSampleChange: (file: string) => void;
+  params: Param[];
+  altParams?: Param[];
+  label: string;
+  alt?: {fn: string; label: string};
+  values: number[];
+  altValues: number[];
+  synced: boolean;
+  onToggleSync: (next: boolean) => void;
+  onChangeMain: (i: number, v: number) => void;
+  onChangeAlt: (i: number, v: number) => void;
+}) {
+  const picker = <SamplePicker samples={samples} value={activeSample} onChange={onSampleChange} />;
+  const split = Boolean(altParams && alt);
+  if (!split) {
+    return <ControlRow params={params} values={values} onChange={onChangeMain} leading={picker} />;
+  }
+  return (
+    <>
+      <div className={styles.syncBar}>
+        <label>
+          <input type="checkbox" checked={synced} onChange={(e) => onToggleSync(e.target.checked)} /> Sync parameters
+          between {label} and {alt!.label}
+        </label>
+      </div>
+      {synced ? (
+        <ControlRow params={params} values={values} onChange={onChangeMain} leading={picker} />
+      ) : (
+        <>
+          {samples && samples.length > 1 && <div className={styles.controls}>{picker}</div>}
+          <div className={styles.splitControls}>
+            <div className={styles.controlGroup}>
+              <div className={styles.groupTitle}>{label}</div>
+              <ControlRow params={params} values={values} onChange={onChangeMain} />
+            </div>
+            <div className={styles.controlGroup}>
+              <div className={styles.groupTitle}>{alt!.label}</div>
+              <ControlRow params={altParams!} values={altValues} onChange={onChangeAlt} />
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
 
@@ -323,95 +428,10 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function InputFigure({
-  canvasRef,
-  size,
-  region,
-  onChange,
-  onReset,
-}: {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  size?: Size;
-  region?: Region;
-  onChange: (next: Region) => void;
-  onReset: () => void;
-}) {
-  const canvas = <canvas ref={canvasRef} />;
-  return (
-    <figure>
-      {size && region ? (
-        <RegionOverlay size={size} region={region} onChange={onChange} onReset={onReset}>
-          {canvas}
-        </RegionOverlay>
-      ) : (
-        canvas
-      )}
-      <figcaption>Input</figcaption>
-    </figure>
-  );
-}
-
-function withRegion(base: number[], region?: Region): number[] {
-  return region ? [...base, region.x, region.y, region.width, region.height] : base;
-}
-
-function useRegion(pictures?: Pictures, spec?: RegionSpec) {
-  const [region, setRegion] = useState<Region>();
-  useEffect(() => {
-    setRegion(pictures && spec ? defaultRegion(pictures.first, spec) : undefined);
-  }, [pictures, spec?.width, spec?.height]);
-  const reset = () => {
-    if (pictures && spec) setRegion(defaultRegion(pictures.first, spec));
-  };
-  return {region, setRegion, reset};
-}
-
-type ControlsProps = {
-  params: Param[];
-  altParams?: Param[];
-  values: number[];
-  altValues: number[];
-  synced: boolean;
-  label: string;
-  altLabel?: string;
-  onMain: (index: number, value: number) => void;
-  onAlt: (index: number, value: number) => void;
-  onToggleSync: (next: boolean) => void;
-};
-
-function ControlsPanel(p: ControlsProps) {
-  const dual = Boolean(p.altParams && p.altLabel);
-  return (
-    <>
-      {dual && (
-        <div className={styles.syncBar}>
-          <label>
-            <input type="checkbox" checked={p.synced} onChange={(e) => p.onToggleSync(e.target.checked)} /> Sync
-            parameters between {p.label} and {p.altLabel}
-          </label>
-        </div>
-      )}
-      {dual && !p.synced && p.altParams ? (
-        <div className={styles.splitControls}>
-          <div className={styles.controlGroup}>
-            <div className={styles.groupTitle}>{p.label}</div>
-            <ControlRow params={p.params} values={p.values} onChange={p.onMain} />
-          </div>
-          <div className={styles.controlGroup}>
-            <div className={styles.groupTitle}>{p.altLabel}</div>
-            <ControlRow params={p.altParams} values={p.altValues} onChange={p.onAlt} />
-          </div>
-        </div>
-      ) : (
-        <ControlRow params={p.params} values={p.values} onChange={p.onMain} />
-      )}
-    </>
-  );
-}
-
 function Live({
   fn,
   sample,
+  samples,
   second,
   params = [],
   altParams,
@@ -423,12 +443,12 @@ function Live({
 }: Props) {
   const base = useBaseUrl('/');
   const version = String(useDocusaurusContext().siteConfig.customFields?.buildTime ?? '');
+  const [activeSample, setActiveSample] = useState(sample);
   const [values, setValues] = useState(params.map((p) => p.value));
   const [altValues, setAltValues] = useState((altParams ?? params).map((p) => p.value));
   const [synced, setSynced] = useState(Boolean(altParams && params.length === altParams.length));
-  const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
-  const {region, setRegion, reset: resetRegion} = useRegion(pictures, selectableRegion);
-
+  const {pictures, setPictures, error, reload} = useSamples(base, activeSample, second);
+  const {region, setRegion, reset: resetRegion} = useRegion(pictures?.first, selectableRegion);
   const effectiveAltValues = altParams ? (synced ? values : altValues) : values;
   const runMainValues = useMemo(() => withRegion(values, region), [values, region]);
   const runAltValues = useMemo(() => withRegion(effectiveAltValues, region), [effectiveAltValues, region]);
@@ -462,17 +482,20 @@ function Live({
 
   return (
     <div className={styles.live}>
-      <ControlsPanel
+      <ControlsSection
+        samples={samples}
+        activeSample={activeSample}
+        onSampleChange={setActiveSample}
         params={params}
         altParams={altParams}
+        label={label}
+        alt={alt}
         values={values}
         altValues={altValues}
         synced={synced}
-        label={label}
-        altLabel={alt?.label}
-        onMain={changeMain}
-        onAlt={changeAlt}
         onToggleSync={toggleSync}
+        onChangeMain={changeMain}
+        onChangeAlt={changeAlt}
       />
       <div className={styles.pictures}>
         <InputFigure canvasRef={input} size={pictures?.first} region={region} onChange={setRegion} onReset={resetRegion} />

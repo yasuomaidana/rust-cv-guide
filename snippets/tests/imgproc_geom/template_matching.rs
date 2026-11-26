@@ -5,13 +5,14 @@ mod example;
 
 use cvg_snippets::common::gray_sample;
 use image::{GrayImage, Luma};
+use imageproc::template_matching::MatchTemplateMethod;
 use rstest::rstest;
 
 #[test]
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "template = (205, 100)\nsse = (204, 100)\nsse_normed = (204, 100)\nccorr = (411, 235)\nccorr_normed = (205, 101)"
+        "template = (205, 100)\nsse = (308, 109)\nsse_normed = (309, 109)\nccorr = (411, 235)\nccorr_normed = (204, 100)\nccorr_normed_masked = (204, 100)"
     );
 }
 
@@ -34,26 +35,53 @@ fn finds_the_patch_in_an_untouched_copy(#[case] method: usize, #[case] exact: bo
     assert_eq!(found == corner, exact, "{found:?} against {corner:?}");
 }
 
-/// The normalised methods survive a change of light: the patch is still found within two pixels.
+/// Under a +50 brightness shift, raw SSE and non-mean-subtracted normalised SSE drift,
+/// while normalised cross-correlation (unmasked and circularly masked) stays within two pixels.
 #[rstest]
-#[case(1)]
-#[case(3)]
-fn normalised_methods_survive_a_change_of_light(#[case] method: usize) {
+#[case(false)]
+#[case(true)]
+fn normalised_correlation_survives_a_change_of_light(#[case] masked: bool) {
     let photo = gray_sample("chelsea.png");
     let (template, corner) = example::cut_template(&photo, 40);
-    let found = example::best_match(&example::relit(&photo), &template, example::METHODS[method]);
+    let search = example::relit(&photo, example::BRIGHTEN);
+    let method = MatchTemplateMethod::CrossCorrelationNormalized;
+    let (found, _) = example::best_match_in(
+        &example::match_scores(&search, &template, method, masked),
+        method,
+    );
     assert!(
         found.0.abs_diff(corner.0) <= 2 && found.1.abs_diff(corner.1) <= 2,
-        "{found:?}"
+        "{found:?} vs {corner:?}"
     );
 }
 
+/// A moderate brightness shift (+25) still leaves SSE and normalised SSE within two pixels;
+/// at +50 raw SSE jumps away to a brighter region.
+#[rstest]
+#[case(25, true)]
+#[case(50, false)]
+fn raw_sse_breaks_under_strong_brightness_shift(#[case] brighten: i32, #[case] close: bool) {
+    let photo = gray_sample("chelsea.png");
+    let (template, corner) = example::cut_template(&photo, 40);
+    let search = example::relit(&photo, brighten);
+    let found = example::best_match(&search, &template, MatchTemplateMethod::SumOfSquaredErrors);
+    let near = found.0.abs_diff(corner.0) <= 2 && found.1.abs_diff(corner.1) <= 2;
+    assert_eq!(near, close, "brighten={brighten} found={found:?}");
+}
+
 #[test]
-fn the_patch_is_cut_where_it_says() {
+fn the_patch_and_circular_mask_match_their_geometry() {
     let picture = GrayImage::from_fn(100, 100, |x, y| Luma([(x + y) as u8]));
     let (template, corner) = example::cut_template(&picture, 20);
     assert_eq!(corner, (40, 30));
     assert_eq!(template.get_pixel(0, 0), picture.get_pixel(40, 30));
+    let mask = example::circular_mask(20);
+    assert_eq!(mask.get_pixel(0, 0).0[0], 0);
+    assert_eq!(mask.get_pixel(10, 10).0[0], 255);
+    let ellipse = example::elliptical_mask(30, 16);
+    assert_eq!(ellipse.dimensions(), (30, 16));
+    assert_eq!(ellipse.get_pixel(0, 0).0[0], 0);
+    assert_eq!(ellipse.get_pixel(15, 8).0[0], 255);
 }
 
 #[rstest]

@@ -170,10 +170,10 @@ dilation adds about a quarter.
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Erode (5x5 square, r=2) | 384x303 grey | 0.018 ms | 0.278 ms | 3.279 ms | 11.79x |
+| Erode (5x5 square, r=2) | 384x303 grey | 0.010 ms | 0.294 ms | 3.347 ms | 11.38x |
 
 :::warning Performance difference
 
-- **Erode (5x5 square, r=2):** oximedia-cv erode is 11.8x slower than imageproc (182x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30).
+- **Erode (5x5 square, r=2):** oximedia-cv erode is 11.4x slower than imageproc (335x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30).
 
 :::

@@ -23,17 +23,26 @@ what is darker than `level`.
 ## Explanation
 
 1. `ink_mask` turns the grey invoice into a black and white picture where the ink is white.
-2. `imageproc::contours::find_contours` returns every border, outer and hole, each with its parent.
+2. `imageproc::contours::find_contours` returns every border, outer and hole, each with its parent, using Suzuki and Abe's algorithm.
 3. `approximate_polygon_dp(&points, epsilon, true)` is `approxPolyDP` for a closed curve.
-4. `oxipix::vectorize::trace_moore_neighbor_contours` walks every boundary of a boolean grid, and `simplify_rdp` does the thinning. It was written to turn scans into SVG (`vectorize_rgba_to_svg`), which drops fragments under three points exactly as the example does. A test checks the two crates find the same number of outlines to within a tenth.
+4. `oxipix::vectorize::trace_moore_neighbor_contours` walks boundaries on a boolean grid, and `simplify_rdp` thins them.
+
+### Why `oxipix 0.1.0` and `imageproc` diverge on holes, low `ε`, and photos
+
+On `invoice.png` at the default settings (`level = 128`, `ε = 2.0`), the two crates look close (`169` vs `174` outlines), yet on letters with holes, smaller `ε`, or photographs (`coins.png`, `chelsea.png`, `building.jpg`) they diverge sharply due to four specific limitations in `oxipix 0.1.0` (tracked in [yasuomaidana/oxipix#4](https://github.com/yasuomaidana/oxipix/issues/4)):
+
+1. **Fixed North entry (`dir = 0`) breaks holes and concavities**: `oxipix`'s Moore tracer always probes North first instead of starting from an adjacent background pixel. On a hole border (`O`, `0`, `4`, `8`, `B`) the pixel above the top of the hole is solid ink, so the walk steps into the interior and spins in bogus `2×2` loops (281 such loops on `invoice.png`, hidden at `ε = 2.0` only because RDP collapses them below 3 points).
+2. **`MAX_CONTOUR_STEPS = 1000` truncates large borders**: Any boundary longer than 1,000 pixels stops mid-walk as an open chain (`invoice.png`'s horizontal bars are 978 px, barely under the cap, whereas `coins.png` has 348 truncated contours and `chelsea.png` has 477). Closing those open chains draws diagonal chords across the image.
+3. **Repeated re-traces after truncation**: Remaining unvisited pixels along a truncated boundary spawn hundreds of duplicate 1,000-step walks over the same border.
+4. **Open-chain `simplify_rdp`**: `oxipix::simplify_rdp` simplifies an open polyline and keeps both endpoints instead of popping the closing vertex like `approximate_polygon_dp(..., true)`, adding roughly one extra vertex per outline (`1092` vs `930` points on `invoice.png`).
+
+(`oximedia-cv::contour::ContourFinder` is not shown on this page because its `trace_boundary` walks greedily into unvisited interior foreground pixels rather than following borders.)
 
 ## Result
 
-<LiveExample fn="outlines" label="image + imageproc" alt={{fn: "outlines_oxipix", label: "oxipix"}} sample="invoice.png" params={[{name: "level", label: "Ink level (darker than)", min: 20, max: 230, step: 1, value: 128}, {name: "epsilon", label: "Simplification ε (pixels)", min: 0.5, max: 6, step: 0.5, value: 2}]} />
+<LiveExample fn="outlines" label="image + imageproc" alt={{fn: "outlines_oxipix", label: "oxipix"}} sample="invoice.png" samples={[{file: "invoice.png", label: "Invoice (text)"}, {file: "coins.png", label: "Coins"}, {file: "chelsea.png", label: "Cat (chelsea)"}, {file: "building.jpg", label: "Building"}]} params={[{name: "level", label: "Ink level (darker than)", min: 20, max: 230, step: 1, value: 128}, {name: "epsilon", label: "Simplification ε (pixels)", min: 0.5, max: 6, step: 0.5, value: 2}]} />
 
-Move the controls, or use your own scan: the code above runs in your browser as WebAssembly. For the sample invoice and the
-settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text (`oxipix`
-finds 174 outlines and 1092 points):
+Try switching **Sample image** to **Coins** or **Cat**, or lowering **Simplification ε** to `0.5` on the invoice to see `oxipix 0.1.0`'s interior loops and 1,000-step diagonal chords compared with `imageproc`'s Suzuki–Abe contours. For the sample invoice and the settings this page starts with, the `imageproc` code prints the numbers below, and a test asserts this exact text (`oxipix` finds 174 outlines and 1092 points):
 
 ```text
 outlines = 169

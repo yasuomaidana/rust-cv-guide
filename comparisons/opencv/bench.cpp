@@ -90,6 +90,8 @@ int main(int argc, char** argv) {
     cv::Mat astronaut = asset(assets, "astronaut.png", cv::IMREAD_COLOR);
     cv::Mat invoice = asset(assets, "invoice.png", cv::IMREAD_GRAYSCALE);
     cv::Mat invoice_photo = asset(assets, "invoice_photo.png", cv::IMREAD_COLOR);
+    cv::Mat box_img = asset(assets, "box.png", cv::IMREAD_GRAYSCALE);
+    cv::Mat box_scene = asset(assets, "box_in_scene.png", cv::IMREAD_GRAYSCALE);
 
     cv::Mat coins_mask;
     cv::threshold(coins, coins_mask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
@@ -180,6 +182,16 @@ int main(int argc, char** argv) {
     auto orb = cv::ORB::create(250);
     cv::Mat desc;
     push("feature_detection_orb", 20, [&] { kps.clear(); orb->detectAndCompute(building, cv::noArray(), kps, desc); });
+    push("feature_description", 10, [&] {
+        std::vector<cv::KeyPoint> ka, kb;
+        cv::Mat da, db;
+        orb->detectAndCompute(box_img, cv::noArray(), ka, da);
+        orb->detectAndCompute(box_scene, cv::noArray(), kb, db);
+        std::vector<cv::DMatch> matches;
+        if (!da.empty() && !db.empty()) {
+            cv::BFMatcher(cv::NORM_HAMMING).match(da, db, matches);
+        }
+    });
 
     std::vector<cv::Point2f> src_pts = {{70.0f, 40.0f}, {580.0f, 70.0f}, {555.0f, 430.0f}, {40.0f, 400.0f}};
     std::vector<cv::Point2f> dst_pts = {{0.0f, 0.0f}, {640.0f, 0.0f}, {640.0f, 480.0f}, {0.0f, 480.0f}};

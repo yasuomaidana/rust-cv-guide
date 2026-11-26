@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styles from './LiveExample.module.css';
 
 export type Region = {x: number; y: number; width: number; height: number};
@@ -126,5 +126,51 @@ export function RegionOverlay({size, region, onChange, onReset, children}: Overl
         </button>
       </div>
     </div>
+  );
+}
+
+/** Appends `(x, y, width, height)` when a template region is active. */
+export function withRegion(base: number[], region?: Region): number[] {
+  return region ? [...base, region.x, region.y, region.width, region.height] : base;
+}
+
+/** Tracks the active image region, resetting to default when the input photo changes. */
+export function useRegion(size?: Size, spec?: RegionSpec) {
+  const [region, setRegion] = useState<Region>();
+  useEffect(() => {
+    setRegion(size && spec ? defaultRegion(size, spec) : undefined);
+  }, [size, spec?.width, spec?.height]);
+  const reset = () => {
+    if (size && spec) setRegion(defaultRegion(size, spec));
+  };
+  return {region, setRegion, reset};
+}
+
+/** Renders the Input figure with optional interactive region selection overlaid. */
+export function InputFigure({
+  canvasRef,
+  size,
+  region,
+  onChange,
+  onReset,
+}: {
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  size?: Size;
+  region?: Region;
+  onChange: (next: Region) => void;
+  onReset: () => void;
+}) {
+  const canvas = <canvas ref={canvasRef} />;
+  return (
+    <figure>
+      {size && region ? (
+        <RegionOverlay size={size} region={region} onChange={onChange} onReset={onReset}>
+          {canvas}
+        </RegionOverlay>
+      ) : (
+        canvas
+      )}
+      <figcaption>Input</figcaption>
+    </figure>
   );
 }

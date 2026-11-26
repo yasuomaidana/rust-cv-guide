@@ -15,11 +15,18 @@ export type Param = {
   options?: string[];
 };
 
+type SampleOption = {
+  file: string;
+  label: string;
+};
+
 type Props = {
   /** Exported function of the `cvg-live` crate, called as `fn(pixels, [secondPixels,] width, height, ...params)`. */
   fn: string;
   /** Photo in `snippets/assets`, served from `/samples/`. */
   sample: string;
+  /** Optional list of sample photos the reader can switch between (defaults to `sample` alone). */
+  samples?: SampleOption[];
   /** Second photo for examples that combine two images; it is resized to the first one's size. */
   second?: string;
   params?: Param[];
@@ -216,11 +223,12 @@ function Footer({status, second, onFile, onReset}: {status: string; second: bool
   );
 }
 
-function Live({fn, sample, second, params = [], label = 'Output', alt, readout: readoutSpec}: Props) {
+function Live({fn, sample, samples, second, params = [], label = 'Output', alt, readout: readoutSpec}: Props) {
   const base = useBaseUrl('/');
   const version = String(useDocusaurusContext().siteConfig.customFields?.buildTime ?? '');
+  const [activeSample, setActiveSample] = useState(sample);
   const [values, setValues] = useState(params.map((p) => p.value));
-  const {pictures, setPictures, error, reload} = useSamples(base, sample, second);
+  const {pictures, setPictures, error, reload} = useSamples(base, activeSample, second);
   const {input, output, altOutput, status, outcomes, readout} = useRun(
     base,
     version,
@@ -245,6 +253,18 @@ function Live({fn, sample, second, params = [], label = 'Output', alt, readout: 
   return (
     <div className={styles.live}>
       <div className={styles.controls}>
+        {samples && samples.length > 1 && (
+          <label className={styles.control}>
+            <span>Sample image</span>
+            <select value={activeSample} onChange={(e) => setActiveSample(e.target.value)}>
+              {samples.map((s) => (
+                <option key={s.file} value={s.file}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {params.map((param, index) => (
           <Control key={param.name} param={param} value={values[index]} onChange={(value) => change(index, value)} />
         ))}

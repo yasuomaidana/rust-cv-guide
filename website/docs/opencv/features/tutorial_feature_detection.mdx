@@ -168,12 +168,9 @@ pub fn main() {
 
 ## Result
 
-<LiveExample fn="corners" label="image + imageproc (FAST)" alt={{fn: "keypoints_oxi", label: "oximedia-cv (ORB-style)"}} sample="building.jpg" params={[{name: "threshold", label: "Threshold", min: 5, max: 80, step: 1, value: 20}, {name: "max", label: "Keypoints kept", min: 20, max: 1000, step: 10, value: 300}]} />
+<LiveExample fn="corners" label="image + imageproc (FAST)" alt={{fn: "keypoints_oxi", label: "oximedia-cv (ORB-style)"}} sample="building.jpg" samples={[{file: "building.jpg", label: "Building"}, {file: "astronaut.png", label: "Astronaut"}, {file: "chelsea.png", label: "Cat (chelsea)"}, {file: "coffee.png", label: "Coffee"}, {file: "coins.png", label: "Coins"}, {file: "invoice.png", label: "Invoice"}, {file: "box_in_scene.png", label: "Box in scene"}]} params={[{name: "threshold", label: "Threshold", min: 5, max: 80, step: 1, value: 20}, {name: "max", label: "Keypoints kept", min: 20, max: 1000, step: 10, value: 300}]} />
 
-The same threshold slider drives both, but it means different things (grey levels around the centre for FAST, contrast for the
-ORB-style detector). Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the
-sample photo and the settings this page starts with, the FAST code prints the numbers below, and a test asserts this exact
-text (the ORB-style code keeps 300 keypoints and recovers the shift `(12, 7)` from 127 matches):
+Switch between **Sample image** choices to compare how FAST-9 corners and `oximedia-cv`'s brightness-peak keypoints behave across architectural, portrait, fur, coin, and text scenes. To see descriptor matching between two views across these images, see [Feature Description](./tutorial_feature_description). Move the controls, or use your own image: the code above runs in your browser as WebAssembly. For the sample photo and the settings this page starts with, the FAST code prints the numbers below, and a test asserts this exact text (the ORB-style code keeps 300 keypoints and recovers the shift `(12, 7)` from 127 matches):
 
 ```text
 corners = 19164

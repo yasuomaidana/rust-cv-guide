@@ -1,5 +1,6 @@
 //! Keeps the OpenCV 5.1 catalog, the coverage file and the generated pages in step.
 
+pub mod benchmarks;
 pub mod check;
 pub mod generate;
 pub mod load;
@@ -7,6 +8,7 @@ pub mod model;
 pub mod proof;
 pub mod roadmap;
 
+use benchmarks::Benchmarks;
 use load::at;
 use model::{Catalog, Coverage, Crates, Sources};
 use std::fs;
@@ -27,6 +29,7 @@ struct Inputs {
     catalog: Catalog,
     coverage: Coverage,
     sources: Sources,
+    benchmarks: Benchmarks,
 }
 
 fn verified(root: &Path) -> Result<Inputs, String> {
@@ -34,12 +37,14 @@ fn verified(root: &Path) -> Result<Inputs, String> {
     let crates: Crates = load::yaml(&root.join("catalog/crates.yaml"))?;
     let coverage = load::coverage(root)?;
     let sources = load::sources(root)?;
-    let problems = check::problems(&catalog, &coverage, &crates, &sources);
+    let benchmarks = load::benchmarks(root)?;
+    let problems = check::problems(&catalog, &coverage, &crates, &sources, &benchmarks);
     if problems.is_empty() {
         Ok(Inputs {
             catalog,
             coverage,
             sources,
+            benchmarks,
         })
     } else {
         Err(problems.join("\n"))
@@ -53,7 +58,12 @@ fn generate(root: &Path) -> Result<String, String> {
     if stale.exists() {
         fs::remove_dir_all(&stale).map_err(at(&stale))?;
     }
-    let pages = generate::pages(&inputs.catalog, &inputs.coverage, &inputs.sources);
+    let pages = generate::pages(
+        &inputs.catalog,
+        &inputs.coverage,
+        &inputs.sources,
+        &inputs.benchmarks,
+    );
     for page in &pages {
         let path = site.join(&page.path);
         fs::create_dir_all(path.parent().unwrap_or(&site)).map_err(at(&path))?;
@@ -129,9 +139,10 @@ mod tests {
         let stale = dir.path().join("website/docs/opencv/old/gone.md");
         fs::create_dir_all(stale.parent().unwrap()).unwrap();
         fs::write(&stale, "x").unwrap();
-        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 1 pages");
+        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 2 pages");
         assert!(!stale.exists());
         assert!(dir.path().join("website/docs/roadmap.md").exists());
+        assert!(dir.path().join("website/docs/benchmarks.md").exists());
     }
 
     #[rstest]
@@ -146,13 +157,17 @@ mod tests {
 
     #[rstest]
     fn generate_embeds_the_guide_body_and_snippet(repo: TempDir) {
-        let covered = "tutorials:\n  tutorial_mat: {status: covered, crates: [ndarray], snippet: core/blend}\nmodules:\n  core: {status: gap, reason: r}\n";
+        let covered = "tutorials:\n  tutorial_mat: {status: covered, crates: [ndarray], oxipix_ticket: OXI-1, snippet: core/blend}\nmodules:\n  core: {status: gap, reason: r}\n";
         fs::write(repo.path().join("catalog/coverage/all.yaml"), covered).unwrap();
         let write = |relative: &str, text: &str| {
             let path = repo.path().join(relative);
             fs::create_dir_all(path.parent().unwrap()).unwrap();
             fs::write(path, text).unwrap();
         };
+        write(
+            "catalog/benchmarks.json",
+            r#"{"benchmarks":[{"id":"mat","tutorial":"tutorial_mat","section":"core","operation":"op","input":"4x4"}]}"#,
+        );
         write(
             "website/guide/core/tutorial_mat.md",
             "Intro.\n\n{{snippet}}\n\n<LiveExample fn=\"blend\" />\n",

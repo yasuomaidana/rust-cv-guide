@@ -138,3 +138,15 @@ ccorr_normed = (205, 101)
 | `TM_SQDIFF_NORMED` | `SumOfSquaredErrorsNormalized` |
 | `TM_CCORR` / `TM_CCORR_NORMED` | `CrossCorrelation` / `CrossCorrelationNormalized` |
 | `cv::minMaxLoc(result, &min, &max, &minLoc, &maxLoc)` | `imageproc::template_matching::find_extremes(&scores)` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Template match (TM_SQDIFF) | 451x300 vs 40x40 grey | 2.765 ms | 120.204 ms | — (OXI-92) | — |
+
+:::warning Performance difference
+
+- **Template match (TM_SQDIFF):** imageproc template matching is 43.5x slower than OpenCV because it evaluates naive spatial O(W*H*w*h) sliding sums instead of FFT cross-correlation (oxipix support tracked in OXI-92).
+
+:::

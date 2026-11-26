@@ -127,3 +127,9 @@ peak L1 = 40.0, L2 = 34.0, LInf = 30.0
 | `DIST_L2` | `euclidean_squared_distance_transform(&inverted)`, then the square root |
 | `DIST_C` | `distance_transform(&inverted, Norm::LInf)` |
 | `cv::normalize(dist, dist, 0, 1, NORM_MINMAX)` | `normalized`: divide by the largest value |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Distance transform (L2) | 384x303 mask | 0.503 ms | 0.826 ms | — (OXI-91) | — |

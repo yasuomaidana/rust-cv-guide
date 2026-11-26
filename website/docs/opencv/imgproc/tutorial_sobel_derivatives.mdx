@@ -180,3 +180,15 @@ This point lies on a horizontal ledge: the x derivative is small and the y deriv
 | `cv::Sobel(src, dst, CV_16S, 0, 1)` | `imageproc::gradients::vertical_sobel` or `oximedia_cv::image::SobelEdge::gradient_y` |
 | `cv::convertScaleAbs` | `to_u8` above (absolute value, saturate to 255) |
 | `cv::magnitude` | `imageproc::gradients::sobel_gradients` or `SobelEdge::new().with_normalize(false)` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Sobel X derivative | 640x480 grey | 0.335 ms | 3.863 ms | 0.788 ms | 0.20x |
+
+:::warning Performance difference
+
+- **Sobel X derivative:** Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (11.5x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice.
+
+:::

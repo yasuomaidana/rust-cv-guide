@@ -1,14 +1,16 @@
-//! Consistency rules between the catalog, the coverage file and the crate list.
+//! Consistency rules between the catalog, the coverage file, the crate list, and benchmarks.
 
+use crate::benchmarks::Benchmarks;
 use crate::model::{Catalog, Coverage, Crates, Entry, Sources, Status};
 use std::collections::{BTreeMap, BTreeSet};
 
-/// Every way the three files disagree; empty when they are consistent.
+/// Every way the catalog, coverage, crates, sources, and benchmarks disagree.
 pub fn problems(
     catalog: &Catalog,
     coverage: &Coverage,
     crates: &Crates,
     sources: &Sources,
+    benchmarks: &Benchmarks,
 ) -> Vec<String> {
     let known: BTreeSet<&str> = crates.crates.iter().map(|c| c.name.as_str()).collect();
     let modules = catalog.modules.iter().map(|m| m.name.as_str());
@@ -19,6 +21,7 @@ pub fn problems(
     out.extend(entry_problems("tutorial", &coverage.tutorials, &known));
     out.extend(evidence_problems(catalog, coverage, sources));
     out.extend(crate::proof::problems(catalog, coverage, sources));
+    out.extend(crate::benchmarks::problems(catalog, coverage, benchmarks));
     out
 }
 
@@ -129,19 +132,41 @@ fn entry_problems(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::fixtures::catalog;
+    use crate::benchmarks::{BenchRow, Benchmarks};
     use crate::model::fixtures::{
-        coverage, coverage_for, crates, entry, entry_with_alternative, full_entry, sources,
-        sources_with_alternative,
+        catalog, coverage, coverage_for, crates, entry, entry_with_alternative, full_entry,
+        sources, sources_with_alternative,
     };
     use rstest::rstest;
+
+    fn mat_bench() -> Benchmarks {
+        Benchmarks {
+            benchmarks: vec![BenchRow {
+                id: "m".into(),
+                tutorial: "tutorial_mat".into(),
+                section: "core".into(),
+                operation: "op".into(),
+                input: "4x4".into(),
+                opencv_ms: Some(0.1),
+                rust_ms: Some(0.2),
+                oximedia_ms: Some(0.2),
+                oximedia_crate: Some("ndarray".into()),
+                oximedia_vs_rust: Some(1.0),
+                rust_vs_opencv: Some(2.0),
+                oximedia_vs_opencv: Some(2.0),
+                oxipix_ticket: Some("OXI-1".into()),
+                warning_note: None,
+            }],
+            ..Benchmarks::default()
+        }
+    }
 
     #[test]
     fn consistent_files_have_no_problems() {
         let mut cov = coverage_for(full_entry(Status::Covered));
         cov.modules
             .insert("core".into(), entry(Status::Covered, &["ndarray"]));
-        assert!(problems(&catalog(), &cov, &crates(), &sources()).is_empty());
+        assert!(problems(&catalog(), &cov, &crates(), &sources(), &mat_bench()).is_empty());
     }
 
     #[rstest]
@@ -149,7 +174,14 @@ mod tests {
     #[case(Status::Partial, &[], "module core is partial but names no crate")]
     #[case(Status::Covered, &[], "tutorial tutorial_mat is covered but names no crate")]
     fn entry_rules(#[case] status: Status, #[case] names: &[&str], #[case] expected: &str) {
-        let found = problems(&catalog(), &coverage(status, names), &crates(), &sources());
+        let b = Benchmarks::default();
+        let found = problems(
+            &catalog(),
+            &coverage(status, names),
+            &crates(),
+            &sources(),
+            &b,
+        );
         assert!(found.iter().any(|p| p == expected), "{found:?}");
     }
 
@@ -166,7 +198,8 @@ mod tests {
         let removed = map.keys().next().cloned().unwrap();
         map.remove(&removed);
         map.insert("stray".into(), entry(Status::Gap, &[]));
-        let found = problems(&catalog(), &cov, &crates(), &sources());
+        let b = Benchmarks::default();
+        let found = problems(&catalog(), &cov, &crates(), &sources(), &b);
         assert!(found.contains(&format!("{kind} {removed} has no coverage entry")));
         assert!(found.contains(&format!("coverage names unknown {kind} stray")));
     }
@@ -192,6 +225,17 @@ mod tests {
         }
     }
 
+    fn assert_problem(tutorial: Entry, src: &Sources, expected: &str) {
+        let found = problems(
+            &catalog(),
+            &coverage_for(tutorial),
+            &crates(),
+            src,
+            &Benchmarks::default(),
+        );
+        assert!(found.iter().any(|p| p == expected), "{found:?}");
+    }
+
     #[rstest]
     #[case(no_snippet(), "tutorial tutorial_mat names no snippet")]
     #[case(
@@ -204,8 +248,7 @@ mod tests {
         "tutorial tutorial_mat is not-planned but gives no reason"
     )]
     fn evidence_rules(#[case] tutorial: Entry, #[case] expected: &str) {
-        let found = problems(&catalog(), &coverage_for(tutorial), &crates(), &sources());
-        assert!(found.iter().any(|p| p == expected), "{found:?}");
+        assert_problem(tutorial, &sources(), expected);
     }
 
     #[rstest]
@@ -221,13 +264,7 @@ mod tests {
         #[case] tutorial: Entry,
         #[case] expected: &str,
     ) {
-        let found = problems(
-            &catalog(),
-            &coverage_for(tutorial),
-            &crates(),
-            &sources_with_alternative(),
-        );
-        assert!(found.iter().any(|p| p == expected), "{found:?}");
+        assert_problem(tutorial, &sources_with_alternative(), expected);
     }
 
     #[test]
@@ -239,6 +276,7 @@ mod tests {
             &coverage_for(full_entry(Status::Covered)),
             &crates(),
             &none,
+            &Benchmarks::default(),
         );
         assert!(
             found.contains(
@@ -257,6 +295,7 @@ mod tests {
             &coverage_for(entry(Status::Unreviewed, &[])),
             &crates(),
             &extra,
+            &Benchmarks::default(),
         );
         assert!(found.contains(&"guide page core/stray matches no tutorial".to_string()));
     }

@@ -208,3 +208,15 @@ gradient(190,150) = 19
 | `MORPH_TOPHAT` / `MORPH_BLACKHAT` | `grey - open` / `close - grey`, or `top_hat` / `black_hat` |
 | `MORPH_GRADIENT` | `grayscale_dilate - grayscale_erode`, or `morphological_gradient` |
 | `cv::getStructuringElement(MORPH_RECT, Size(2r+1, 2r+1))` | `Mask::square(r)`, or `StructuringElement::rectangle(2r+1, 2r+1)` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Top-hat morphology (7x7, r=3) | 384x303 grey | 0.068 ms | 0.420 ms | 14.045 ms | 33.44x |
+
+:::warning Performance difference
+
+- **Top-hat morphology (7x7, r=3):** oximedia-cv top_hat is 33.4x slower than imageproc (206.5x slower than OpenCV) for a 7x7 square window due to non-separable 2D erode/dilate with per-pixel iter_active() coordinate division and bounds checks (cool-japan/oximedia#30).
+
+:::

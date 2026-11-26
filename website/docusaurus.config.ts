@@ -38,6 +38,7 @@ const config: Config = {
       logo: {alt: 'Rust CV Guide', src: 'img/logo.svg'},
       items: [
         {type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Guide'},
+        {to: '/benchmarks', label: 'Benchmarks', position: 'left'},
         {href: 'https://github.com/yasuomaidana/rust-cv-guide', label: 'GitHub', position: 'right'},
       ],
     },

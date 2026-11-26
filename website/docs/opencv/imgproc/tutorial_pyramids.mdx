@@ -188,3 +188,9 @@ sizes = 451x300, 226x150, 113x75, 57x38, 456x304
 |---|---|
 | `cv::pyrDown(src, dst)` | `separable_filter_equal` + subsample (`imageproc`), or `oximedia_cv::image::resize::ImagePyramid::gaussian` |
 | `cv::pyrUp(src, dst)` | `imageops::resize(.., FilterType::Triangle)` or `oximedia_cv::image::resize::resize_image(.., ResizeMethod::Bilinear)` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| 3-level pyrDown | 451x300 RGB | 0.107 ms | 1.833 ms | 0.888 ms | 0.48x |

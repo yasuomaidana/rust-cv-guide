@@ -192,3 +192,19 @@ bilateral(225,150) = [187, 145, 118]
 | `cv::GaussianBlur(src, dst, Size(5, 5), σ)` | `imageproc::filter::gaussian_blur_f32(&img, σ)` |
 | `cv::medianBlur(src, dst, 5)` | `imageproc::filter::median_filter(&img, 2, 2)` (radius, not size), or `oximedia_cv::image::MedianFilter::new(5)` |
 | `cv::bilateralFilter(src, dst, 5, 30, 2)` | `bilateral_filter(&img, 2, 2.0, GaussianEuclideanColorDistance::new(30.0))`, or `oximedia_cv::image::BilateralFilter::new(2.0, 30.0, 5)` per colour plane |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Box blur (5x5, r=2) | 451x300 RGB | 0.417 ms | 1.351 ms | 1.576 ms | 1.17x |
+| Gaussian blur (sigma=1.1) | 451x300 RGB | 0.345 ms | 1.797 ms | 4.842 ms | 2.69x |
+| Median filter (5x5, r=2) | 451x300 RGB | 0.873 ms | 17.887 ms | 38.468 ms | 2.15x |
+| Bilateral filter (d=5, r=2, sc=30) | 451x300 RGB | 1.618 ms | 9.245 ms | 33.128 ms | 3.58x |
+
+:::warning Performance difference
+
+- **Median filter (5x5, r=2):** Median 5x5 is 20.5x (imageproc) to 44.1x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93).
+- **Bilateral filter (d=5, r=2, sc=30):** oximedia-cv bilateral filter is 3.6x slower than imageproc (20.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93).
+
+:::

@@ -121,3 +121,9 @@ The hazy sky and the dark facade now use more of the grey range, so the structur
 |---|---|
 | `cv::equalizeHist(src, dst)` | `imageproc::contrast::equalize_histogram(&gray)` or `oximedia_cv::image::histogram_ext::equalize_histogram` |
 | `cv::calcHist` | `imageproc::stats::histogram` or `oximedia_cv::image::Histogram::compute` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Histogram equalisation | 640x480 grey | 0.442 ms | 0.356 ms | 0.311 ms | 0.87x |

@@ -185,3 +185,9 @@ emboss(225,150) = [181, 138, 128]
 | `cv::filter2D(src, dst, -1, kernel)` | `imageproc::filter::filter_clamped` or `oximedia_cv::image::filter::ConvolutionKernel::apply` |
 | `Mat::ones(k, k, CV_32F) / (k * k)` | `vec![1.0 / (k * k) as f32; k * k]` |
 | `cv::blur(src, dst, Size(k, k))` | the same box kernel |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| 2D convolution (5x5 box kernel) | 451x300 RGB | 1.329 ms | 3.526 ms | 8.370 ms | 2.37x |

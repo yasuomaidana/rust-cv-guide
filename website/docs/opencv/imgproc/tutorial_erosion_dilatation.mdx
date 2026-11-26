@@ -165,3 +165,15 @@ dilation adds about a quarter.
 | `cv::getStructuringElement(MORPH_RECT, Size(5, 5))` | `Norm::LInf` with `k = 2` (`imageproc`), or `oximedia_cv::image::StructuringElement::rectangle(5, 5)` |
 | `cv::erode(src, dst, element)` | `imageproc::morphology::erode` or `oximedia_cv::image::morph::erode` |
 | `cv::dilate(src, dst, element)` | `imageproc::morphology::dilate` or `oximedia_cv::image::morph::dilate` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Erode (5x5 square, r=2) | 384x303 grey | 0.018 ms | 0.278 ms | 3.279 ms | 11.79x |
+
+:::warning Performance difference
+
+- **Erode (5x5 square, r=2):** oximedia-cv erode is 11.8x slower than imageproc (182x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30).
+
+:::

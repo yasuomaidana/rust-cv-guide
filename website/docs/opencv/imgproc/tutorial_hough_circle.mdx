@@ -111,3 +111,9 @@ circles = 23
 | `cv::Canny` | `imageproc::edges::canny` |
 | `cv::HoughCircles(gray, circles, HOUGH_GRADIENT, ..)` | `oximedia_cv::hough_transform::hough_circles` |
 | `cv::circle` (drawing) | `common::draw_circles`, a few lines |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Canny + circle Hough (r=15..40) | 384x303 grey | 6.885 ms | — | 63.094 ms | — |

@@ -1,5 +1,6 @@
 //! The pages of implemented tutorials, and the roadmap that lists everything else.
 
+use crate::benchmarks::{self, Benchmarks};
 use crate::model::{Catalog, Coverage, Entry, Sources, Status, Tutorial};
 use crate::roadmap;
 use std::collections::BTreeSet;
@@ -13,8 +14,13 @@ pub struct Page {
 pub(crate) const BLOB: &str = "https://github.com/opencv/opencv/blob/5.1.0/";
 pub(crate) const TREE: &str = "https://github.com/opencv/opencv/tree/5.1.0/";
 
-/// Every generated page: one per implemented tutorial, category labels for sections that have one, and the roadmap.
-pub fn pages(catalog: &Catalog, coverage: &Coverage, sources: &Sources) -> Vec<Page> {
+/// Every generated page: implemented tutorials, category labels, roadmap, and benchmarks.
+pub fn pages(
+    catalog: &Catalog,
+    coverage: &Coverage,
+    sources: &Sources,
+    bench: &Benchmarks,
+) -> Vec<Page> {
     let mut out = Vec::new();
     for t in catalog
         .tutorials
@@ -24,10 +30,12 @@ pub fn pages(catalog: &Catalog, coverage: &Coverage, sources: &Sources) -> Vec<P
         let path = format!("docs/opencv/{}/{}.mdx", t.section, t.id);
         let entry = coverage.tutorials.get(&t.id);
         let body = render_body(&format!("{}/{}", t.section, t.id), entry, sources);
-        out.push(item_page(path, t, entry, body));
+        let perf = benchmarks::tutorial_section(&t.id, bench);
+        out.push(item_page(path, t, entry, &body, &perf));
     }
     out.extend(category_pages(catalog, coverage));
     out.push(roadmap::page(catalog, coverage));
+    out.push(benchmarks::page(catalog, bench));
     out
 }
 
@@ -114,7 +122,13 @@ fn imports(entry: Option<&Entry>) -> &'static str {
     }
 }
 
-fn item_page(path: String, tutorial: &Tutorial, entry: Option<&Entry>, body: String) -> Page {
+fn item_page(
+    path: String,
+    tutorial: &Tutorial,
+    entry: Option<&Entry>,
+    body: &str,
+    perf: &str,
+) -> Page {
     let (status, crates) = status_of(entry);
     let list = if crates.is_empty() {
         "No crate named yet.".to_string()
@@ -127,7 +141,7 @@ fn item_page(path: String, tutorial: &Tutorial, entry: Option<&Entry>, body: Str
         .map(|r| format!("\n**Reason:** {r}\n"))
         .unwrap_or_default();
     let content = format!(
-        "---\ntitle: {}\n---\n\n{}**Status:** {}\n{reason}\nOpenCV tutorial: [source at 5.1.0]({BLOB}{}).\n\n## Rust crates\n\n{list}\n{body}",
+        "---\ntitle: {}\n---\n\n{}**Status:** {}\n{reason}\nOpenCV tutorial: [source at 5.1.0]({BLOB}{}).\n\n## Rust crates\n\n{list}\n{body}{perf}",
         yaml_quote(&tutorial.title),
         imports(entry),
         status.label(),
@@ -182,12 +196,13 @@ mod tests {
         "Body.\n\n```rust\nfn main() {}\n```"
     )]
     #[case("docs/roadmap.md", "| covered | 1 | 1 |")]
+    #[case("docs/benchmarks.md", "Performance benchmarks")]
     fn renders_expected_text(#[case] path: &str, #[case] expected: &str) {
         let mut cov = coverage(Status::Covered, &["ndarray"]);
         let tutorial = cov.tutorials.get_mut("tutorial_mat").unwrap();
         tutorial.snippet = Some("core/blend".into());
         tutorial.reason = Some("shown below".into());
-        let pages = pages(&catalog(), &cov, &sources());
+        let pages = pages(&catalog(), &cov, &sources(), &Benchmarks::default());
         assert!(
             find(&pages, path).contains(expected),
             "{}",
@@ -200,9 +215,14 @@ mod tests {
     #[case(Status::Gap)]
     #[case(Status::NotPlanned)]
     fn only_implemented_tutorials_get_pages(#[case] status: Status) {
-        let pages = pages(&catalog(), &coverage(status, &[]), &Sources::default());
+        let pages = pages(
+            &catalog(),
+            &coverage(status, &[]),
+            &Sources::default(),
+            &Benchmarks::default(),
+        );
         let paths: Vec<&str> = pages.iter().map(|p| p.path.as_str()).collect();
-        assert_eq!(paths, ["docs/roadmap.md"]);
+        assert_eq!(paths, ["docs/roadmap.md", "docs/benchmarks.md"]);
     }
 
     #[test]
@@ -213,7 +233,12 @@ mod tests {
             crates: vec!["ndarray".into(), "oximedia-cv".into()],
             ..entry_with_alternative("oximedia-cv", "alt/blend")
         };
-        let pages = pages(&catalog(), &cov, &sources_with_alternative());
+        let pages = pages(
+            &catalog(),
+            &cov,
+            &sources_with_alternative(),
+            &Benchmarks::default(),
+        );
         let text = find(&pages, "docs/opencv/core/tutorial_mat.mdx");
         for expected in [
             "import Tabs from '@theme/Tabs';",
@@ -237,6 +262,7 @@ mod tests {
             &catalog(),
             &coverage(Status::Partial, &[]),
             &Sources::default(),
+            &Benchmarks::default(),
         );
         let text = find(&pages, "docs/opencv/core/tutorial_mat.mdx");
         assert!(text.contains("No crate named yet.") && text.contains("**Status:** partial"));

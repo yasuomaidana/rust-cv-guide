@@ -197,14 +197,15 @@ bilateral(225,150) = [187, 145, 118]
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Box blur (5x5, r=2) | 451x300 RGB | 0.417 ms | 1.351 ms | 1.576 ms | 1.17x |
-| Gaussian blur (sigma=1.1) | 451x300 RGB | 0.345 ms | 1.797 ms | 4.842 ms | 2.69x |
-| Median filter (5x5, r=2) | 451x300 RGB | 0.873 ms | 17.887 ms | 38.468 ms | 2.15x |
-| Bilateral filter (d=5, r=2, sc=30) | 451x300 RGB | 1.618 ms | 9.245 ms | 33.128 ms | 3.58x |
+| Box blur (5x5, r=2) | 451x300 RGB | 0.241 ms | 1.399 ms | 1.558 ms | 1.11x |
+| Gaussian blur (sigma=1.1) | 451x300 RGB | 0.198 ms | 1.742 ms | 4.726 ms | 2.71x |
+| Median filter (5x5, r=2) | 451x300 RGB | 0.435 ms | 17.852 ms | 39.155 ms | 2.19x |
+| Bilateral filter (d=5, r=2, sc=30) | 451x300 RGB | 0.811 ms | 9.438 ms | 33.618 ms | 3.56x |
 
 :::warning Performance difference
 
-- **Median filter (5x5, r=2):** Median 5x5 is 20.5x (imageproc) to 44.1x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93).
-- **Bilateral filter (d=5, r=2, sc=30):** oximedia-cv bilateral filter is 3.6x slower than imageproc (20.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93).
+- **Gaussian blur (sigma=1.1):** oximedia-cv GaussianBlur is 2.7x slower than image::imageops::blur (23.9x slower than OpenCV) due to per-channel plane splitting and generic 2D/separable float passes without integer SIMD vectorisation (cool-japan/oximedia#29).
+- **Median filter (5x5, r=2):** Median 5x5 is 41.0x (imageproc) to 90.0x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93).
+- **Bilateral filter (d=5, r=2, sc=30):** oximedia-cv bilateral filter is 3.6x slower than imageproc (41.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93).
 
 :::

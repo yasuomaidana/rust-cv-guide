@@ -226,3 +226,9 @@ Because `box.png` is rotated and scaled inside `box_in_scene.png`, non-invariant
 | `cv::ORB::create(n)->detectAndCompute(..)` | `oximedia_cv::feature_extract::OrbExtractor::extract` |
 | `cv::BFMatcher(NORM_HAMMING).match(..)` | `oximedia_cv::feature_extract::match_descriptors` or Hamming loop |
 | `cv::drawMatches` | `vis::draw_matches` |
+
+## Performance comparison
+
+| Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
+|---|---|---|---|---|---|
+| Binary feature matching (250 kp) | 324x223 vs 512x384 grey | 4.357 ms | 3.931 ms | 2.734 ms | 0.70x |

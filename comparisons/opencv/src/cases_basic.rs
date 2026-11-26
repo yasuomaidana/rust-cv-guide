@@ -2,10 +2,10 @@
 
 use crate::spec::{Assets, BenchSpec};
 use crate::{
-    adding_images, basic_linear_transform, bench_one, bench_pair, contours, distance, equalize,
-    erosion, fast, hats, homography, in_range, oxi_adding_images, oxi_equalize, oxi_erosion,
-    oxi_in_range, oxi_morphology, oxi_orb, oxi_quality, oxipix_contours, oxipix_homography,
-    oxipix_threshold, psnr, threshold,
+    adding_images, basic_linear_transform, bench_one, bench_pair, brief_match, contours, distance,
+    equalize, erosion, fast, hats, homography, in_range, oxi_adding_images, oxi_equalize,
+    oxi_erosion, oxi_in_range, oxi_morphology, oxi_orb, oxi_orb_match, oxi_quality,
+    oxipix_contours, oxipix_homography, oxipix_threshold, psnr, threshold,
 };
 use cvg_snippets::common::FeatureAlgorithm;
 use imageproc::contrast::ThresholdType;
@@ -88,6 +88,18 @@ pub fn collect(a: &Assets) -> Vec<BenchSpec<'_>> {
             "ORB keypoints (t=30, max=250)",
             10,
             FeatureAlgorithm::Orb,
+        ),
+        bench_pair!(
+            "feature_description",
+            "tutorial_feature_description",
+            "features",
+            "Binary feature matching (250 kp)",
+            "324x223 vs 512x384 grey",
+            10,
+            "oximedia-cv",
+            None,
+            brief_match::match_two(&a.box_img, &a.box_in_scene, 20, 250, 32),
+            oxi_orb_match::match_two(&a.box_img, &a.box_in_scene, 20, 250, 24)
         ),
         bench_pair!(
             "homography",

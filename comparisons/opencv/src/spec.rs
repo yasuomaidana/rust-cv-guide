@@ -62,6 +62,8 @@ pub struct Assets {
     pub astronaut: RgbImage,
     pub invoice_mask: GrayImage,
     pub invoice_photo: RgbImage,
+    pub box_img: GrayImage,
+    pub box_in_scene: GrayImage,
     pub quad: [(f32, f32); 4],
 }
 
@@ -103,6 +105,8 @@ impl Assets {
             astronaut: sample("astronaut.png"),
             invoice_mask: ink_mask(&gray_sample("invoice.png"), 128),
             invoice_photo,
+            box_img: gray_sample("box.png"),
+            box_in_scene: gray_sample("box_in_scene.png"),
             quad,
         }
     }

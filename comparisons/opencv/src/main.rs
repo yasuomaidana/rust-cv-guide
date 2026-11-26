@@ -11,6 +11,9 @@ pub mod adding_images;
 #[path = "../../../snippets/examples/core/basic_linear_transform.rs"]
 pub mod basic_linear_transform;
 #[allow(dead_code)]
+#[path = "../../../snippets/examples/features/brief_match.rs"]
+pub mod brief_match;
+#[allow(dead_code)]
 #[path = "../../../snippets/examples/imgproc_edges/canny.rs"]
 pub mod canny;
 #[allow(dead_code)]
@@ -79,6 +82,9 @@ pub mod oxi_morphology;
 #[allow(dead_code)]
 #[path = "../../../snippets/examples/oximedia/orb.rs"]
 pub mod oxi_orb;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/oximedia/orb_match.rs"]
+pub mod oxi_orb_match;
 #[allow(dead_code)]
 #[path = "../../../snippets/examples/oximedia_imgproc/pyramids.rs"]
 pub mod oxi_pyramids;

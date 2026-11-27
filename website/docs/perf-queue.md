@@ -40,7 +40,7 @@ Operations where the best Rust backend is still slower than OpenCV 5.1.0, bigges
 
 Rows whose backends cannot run the same work, with the reason.
 
-- **FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)**: oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; upstream issue pending.
+- **FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)**: oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; reported upstream as https://github.com/cool-japan/oximedia/issues/32.
 
 ## At parity
 

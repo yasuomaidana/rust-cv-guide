@@ -8,6 +8,7 @@ pub mod model;
 pub mod perf_queue;
 pub mod proof;
 pub mod roadmap;
+pub mod sweep;
 
 use benchmarks::Benchmarks;
 use load::at;

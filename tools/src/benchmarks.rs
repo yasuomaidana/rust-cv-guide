@@ -33,6 +33,12 @@ pub struct Environment {
     /// Where the `oxipix` imgproc backend comes from.
     #[serde(default)]
     pub oxipix_next_source: String,
+    /// Threads OpenCV uses by default on the benchmark machine.
+    #[serde(default)]
+    pub opencv_threads: usize,
+    /// Whether OpenCV found an OpenCL device.
+    #[serde(default)]
+    pub opencv_opencl: bool,
 }
 
 /// Spread of one timing series (milliseconds), as written by the benchmark harness.
@@ -84,6 +90,9 @@ pub struct BenchRow {
     /// OpenCV timed with a freshly allocated output, comparable with the Rust snippets.
     #[serde(default)]
     pub opencv_fresh_ms: Option<f64>,
+    /// OpenCV with its default number of threads.
+    #[serde(default)]
+    pub opencv_mt_ms: Option<f64>,
     #[serde(default)]
     pub rust_opt_ms: Option<f64>,
     #[serde(default)]
@@ -115,6 +124,9 @@ pub struct Benchmarks {
     pub environment: Environment,
     #[serde(default)]
     pub benchmarks: Vec<BenchRow>,
+    /// Small, medium and big pictures for the kernels where size and threads matter.
+    #[serde(default)]
+    pub size_sweep: Vec<BenchRow>,
 }
 
 impl Default for Benchmarks {
@@ -124,6 +136,7 @@ impl Default for Benchmarks {
             opencv_warn_ratio_threshold: default_opencv_warn(),
             environment: Environment::default(),
             benchmarks: Vec::new(),
+            size_sweep: Vec::new(),
         }
     }
 }

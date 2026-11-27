@@ -7,33 +7,33 @@
       "operation": "Median filter (5x5, r=2)",
       "opencv_ms": 0.435,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 7.03,
-      "ms_lost": 2.624,
+      "best_gap": 7.14,
+      "ms_lost": 2.673,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 17.613,
-          "ms_opt": 18.34,
+          "ms": 17.612,
+          "ms_opt": 18.891,
           "gap": 40.49,
-          "gap_opt": 42.16,
-          "noise": 0.002498154772043377
+          "gap_opt": 43.43,
+          "noise": 0.007949125596184421
         },
         {
           "name": "oximedia-cv",
-          "ms": 38.584,
-          "ms_opt": 37.869,
-          "gap": 88.7,
-          "gap_opt": 87.06,
-          "noise": 0.005701845324486834
+          "ms": 40.067,
+          "ms_opt": 38.694,
+          "gap": 92.11,
+          "gap_opt": 88.95,
+          "noise": 0.06309431701899319
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 3.189,
-          "ms_opt": 3.059,
-          "gap": 7.33,
-          "gap_opt": 7.03,
-          "noise": 0.005644402634054562
+          "ms": 3.194,
+          "ms_opt": 3.108,
+          "gap": 7.34,
+          "gap_opt": 7.14,
+          "noise": 0.008140262993112084
         }
       ],
       "status": "fix-proposed",
@@ -49,35 +49,35 @@
       "id": "feature_detection_fast",
       "tutorial": "tutorial_feature_detection",
       "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
-      "opencv_ms": 0.576,
+      "opencv_ms": 0.57,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 4.22,
+      "best_gap": 4.25,
       "ms_lost": 1.855,
       "parity": "mismatch",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.21,
-          "ms_opt": 3.161,
-          "gap": 5.57,
-          "gap_opt": 5.49,
-          "noise": 0.018068535825545174
+          "ms": 3.538,
+          "ms_opt": 3.149,
+          "gap": 6.21,
+          "gap_opt": 5.52,
+          "noise": 0.04748445449406445
         },
         {
           "name": "oximedia-cv",
-          "ms": 6.966,
-          "ms_opt": 6.991,
-          "gap": 12.09,
-          "gap_opt": 12.14,
-          "noise": 0.007464829170255526
+          "ms": 7.161,
+          "ms_opt": 6.988,
+          "gap": 12.56,
+          "gap_opt": 12.26,
+          "noise": 0.03016338500209468
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.478,
-          "ms_opt": 2.431,
-          "gap": 4.3,
-          "gap_opt": 4.22,
-          "noise": 0.005649717514124294
+          "ms": 2.817,
+          "ms_opt": 2.425,
+          "gap": 4.94,
+          "gap_opt": 4.25,
+          "noise": 0.12140575079872205
         }
       ],
       "status": "fix-proposed",
@@ -95,25 +95,25 @@
       "operation": "Distance transform (L2)",
       "opencv_ms": 0.248,
       "best_crate": "image/imageproc",
-      "best_gap": 3.45,
-      "ms_lost": 0.607,
+      "best_gap": 3.52,
+      "ms_lost": 0.626,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.855,
-          "ms_opt": 0.894,
-          "gap": 3.45,
-          "gap_opt": 3.6,
-          "noise": 0.011695906432748539
+          "ms": 0.874,
+          "ms_opt": 0.903,
+          "gap": 3.52,
+          "gap_opt": 3.64,
+          "noise": 0.10297482837528604
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.996,
-          "ms_opt": 1.02,
-          "gap": 4.02,
-          "gap_opt": 4.11,
-          "noise": 0.006024096385542169
+          "ms": 1.043,
+          "ms_opt": 1.05,
+          "gap": 4.21,
+          "gap_opt": 4.23,
+          "noise": 0.1227229146692234
         }
       ],
       "status": "fix-proposed",
@@ -129,35 +129,35 @@
       "id": "homography",
       "tutorial": "tutorial_homography",
       "operation": "Perspective unwarp (4-point quad)",
-      "opencv_ms": 0.587,
+      "opencv_ms": 0.599,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.4,
-      "ms_lost": 1.408,
+      "best_gap": 3.33,
+      "ms_lost": 1.394,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.863,
-          "ms_opt": 4.167,
-          "gap": 6.58,
-          "gap_opt": 7.1,
-          "noise": 0.0015531969971524723
+          "ms": 3.834,
+          "ms_opt": 4.169,
+          "gap": 6.4,
+          "gap_opt": 6.96,
+          "noise": 0.010954616588419406
         },
         {
           "name": "oxipix",
-          "ms": 6.72,
-          "ms_opt": 6.264,
-          "gap": 11.45,
-          "gap_opt": 10.67,
-          "noise": 0.0017857142857142859
+          "ms": 6.737,
+          "ms_opt": 6.487,
+          "gap": 11.25,
+          "gap_opt": 10.83,
+          "noise": 0.005046756716639454
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 1.995,
+          "ms": 1.993,
           "ms_opt": 1.998,
-          "gap": 3.4,
-          "gap_opt": 3.4,
-          "noise": 0.0020050125313283208
+          "gap": 3.33,
+          "gap_opt": 3.34,
+          "noise": 0.004014049172102358
         }
       ],
       "status": "fix-proposed",
@@ -173,35 +173,35 @@
       "id": "smoothing_bilateral",
       "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
       "operation": "Bilateral filter (d=5, r=2, sc=30)",
-      "opencv_ms": 0.806,
+      "opencv_ms": 0.81,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 3.13,
-      "ms_lost": 1.714,
+      "ms_lost": 1.724,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 9.154,
-          "ms_opt": 5.838,
-          "gap": 11.36,
-          "gap_opt": 7.24,
-          "noise": 0.001529386060738475
+          "ms": 8.182,
+          "ms_opt": 5.901,
+          "gap": 10.1,
+          "gap_opt": 7.29,
+          "noise": 0.0024443901246638962
         },
         {
           "name": "oximedia-cv",
-          "ms": 32.873,
-          "ms_opt": 33.331,
-          "gap": 40.79,
-          "gap_opt": 41.35,
-          "noise": 0.0018252060961883613
+          "ms": 33.124,
+          "ms_opt": 34.561,
+          "gap": 40.89,
+          "gap_opt": 42.67,
+          "noise": 0.011834319526627219
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.705,
-          "ms_opt": 2.52,
-          "gap": 3.36,
+          "ms": 2.756,
+          "ms_opt": 2.534,
+          "gap": 3.4,
           "gap_opt": 3.13,
-          "noise": 0.005914972273567467
+          "noise": 0.02830188679245283
         }
       ],
       "status": "fix-proposed",
@@ -217,35 +217,35 @@
       "id": "feature_description",
       "tutorial": "tutorial_feature_description",
       "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
-      "opencv_ms": 2.389,
+      "opencv_ms": 2.408,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.04,
-      "ms_lost": 4.863,
+      "best_gap": 2.99,
+      "ms_lost": 4.791,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 12.142,
-          "ms_opt": 11.671,
-          "gap": 5.08,
-          "gap_opt": 4.89,
-          "noise": 0.018283643551309504
+          "ms": 12.403,
+          "ms_opt": 11.553,
+          "gap": 5.15,
+          "gap_opt": 4.8,
+          "noise": 0.022897686043699104
         },
         {
           "name": "oximedia-cv",
-          "ms": 15.544,
-          "ms_opt": 15.407,
-          "gap": 6.51,
-          "gap_opt": 6.45,
-          "noise": 0.004246011322696861
+          "ms": 15.627,
+          "ms_opt": 15.429,
+          "gap": 6.49,
+          "gap_opt": 6.41,
+          "noise": 0.011518525628719523
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 7.574,
-          "ms_opt": 7.252,
-          "gap": 3.17,
-          "gap_opt": 3.04,
-          "noise": 0.0036968576709796672
+          "ms": 7.389,
+          "ms_opt": 7.199,
+          "gap": 3.07,
+          "gap_opt": 2.99,
+          "noise": 0.030586006225470294
         }
       ],
       "status": "fix-proposed",
@@ -258,81 +258,37 @@
     },
     {
       "rank": 7,
-      "id": "erosion",
-      "tutorial": "tutorial_erosion_dilatation",
-      "operation": "Erode (5x5 square, r=2)",
-      "opencv_ms": 0.01,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.0,
-      "ms_lost": 0.02,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.273,
-          "ms_opt": 0.285,
-          "gap": 27.3,
-          "gap_opt": 28.5,
-          "noise": 0.0
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 3.266,
-          "ms_opt": 2.768,
-          "gap": 326.6,
-          "gap_opt": 276.8,
-          "noise": 0.0030618493570116353
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 0.03,
-          "ms_opt": 0.03,
-          "gap": 3.0,
-          "gap_opt": 3.0,
-          "noise": 0.0
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "OpenCV erodes with separable running minima on 16 pixels at a time (morph.simd.hpp `MorphRowVec` / `MorphColumnVec`, `ErodeVec8u`). `imageproc::morphology::erode` computes a full distance transform of the mask and thresholds it, which is O(pixels) but with a heavy constant and unrelated to the window size.",
-      "fix_target": "oxipix wave 1: separable min/max over shifted row slices (vectorises to 16 byte lanes), van Herk / Gil-Werman for large radii. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-160",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 8,
       "id": "pyramids",
       "tutorial": "tutorial_pyramids",
       "operation": "3-level pyrDown",
       "opencv_ms": 0.045,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.71,
-      "ms_lost": 0.077,
+      "best_gap": 2.76,
+      "ms_lost": 0.079,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.821,
-          "ms_opt": 1.807,
-          "gap": 40.47,
-          "gap_opt": 40.16,
-          "noise": 0.004393190554640308
+          "ms": 1.82,
+          "ms_opt": 1.836,
+          "gap": 40.44,
+          "gap_opt": 40.8,
+          "noise": 0.005494505494505494
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.868,
-          "ms_opt": 0.849,
-          "gap": 19.29,
-          "gap_opt": 18.87,
-          "noise": 0.002304147465437788
+          "ms": 0.87,
+          "ms_opt": 0.865,
+          "gap": 19.33,
+          "gap_opt": 19.22,
+          "noise": 0.006896551724137931
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.125,
-          "ms_opt": 0.122,
-          "gap": 2.78,
-          "gap_opt": 2.71,
+          "ms": 0.124,
+          "ms_opt": 0.192,
+          "gap": 2.76,
+          "gap_opt": 4.27,
           "noise": 0.0
         }
       ],
@@ -345,39 +301,83 @@
       "known_difference": null
     },
     {
+      "rank": 8,
+      "id": "erosion",
+      "tutorial": "tutorial_erosion_dilatation",
+      "operation": "Erode (5x5 square, r=2)",
+      "opencv_ms": 0.011,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 2.64,
+      "ms_lost": 0.018,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.275,
+          "ms_opt": 0.311,
+          "gap": 25.0,
+          "gap_opt": 28.27,
+          "noise": 0.07272727272727272
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 3.293,
+          "ms_opt": 2.797,
+          "gap": 299.36,
+          "gap_opt": 254.27,
+          "noise": 0.02915274825387185
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.029,
+          "ms_opt": 0.03,
+          "gap": 2.64,
+          "gap_opt": 2.73,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV erodes with separable running minima on 16 pixels at a time (morph.simd.hpp `MorphRowVec` / `MorphColumnVec`, `ErodeVec8u`). `imageproc::morphology::erode` computes a full distance transform of the mask and thresholds it, which is O(pixels) but with a heavy constant and unrelated to the window size.",
+      "fix_target": "oxipix wave 1: separable min/max over shifted row slices (vectorises to 16 byte lanes), van Herk / Gil-Werman for large radii. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-160",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
+      "owner": null,
+      "known_difference": null
+    },
+    {
       "rank": 9,
       "id": "warp_affine",
       "tutorial": "tutorial_warp_affine",
       "operation": "Rotate 30 deg + scale 0.6",
-      "opencv_ms": 0.264,
+      "opencv_ms": 0.266,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.58,
+      "best_gap": 2.56,
       "ms_lost": 0.416,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.525,
-          "ms_opt": 2.565,
-          "gap": 9.56,
-          "gap_opt": 9.72,
-          "noise": 0.0039603960396039604
+          "ms": 2.526,
+          "ms_opt": 2.711,
+          "gap": 9.5,
+          "gap_opt": 10.19,
+          "noise": 0.004750593824228029
         },
         {
           "name": "oximedia-cv",
-          "ms": 1.943,
-          "ms_opt": 1.651,
-          "gap": 7.36,
-          "gap_opt": 6.25,
-          "noise": 0.003088008234688626
+          "ms": 1.853,
+          "ms_opt": 1.762,
+          "gap": 6.97,
+          "gap_opt": 6.62,
+          "noise": 0.010793308148947653
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.68,
-          "ms_opt": 0.695,
-          "gap": 2.58,
-          "gap_opt": 2.63,
-          "noise": 0.0058823529411764705
+          "ms": 0.682,
+          "ms_opt": 0.717,
+          "gap": 2.56,
+          "gap_opt": 2.7,
+          "noise": 0.005865102639296188
         }
       ],
       "status": "fix-proposed",
@@ -395,33 +395,33 @@
       "operation": "Top-hat morphology (7x7, r=3)",
       "opencv_ms": 0.029,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.17,
-      "ms_lost": 0.034,
+      "best_gap": 2.21,
+      "ms_lost": 0.035,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.415,
-          "ms_opt": 1.231,
-          "gap": 14.31,
-          "gap_opt": 42.45,
-          "noise": 0.0
+          "ms": 0.414,
+          "ms_opt": 1.164,
+          "gap": 14.28,
+          "gap_opt": 40.14,
+          "noise": 0.009661835748792272
         },
         {
           "name": "oximedia-cv",
-          "ms": 14.026,
-          "ms_opt": 10.711,
-          "gap": 483.66,
-          "gap_opt": 369.34,
-          "noise": 0.004277769855981748
+          "ms": 13.982,
+          "ms_opt": 10.846,
+          "gap": 482.14,
+          "gap_opt": 374.0,
+          "noise": 0.0057216421112859395
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.063,
-          "ms_opt": 0.065,
-          "gap": 2.17,
-          "gap_opt": 2.24,
-          "noise": 0.031746031746031744
+          "ms": 0.075,
+          "ms_opt": 0.064,
+          "gap": 2.59,
+          "gap_opt": 2.21,
+          "noise": 0.05333333333333334
         }
       ],
       "status": "fix-proposed",
@@ -437,35 +437,35 @@
       "id": "ssim",
       "tutorial": "tutorial_video_input_psnr_ssim",
       "operation": "SSIM (11x11 Gaussian)",
-      "opencv_ms": 3.083,
+      "opencv_ms": 3.182,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.79,
-      "ms_lost": 2.421,
+      "best_gap": 1.74,
+      "ms_lost": 2.34,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 5.975,
-          "ms_opt": 5.833,
-          "gap": 1.94,
-          "gap_opt": 1.89,
-          "noise": 0.1295397489539749
+          "ms": 6.646,
+          "ms_opt": 6.125,
+          "gap": 2.09,
+          "gap_opt": 1.92,
+          "noise": 0.19921757448089078
         },
         {
           "name": "oximedia-cv",
-          "ms": 100.466,
-          "ms_opt": 86.584,
-          "gap": 32.59,
-          "gap_opt": 28.08,
-          "noise": 0.0009754543825771904
+          "ms": 100.868,
+          "ms_opt": 107.395,
+          "gap": 31.7,
+          "gap_opt": 33.75,
+          "noise": 0.006483721299123607
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 5.523,
-          "ms_opt": 5.504,
-          "gap": 1.79,
-          "gap_opt": 1.79,
-          "noise": 0.008328806807894261
+          "ms": 5.97,
+          "ms_opt": 5.522,
+          "gap": 1.88,
+          "gap_opt": 1.74,
+          "noise": 0.10653266331658293
         }
       ],
       "status": "fix-proposed",
@@ -481,26 +481,26 @@
       "id": "basic_linear_transform",
       "tutorial": "tutorial_basic_linear_transform",
       "operation": "Contrast + brightness (a=1.3, b=40)",
-      "opencv_ms": 0.064,
+      "opencv_ms": 0.065,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.64,
-      "ms_lost": 0.041,
+      "best_gap": 1.62,
+      "ms_lost": 0.04,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.449,
-          "ms_opt": 0.341,
-          "gap": 7.02,
-          "gap_opt": 5.33,
-          "noise": 0.004454342984409799
+          "ms": 0.4,
+          "ms_opt": 0.34,
+          "gap": 6.15,
+          "gap_opt": 5.23,
+          "noise": 0.024999999999999998
         },
         {
           "name": "oxipix (imgproc)",
           "ms": 0.129,
           "ms_opt": 0.105,
-          "gap": 2.02,
-          "gap_opt": 1.64,
+          "gap": 1.98,
+          "gap_opt": 1.62,
           "noise": 0.0
         }
       ],
@@ -517,27 +517,27 @@
       "id": "find_contours",
       "tutorial": "tutorial_find_contours",
       "operation": "Find contours + approxPolyDP",
-      "opencv_ms": 0.157,
+      "opencv_ms": 0.16,
       "best_crate": "oxipix",
-      "best_gap": 1.6,
-      "ms_lost": 0.094,
+      "best_gap": 1.58,
+      "ms_lost": 0.092,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.513,
-          "ms_opt": 0.476,
-          "gap": 3.27,
-          "gap_opt": 3.03,
-          "noise": 0.015594541910331383
+          "ms": 0.521,
+          "ms_opt": 0.475,
+          "gap": 3.26,
+          "gap_opt": 2.97,
+          "noise": 0.026871401151631478
         },
         {
           "name": "oxipix",
-          "ms": 0.265,
-          "ms_opt": 0.251,
-          "gap": 1.69,
-          "gap_opt": 1.6,
-          "noise": 0.01509433962264151
+          "ms": 0.269,
+          "ms_opt": 0.252,
+          "gap": 1.68,
+          "gap_opt": 1.58,
+          "noise": 0.02973977695167286
         }
       ],
       "status": "researched",
@@ -561,19 +561,19 @@
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.249,
+          "ms": 0.213,
           "ms_opt": 0.215,
-          "gap": 6.55,
+          "gap": 5.61,
           "gap_opt": 5.66,
-          "noise": 0.008032128514056226
+          "noise": 0.028169014084507043
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.506,
-          "ms_opt": 0.461,
-          "gap": 13.32,
-          "gap_opt": 12.13,
-          "noise": 0.007905138339920948
+          "ms": 0.606,
+          "ms_opt": 0.459,
+          "gap": 15.95,
+          "gap_opt": 12.08,
+          "noise": 0.009900990099009901
         },
         {
           "name": "oxipix (imgproc)",
@@ -605,23 +605,23 @@
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.728,
-          "ms_opt": 1.723,
-          "gap": 8.73,
-          "gap_opt": 8.7,
-          "noise": 0.0034722222222222225
+          "ms": 1.733,
+          "ms_opt": 1.742,
+          "gap": 8.75,
+          "gap_opt": 8.8,
+          "noise": 0.0057703404500865545
         },
         {
           "name": "oximedia-cv",
-          "ms": 4.695,
-          "ms_opt": 4.788,
-          "gap": 23.71,
-          "gap_opt": 24.18,
-          "noise": 0.0034078807241746537
+          "ms": 4.95,
+          "ms_opt": 5.042,
+          "gap": 25.0,
+          "gap_opt": 25.46,
+          "noise": 0.09858585858585858
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.262,
+          "ms": 0.261,
           "ms_opt": 0.26,
           "gap": 1.32,
           "gap_opt": 1.31,
@@ -638,74 +638,38 @@
     },
     {
       "rank": 16,
-      "id": "template_matching",
-      "tutorial": "tutorial_template_matching",
-      "operation": "Template match (TM_SQDIFF)",
-      "opencv_ms": 1.631,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.25,
-      "ms_lost": 0.401,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 114.968,
-          "ms_opt": 118.326,
-          "gap": 70.49,
-          "gap_opt": 72.55,
-          "noise": 0.011133532809129498
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 2.08,
-          "ms_opt": 2.032,
-          "gap": 1.28,
-          "gap_opt": 1.25,
-          "noise": 0.004807692307692308
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "OpenCV computes the cross-correlation with a block-wise DFT (templmatch.cpp `convolve_dft`, `getOptimalDFTSize`) and gets the window energies from integral images, so the cost does not grow with the template area. `imageproc::template_matching::match_template` evaluates the sum of squared errors directly for every position: 411 x 261 positions x 1600 template pixels is about 170M multiply-adds, single threaded (its `rayon` feature is off).",
-      "fix_target": "oxipix wave 1: SSE as `sum(I^2 window) - 2 * corr + sum(T^2)`, with the correlation by FFT (`realfft`) and the window energy from an integral image. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-158",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 17,
       "id": "filter_2d",
       "tutorial": "tutorial_filter_2d",
       "operation": "2D convolution (5x5 box kernel)",
-      "opencv_ms": 0.663,
+      "opencv_ms": 0.665,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.17,
-      "ms_lost": 0.11,
+      "best_gap": 1.16,
+      "ms_lost": 0.109,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.308,
-          "ms_opt": 2.639,
-          "gap": 4.99,
+          "ms": 3.304,
+          "ms_opt": 2.649,
+          "gap": 4.97,
           "gap_opt": 3.98,
-          "noise": 0.005441354292623942
+          "noise": 0.002421307506053269
         },
         {
           "name": "oximedia-cv",
-          "ms": 8.361,
-          "ms_opt": 8.342,
-          "gap": 12.61,
-          "gap_opt": 12.58,
-          "noise": 0.00669776342542758
+          "ms": 8.364,
+          "ms_opt": 8.498,
+          "gap": 12.58,
+          "gap_opt": 12.78,
+          "noise": 0.006217120994739358
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.773,
-          "ms_opt": 0.774,
-          "gap": 1.17,
-          "gap_opt": 1.17,
-          "noise": 0.0025873221216041395
+          "ms": 0.774,
+          "ms_opt": 0.813,
+          "gap": 1.16,
+          "gap_opt": 1.22,
+          "noise": 0.00516795865633075
         }
       ],
       "status": "fix-proposed",
@@ -717,7 +681,7 @@
       "known_difference": null
     },
     {
-      "rank": 18,
+      "rank": 17,
       "id": "threshold_inRange",
       "tutorial": "tutorial_threshold_inRange",
       "operation": "HSV red range mask",
@@ -738,14 +702,14 @@
         {
           "name": "oximedia-cv",
           "ms": 0.445,
-          "ms_opt": 0.367,
+          "ms_opt": 0.368,
           "gap": 3.56,
           "gap_opt": 2.94,
           "noise": 0.0
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.248,
+          "ms": 0.247,
           "ms_opt": 0.144,
           "gap": 1.98,
           "gap_opt": 1.15,
@@ -757,6 +721,42 @@
       "fix_target": "oxipix wave 3: integer HSV conversion and range test fused in one slice pass. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-182",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/63",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 18,
+      "id": "template_matching",
+      "tutorial": "tutorial_template_matching",
+      "operation": "Template match (TM_SQDIFF)",
+      "opencv_ms": 1.848,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.14,
+      "ms_lost": 0.253,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 117.406,
+          "ms_opt": 120.009,
+          "gap": 63.53,
+          "gap_opt": 64.94,
+          "noise": 0.009198848440454491
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 2.126,
+          "ms_opt": 2.101,
+          "gap": 1.15,
+          "gap_opt": 1.14,
+          "noise": 0.005644402634054563
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV computes the cross-correlation with a block-wise DFT (templmatch.cpp `convolve_dft`, `getOptimalDFTSize`) and gets the window energies from integral images, so the cost does not grow with the template area. `imageproc::template_matching::match_template` evaluates the sum of squared errors directly for every position: 411 x 261 positions x 1600 template pixels is about 170M multiply-adds, single threaded (its `rayon` feature is off).",
+      "fix_target": "oxipix wave 1: SSE as `sum(I^2 window) - 2 * corr + sum(T^2)`, with the correlation by FFT (`realfft`) and the window energy from an integral image. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-158",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
       "owner": null,
       "known_difference": null
     }
@@ -775,11 +775,11 @@
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.389,
+          "ms": 0.381,
           "ms_opt": 0.389,
-          "gap": 2.65,
+          "gap": 2.59,
           "gap_opt": 2.65,
-          "noise": 0.005141388174807198
+          "noise": 0.08398950131233596
         },
         {
           "name": "oximedia-cv",
@@ -787,7 +787,7 @@
           "ms_opt": 0.4,
           "gap": 2.72,
           "gap_opt": 2.72,
-          "noise": 0.0
+          "noise": 0.08999999999999998
         },
         {
           "name": "oxipix (imgproc)",
@@ -811,35 +811,35 @@
       "id": "feature_detection_orb",
       "tutorial": "tutorial_feature_detection",
       "operation": "Oriented keypoints (t=30, max=250)",
-      "opencv_ms": 6.609,
+      "opencv_ms": 6.935,
       "best_crate": "image/imageproc",
-      "best_gap": 0.33,
-      "ms_lost": -4.425,
+      "best_gap": 0.32,
+      "ms_lost": -4.73,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.312,
-          "ms_opt": 2.184,
-          "gap": 0.35,
-          "gap_opt": 0.33,
-          "noise": 0.005190311418685122
+          "ms": 2.351,
+          "ms_opt": 2.205,
+          "gap": 0.34,
+          "gap_opt": 0.32,
+          "noise": 0.04678860059549128
         },
         {
           "name": "oximedia-cv",
-          "ms": 6.967,
-          "ms_opt": 6.979,
-          "gap": 1.05,
-          "gap_opt": 1.06,
-          "noise": 0.00775082531936271
+          "ms": 6.985,
+          "ms_opt": 7.001,
+          "gap": 1.01,
+          "gap_opt": 1.01,
+          "noise": 0.003722261989978525
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.523,
-          "ms_opt": 2.434,
-          "gap": 0.38,
-          "gap_opt": 0.37,
-          "noise": 0.01426872770511296
+          "ms": 2.491,
+          "ms_opt": 2.427,
+          "gap": 0.36,
+          "gap_opt": 0.35,
+          "noise": 0.005620232838217583
         }
       ],
       "status": "unprobed",
@@ -855,34 +855,34 @@
       "id": "threshold",
       "tutorial": "tutorial_threshold",
       "operation": "Otsu binary threshold",
-      "opencv_ms": 0.03,
+      "opencv_ms": 0.031,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.93,
-      "ms_lost": -0.002,
+      "best_gap": 0.9,
+      "ms_lost": -0.003,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
           "ms": 0.045,
           "ms_opt": 0.045,
-          "gap": 1.5,
-          "gap_opt": 1.5,
+          "gap": 1.45,
+          "gap_opt": 1.45,
           "noise": 0.0
         },
         {
           "name": "oxipix",
-          "ms": 0.159,
-          "ms_opt": 0.136,
-          "gap": 5.3,
-          "gap_opt": 4.53,
-          "noise": 0.025157232704402517
+          "ms": 0.16,
+          "ms_opt": 0.149,
+          "gap": 5.16,
+          "gap_opt": 4.81,
+          "noise": 0.025
         },
         {
           "name": "oxipix (imgproc)",
           "ms": 0.028,
           "ms_opt": 0.028,
-          "gap": 0.93,
-          "gap_opt": 0.93,
+          "gap": 0.9,
+          "gap_opt": 0.9,
           "noise": 0.0
         }
       ],
@@ -899,35 +899,35 @@
       "id": "equalize",
       "tutorial": "tutorial_histogram_equalization",
       "operation": "Histogram equalisation",
-      "opencv_ms": 0.253,
+      "opencv_ms": 0.255,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.92,
-      "ms_lost": -0.021,
+      "best_gap": 0.91,
+      "ms_lost": -0.023,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.351,
-          "ms_opt": 0.351,
-          "gap": 1.39,
-          "gap_opt": 1.39,
-          "noise": 0.011396011396011397
+          "ms": 0.352,
+          "ms_opt": 0.352,
+          "gap": 1.38,
+          "gap_opt": 1.38,
+          "noise": 0.017045454545454548
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.305,
-          "ms_opt": 0.304,
-          "gap": 1.21,
+          "ms": 0.306,
+          "ms_opt": 0.305,
+          "gap": 1.2,
           "gap_opt": 1.2,
-          "noise": 0.0
+          "noise": 0.013071895424836602
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.311,
+          "ms": 0.315,
           "ms_opt": 0.232,
-          "gap": 1.23,
-          "gap_opt": 0.92,
-          "noise": 0.0
+          "gap": 1.24,
+          "gap_opt": 0.91,
+          "noise": 0.025396825396825397
         }
       ],
       "status": "fix-proposed",
@@ -946,31 +946,31 @@
       "opencv_ms": 0.239,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 0.92,
-      "ms_lost": -0.02,
+      "ms_lost": -0.019,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.344,
-          "ms_opt": 1.336,
-          "gap": 5.62,
-          "gap_opt": 5.59,
-          "noise": 0.002976190476190476
+          "ms": 1.35,
+          "ms_opt": 1.34,
+          "gap": 5.65,
+          "gap_opt": 5.61,
+          "noise": 0.011851851851851851
         },
         {
           "name": "oximedia-cv",
-          "ms": 2.044,
-          "ms_opt": 1.528,
-          "gap": 8.55,
-          "gap_opt": 6.39,
-          "noise": 0.005870841487279843
+          "ms": 1.541,
+          "ms_opt": 1.529,
+          "gap": 6.45,
+          "gap_opt": 6.4,
+          "noise": 0.006489292667099286
         },
         {
           "name": "oxipix (imgproc)",
           "ms": 0.22,
-          "ms_opt": 0.219,
+          "ms_opt": 0.222,
           "gap": 0.92,
-          "gap_opt": 0.92,
+          "gap_opt": 0.93,
           "noise": 0.0
         }
       ],
@@ -987,35 +987,35 @@
       "id": "laplace",
       "tutorial": "tutorial_laplace_operator",
       "operation": "Gaussian blur + Laplacian edge",
-      "opencv_ms": 0.733,
+      "opencv_ms": 0.734,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 0.99,
-      "ms_lost": -0.008,
+      "ms_lost": -0.004,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.465,
-          "ms_opt": 1.907,
+          "ms": 3.47,
+          "ms_opt": 1.944,
           "gap": 4.73,
-          "gap_opt": 2.6,
-          "noise": 0.00404040404040404
+          "gap_opt": 2.65,
+          "noise": 0.0069164265129683
         },
         {
           "name": "oximedia-cv",
-          "ms": 5.723,
-          "ms_opt": 5.714,
+          "ms": 5.735,
+          "ms_opt": 5.775,
           "gap": 7.81,
-          "gap_opt": 7.8,
-          "noise": 0.008037742442774769
+          "gap_opt": 7.87,
+          "noise": 0.012903225806451611
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.73,
-          "ms_opt": 0.725,
-          "gap": 1.0,
+          "ms": 0.746,
+          "ms_opt": 0.73,
+          "gap": 1.02,
           "gap_opt": 0.99,
-          "noise": 0.0027397260273972603
+          "noise": 0.024128686327077747
         }
       ],
       "status": "fix-proposed",
@@ -1031,31 +1031,31 @@
       "id": "sobel",
       "tutorial": "tutorial_sobel_derivatives",
       "operation": "Sobel X derivative",
-      "opencv_ms": 0.141,
+      "opencv_ms": 0.142,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 0.62,
-      "ms_lost": -0.053,
+      "ms_lost": -0.054,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.847,
-          "ms_opt": 3.806,
-          "gap": 27.28,
-          "gap_opt": 26.99,
-          "noise": 0.006758513127112035
+          "ms": 3.924,
+          "ms_opt": 3.895,
+          "gap": 27.63,
+          "gap_opt": 27.43,
+          "noise": 0.00815494393476045
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.784,
-          "ms_opt": 0.738,
-          "gap": 5.56,
-          "gap_opt": 5.23,
-          "noise": 0.01020408163265306
+          "ms": 0.788,
+          "ms_opt": 0.745,
+          "gap": 5.55,
+          "gap_opt": 5.25,
+          "noise": 0.015228426395939085
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.089,
+          "ms": 0.09,
           "ms_opt": 0.088,
           "gap": 0.63,
           "gap_opt": 0.62,
@@ -1075,35 +1075,35 @@
       "id": "canny",
       "tutorial": "tutorial_canny_detector",
       "operation": "Gaussian blur + Canny (50/150)",
-      "opencv_ms": 2.271,
+      "opencv_ms": 2.247,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.74,
-      "ms_lost": -0.599,
+      "best_gap": 0.78,
+      "ms_lost": -0.5,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 17.661,
-          "ms_opt": 15.813,
-          "gap": 7.78,
-          "gap_opt": 6.96,
-          "noise": 0.0026046090255364925
+          "ms": 17.812,
+          "ms_opt": 16.253,
+          "gap": 7.93,
+          "gap_opt": 7.23,
+          "noise": 0.004491354143274197
         },
         {
           "name": "oximedia-cv",
-          "ms": 22.285,
-          "ms_opt": 19.769,
-          "gap": 9.81,
-          "gap_opt": 8.7,
-          "noise": 0.0033206192506170067
+          "ms": 22.271,
+          "ms_opt": 20.297,
+          "gap": 9.91,
+          "gap_opt": 9.03,
+          "noise": 0.003232903776211216
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 1.769,
-          "ms_opt": 1.672,
-          "gap": 0.78,
-          "gap_opt": 0.74,
-          "noise": 0.013566986998304128
+          "ms": 1.768,
+          "ms_opt": 1.747,
+          "gap": 0.79,
+          "gap_opt": 0.78,
+          "noise": 0.012443438914027148
         }
       ],
       "status": "fix-proposed",
@@ -1119,35 +1119,35 @@
       "id": "hough_lines",
       "tutorial": "tutorial_hough_lines",
       "operation": "Canny + standard Hough lines",
-      "opencv_ms": 6.508,
+      "opencv_ms": 6.865,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.9,
-      "ms_lost": -0.65,
+      "best_gap": 0.88,
+      "ms_lost": -0.812,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 22.765,
-          "ms_opt": 20.876,
-          "gap": 3.5,
-          "gap_opt": 3.21,
-          "noise": 0.0038655831320008782
+          "ms": 22.89,
+          "ms_opt": 21.238,
+          "gap": 3.33,
+          "gap_opt": 3.09,
+          "noise": 0.0041939711664482305
         },
         {
           "name": "oximedia-cv",
-          "ms": 42.776,
-          "ms_opt": 39.023,
-          "gap": 6.57,
-          "gap_opt": 6.0,
-          "noise": 0.004441743033476716
+          "ms": 42.555,
+          "ms_opt": 40.505,
+          "gap": 6.2,
+          "gap_opt": 5.9,
+          "noise": 0.008130654447185994
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 6.034,
-          "ms_opt": 5.858,
-          "gap": 0.93,
+          "ms": 6.053,
+          "ms_opt": 6.202,
+          "gap": 0.88,
           "gap_opt": 0.9,
-          "noise": 0.014252568776930725
+          "noise": 0.014207830827688749
         }
       ],
       "status": "fix-proposed",
@@ -1163,27 +1163,27 @@
       "id": "hough_circle",
       "tutorial": "tutorial_hough_circle",
       "operation": "Canny + circle Hough (r=15..40)",
-      "opencv_ms": 3.939,
+      "opencv_ms": 4.254,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.22,
-      "ms_lost": -3.069,
+      "best_gap": 0.21,
+      "ms_lost": -3.373,
       "parity": "n/a",
       "backends": [
         {
           "name": "oximedia-cv",
-          "ms": 63.274,
-          "ms_opt": 62.756,
-          "gap": 16.06,
-          "gap_opt": 15.93,
-          "noise": 0.0014539937415051995
+          "ms": 63.364,
+          "ms_opt": 64.373,
+          "gap": 14.9,
+          "gap_opt": 15.13,
+          "noise": 0.0011047282368537342
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.899,
-          "ms_opt": 0.87,
-          "gap": 0.23,
-          "gap_opt": 0.22,
-          "noise": 0.002224694104560623
+          "ms": 0.891,
+          "ms_opt": 0.881,
+          "gap": 0.21,
+          "gap_opt": 0.21,
+          "noise": 0.004489337822671156
         }
       ],
       "status": "fix-proposed",

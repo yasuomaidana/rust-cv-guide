@@ -29,12 +29,9 @@ fn page(a: &Assets) -> [(f32, f32); 4] {
     [(0.0, 0.0), (w, 0.0), (w, h), (0.0, h)]
 }
 
-/// Destination-to-source map of "turn clockwise by `degrees` about the centre and scale".
-fn rotation_map(a: &Assets, degrees: f32, scale: f32) -> [f32; 6] {
-    let (cx, cy) = (
-        a.astronaut.width() as f32 / 2.0,
-        a.astronaut.height() as f32 / 2.0,
-    );
+/// Destination-to-source map of "turn clockwise by `degrees` about the centre of a `size` picture and scale".
+pub(crate) fn rotation_map(size: (u32, u32), degrees: f32, scale: f32) -> [f32; 6] {
+    let (cx, cy) = (size.0 as f32 / 2.0, size.1 as f32 / 2.0);
     let (s, c) = (-degrees.to_radians()).sin_cos();
     let k = 1.0 / scale;
     [
@@ -124,7 +121,7 @@ backends! {
     equalize_hist, "equalize", |a| equalize::equalize_hist(&a.building);
     psnr, "psnr", |a| quality::psnr(&a.building, &a.building_blur);
     ssim, "ssim", |a| quality::ssim(&a.building, &a.building_blur);
-    warp_affine, "warp_affine", |a| warp::warp_affine(&a.astronaut, &rotation_map(a, 30.0, 0.6), a.astronaut.dimensions());
+    warp_affine, "warp_affine", |a| warp::warp_affine(&a.astronaut, &rotation_map(a.astronaut.dimensions(), 30.0, 0.6), a.astronaut.dimensions());
     unwarp, "homography", |a| warp::warp_perspective(
         &a.invoice_photo,
         &warp::homography(&page(a), &a.quad).expect("four corners in general position"),

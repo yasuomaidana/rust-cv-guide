@@ -36,6 +36,7 @@ pub fn pages(
     out.extend(category_pages(catalog, coverage));
     out.push(roadmap::page(catalog, coverage));
     out.push(benchmarks::page(catalog, bench));
+    out.extend(crate::sweep::page(bench));
     out
 }
 

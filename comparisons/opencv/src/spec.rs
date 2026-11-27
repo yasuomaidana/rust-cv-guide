@@ -22,6 +22,10 @@ pub struct Environment {
     pub builds: Vec<String>,
     /// HAL / SIMD / threading lines from `cv::getBuildInformation()`.
     pub opencv_build: Vec<String>,
+    /// Threads OpenCV uses by default on this machine (the single-thread rows pin it to 1).
+    pub opencv_threads: usize,
+    /// Whether OpenCV found an OpenCL device it could use.
+    pub opencv_opencl: bool,
 }
 
 /// One measured comparison row across OpenCV, pure Rust, and `oximedia-cv`/`oxipix`.
@@ -42,6 +46,8 @@ pub struct BenchRow {
     pub oxipix_ticket: Option<String>,
     pub warning_note: Option<String>,
     pub opencv_fresh_ms: Option<f64>,
+    /// OpenCV with its default number of threads (the single-thread `opencv_ms` is the algorithm comparison).
+    pub opencv_mt_ms: Option<f64>,
     pub rust_opt_ms: Option<f64>,
     pub oximedia_opt_ms: Option<f64>,
     pub rust_stats: Option<Stats>,
@@ -68,6 +74,8 @@ pub struct BenchmarkCatalog {
     /// Probe-overhead floor: empty closure and allocate-and-drop per input size, in milliseconds.
     pub calibration: BTreeMap<String, f64>,
     pub benchmarks: Vec<BenchRow>,
+    /// Small, medium and big pictures for the kernels where size and threads matter.
+    pub size_sweep: Vec<BenchRow>,
 }
 
 /// Pre-decoded inputs shared across benchmark runs so decode cost is excluded.
@@ -266,6 +274,11 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         .get(&format!("{}__fresh", spec.id))
         .copied()
         .map(round3);
+    let opencv_mt_ms = ocv
+        .results
+        .get(&format!("{}__mt", spec.id))
+        .copied()
+        .map(round3);
     let opencv_digest = ocv.digests.get(spec.id).copied();
     let rust_digest = spec.rust_digest.and_then(|mut d| d());
     let oximedia_digest = spec.oxi_digest.and_then(|mut d| d());
@@ -297,6 +310,7 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         oxipix_ticket: spec.oxipix_ticket.map(str::to_string),
         warning_note: None,
         opencv_fresh_ms,
+        opencv_mt_ms,
         rust_opt_ms: None,
         oximedia_opt_ms: None,
         rust_stats,

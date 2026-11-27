@@ -331,6 +331,13 @@ mod tests {
     use crate::model::fixtures::{catalog, coverage};
     use rstest::rstest;
 
+    #[rstest]
+    #[case(0.0, 1.0, 0.0)]
+    #[case(1.0, 0.1, 0.2)]
+    fn noise_is_twice_the_relative_mad(#[case] median: f64, #[case] mad: f64, #[case] want: f64) {
+        assert!((Stats { median, mad }.noise() - want).abs() < 1e-9);
+    }
+
     fn sample_row(
         id: &str,
         tut: &str,

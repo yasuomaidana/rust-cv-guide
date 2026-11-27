@@ -35,15 +35,20 @@ struct Inputs {
     queue: perf_queue::QueueMeta,
 }
 
+/// Writes `content` to `base/relative`, creating the directories it needs.
+fn write_file(base: &Path, relative: &str, content: &str) -> Result<(), String> {
+    let path = base.join(relative);
+    fs::create_dir_all(path.parent().unwrap_or(base)).map_err(at(&path))?;
+    fs::write(&path, content).map_err(at(&path))
+}
+
 /// Writes the queue files from the benchmarks without enforcing issue links; says which items lack one.
 fn perf_queue_files(root: &Path) -> Result<String, String> {
     let benchmarks = load::benchmarks(root)?;
     let meta = load::queue_meta(root)?;
     let queue = perf_queue::build(&benchmarks, &meta);
     for (path, content) in perf_queue::outputs(&queue) {
-        let path = root.join(path);
-        fs::create_dir_all(path.parent().unwrap_or(root)).map_err(at(&path))?;
-        fs::write(&path, content).map_err(at(&path))?;
+        write_file(root, &path, &content)?;
     }
     let missing = perf_queue::problems(&benchmarks, &meta);
     Ok(format!(
@@ -115,15 +120,11 @@ fn generate(root: &Path) -> Result<String, String> {
         &inputs.benchmarks,
     );
     for page in &pages {
-        let path = site.join(&page.path);
-        fs::create_dir_all(path.parent().unwrap_or(&site)).map_err(at(&path))?;
-        fs::write(&path, &page.content).map_err(at(&path))?;
+        write_file(&site, &page.path, &page.content)?;
     }
     let extra = queue_outputs(&inputs);
     for (path, content) in &extra {
-        let path = root.join(path);
-        fs::create_dir_all(path.parent().unwrap_or(root)).map_err(at(&path))?;
-        fs::write(&path, content).map_err(at(&path))?;
+        write_file(root, path, content)?;
     }
     Ok(format!(
         "wrote {} pages and {} queue files",
@@ -163,6 +164,57 @@ mod tests {
 
     fn call(arg: &str, root: &Path) -> Result<String, String> {
         run(&[arg.to_string()], root)
+    }
+
+    const BENCH: &str = r#"{"benchmarks":[{"id":"m","tutorial":"tutorial_mat","section":"core","operation":"op","input":"4x4","opencv_ms":0.1,"opencv_fresh_ms":0.1,"rust_ms":0.5,"oximedia_ms":0.5,"oximedia_crate":"ndarray","oxipix_ticket":"OXI-1","parity":"ok"}]}"#;
+    const QUEUE_META: &str =
+        "items:\n  m: {plane: RUSTCVGUID-1, issue: \"https://github.com/o/r/issues/1\"}\n";
+
+    /// The consistent repo plus one benchmark that is slower than OpenCV, with or without queue metadata.
+    fn queue_repo(meta: Option<&str>) -> TempDir {
+        let dir = repo_with(OK_COVERAGE);
+        fs::write(dir.path().join("catalog/benchmarks.json"), BENCH).unwrap();
+        if let Some(text) = meta {
+            fs::write(dir.path().join("catalog/perf_queue.yaml"), text).unwrap();
+        }
+        dir
+    }
+
+    #[rstest]
+    #[case(None, "queue of 1 items written; 2 problems still to fix")]
+    #[case(Some(QUEUE_META), "queue of 1 items written; 0 problems still to fix")]
+    fn perf_queue_command_writes_the_files(#[case] meta: Option<&str>, #[case] expected: &str) {
+        let dir = queue_repo(meta);
+        assert!(call("perf-queue", dir.path()).unwrap().contains(expected));
+        assert!(dir.path().join("PERF_QUEUE.md").is_file());
+        assert!(dir.path().join("catalog/perf_queue.json").is_file());
+    }
+
+    #[test]
+    fn check_needs_current_queue_files_and_generate_writes_them() {
+        let dir = queue_repo(Some(QUEUE_META));
+        let stale = call("check", dir.path()).unwrap_err();
+        assert!(stale.contains("PERF_QUEUE.md is out of date"), "{stale}");
+        assert!(
+            call("generate", dir.path())
+                .unwrap()
+                .contains("3 queue files")
+        );
+        assert!(call("check", dir.path()).is_ok());
+        fs::write(dir.path().join("PERF_QUEUE.md"), "edited").unwrap();
+        assert!(call("check", dir.path()).is_err());
+    }
+
+    #[test]
+    fn check_rejects_queue_items_without_an_issue() {
+        let err = call("check", queue_repo(None).path()).unwrap_err();
+        assert!(err.contains("no GitHub issue link"), "{err}");
+    }
+
+    #[test]
+    fn unknown_commands_print_usage() {
+        let err = call("bogus", repo_with(OK_COVERAGE).path()).unwrap_err();
+        assert!(err.contains("usage: cvg-tools"), "{err}");
     }
 
     #[rstest]

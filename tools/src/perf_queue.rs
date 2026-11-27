@@ -527,5 +527,6 @@ mod tests {
         let q = build(&b, &QueueMeta::default());
         assert_eq!(q.queue[0].best_gap, 3.0);
         assert!(markdown(&q).contains("4.0x (3.0x opt)"));
+        assert!(summary(&q).contains("4.0 ms, 4.0x (3.0x opt)"));
     }
 }

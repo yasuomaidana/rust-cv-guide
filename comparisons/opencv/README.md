@@ -22,3 +22,7 @@ It writes measured median wall-clock timings (excluding image decode and fixture
 - `calibration` is the probe-overhead floor: an empty closure and one allocate-and-drop per input size.
 - `rust_stats` / `oximedia_stats` hold median, p10, p90, MAD and iteration count. A ratio only counts as a difference when it exceeds 5 % and twice the relative MAD.
 - `parity` is `mismatch` when the backends produce outputs that differ in size or mean (images) or by more than 25 % in count (keypoints, lines). A mismatching row compares different work and must be fixed before its ratio is trusted.
+
+## The oxipix imgproc backend
+
+`src/next.rs` runs the `oxipix` `imgproc` kernels (OXI-94, OXI-95, OXI-96; not released yet, so `Cargo.toml` depends on their git branch) on the same input and with the same parameters as each tutorial snippet. Rows carry `oxipix_next_ms` and friends, and the parity check covers the new backend like the others. After oxipix publishes the kernels, replace the git dependency with the released version.

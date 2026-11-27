@@ -10,6 +10,8 @@ use std::collections::BTreeMap;
 /// A gap smaller than this (and than the measured noise) is not a real difference.
 const MIN_GAP: f64 = 0.05;
 const ISSUE_PREFIX: &str = "https://github.com/";
+/// Name of the backend that runs the `oxipix` imgproc kernels.
+const NEXT: &str = "oxipix (imgproc)";
 
 /// Hand-kept facts about one queue item, from `catalog/perf_queue.yaml`.
 #[derive(Debug, Default, Clone, Deserialize)]
@@ -119,6 +121,13 @@ fn backends(row: &BenchRow, fair: f64) -> Vec<Backend> {
             row.oximedia_ms,
             row.oximedia_opt_ms,
             row.oximedia_stats,
+            fair,
+        ),
+        backend(
+            NEXT,
+            row.oxipix_next_ms,
+            row.oxipix_next_opt_ms,
+            row.oxipix_next_stats,
             fair,
         ),
     ]
@@ -321,10 +330,10 @@ Gaps compare each crate against OpenCV timed with a freshly allocated output, an
 **Pick an item:** open its issue, say you are taking it, and set `owner` for it in `catalog/perf_queue.yaml` in your pull request. \
 See `CONTRIBUTING.md` for how to run the benchmarks. The preferred place for a fix is `oxipix`, then a pull request to `imageproc` or `oximedia-cv`.\n";
 
-fn crate_cell(item: &Item, name_prefix: &str) -> String {
+fn crate_cell(item: &Item, wanted: impl Fn(&str) -> bool) -> String {
     item.backends
         .iter()
-        .find(|b| b.name.starts_with(name_prefix))
+        .find(|b| wanted(&b.name))
         .map_or("—".into(), |b| match b.gap_opt {
             Some(o) => format!("{:.1} ms, {:.1}x ({:.1}x opt)", b.ms, b.gap, o),
             None => format!("{:.1} ms, {:.1}x", b.ms, b.gap),
@@ -336,17 +345,17 @@ pub fn summary(queue: &Queue) -> String {
     let mut lines = vec![
         "## Summary by crate\n".to_string(),
         "Every operation with each crate's median time and gap to OpenCV (fresh output buffer). `opt` is the fat-LTO, native-CPU build. The ranked work list is the [performance queue](perf-queue.md).\n".into(),
-        "| Operation | OpenCV | image/imageproc | oximedia-cv / oxipix | Best gap |".into(),
-        "|---|---|---|---|---|".into(),
+        "| Operation | OpenCV | image/imageproc | oximedia-cv / oxipix 0.1 | oxipix imgproc | Best gap |".into(),
+        "|---|---|---|---|---|---|".into(),
     ];
     for it in queue.queue.iter().chain(&queue.at_parity) {
-        let oxi = crate_cell(it, "oxi");
         lines.push(format!(
-            "| {} | {:.3} ms | {} | {} | {:.1}x |",
+            "| {} | {:.3} ms | {} | {} | {} | {:.1}x |",
             clean(&it.operation),
             it.opencv_ms,
-            crate_cell(it, "image"),
-            oxi,
+            crate_cell(it, |n| n.starts_with("image")),
+            crate_cell(it, |n| n.starts_with("oxi") && n != NEXT),
+            crate_cell(it, |n| n == NEXT),
             it.best_gap
         ));
     }
@@ -587,6 +596,25 @@ mod tests {
         let mut only = QueueMeta::default();
         only.items.insert("big".into(), undecided);
         assert!(markdown(&build(&bench, &only)).contains("*Fix:* not decided yet"));
+    }
+
+    #[rstest]
+    fn the_oxipix_imgproc_backend_is_ranked_and_shown_in_its_own_column() {
+        let mut r = row("fast", 1.0, Some(8.0), Some(4.0), "ok");
+        r.oxipix_next_ms = Some(1.5);
+        let b = Benchmarks {
+            benchmarks: vec![r],
+            ..Benchmarks::default()
+        };
+        let q = build(&b, &QueueMeta::default());
+        assert_eq!(q.queue[0].best_crate, "oxipix (imgproc)");
+        assert_eq!(q.queue[0].best_gap, 1.5);
+        let table = summary(&q);
+        assert!(table.contains("| oxipix imgproc |"));
+        assert!(
+            table.contains("| 4.0 ms, 4.0x | 1.5 ms, 1.5x | 1.5x |"),
+            "{table}"
+        );
     }
 
     #[rstest]

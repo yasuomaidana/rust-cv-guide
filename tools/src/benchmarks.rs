@@ -30,6 +30,9 @@ pub struct Environment {
     pub oxipix_version: String,
     #[serde(default)]
     pub imageproc_version: String,
+    /// Where the `oxipix` imgproc backend comes from.
+    #[serde(default)]
+    pub oxipix_next_source: String,
 }
 
 /// Spread of one timing series (milliseconds), as written by the benchmark harness.
@@ -89,6 +92,13 @@ pub struct BenchRow {
     pub rust_stats: Option<Stats>,
     #[serde(default)]
     pub oximedia_stats: Option<Stats>,
+    /// The `oxipix` imgproc kernels (git branch) measured in the same run.
+    #[serde(default)]
+    pub oxipix_next_ms: Option<f64>,
+    #[serde(default)]
+    pub oxipix_next_opt_ms: Option<f64>,
+    #[serde(default)]
+    pub oxipix_next_stats: Option<Stats>,
     /// `ok`, `mismatch` (backends do different work) or `n/a`.
     #[serde(default)]
     pub parity: String,
@@ -236,6 +246,15 @@ pub(crate) fn clean(text: &str) -> String {
     text.replace('|', "\\|").replace('<', "&lt;")
 }
 
+/// The environment line for the `oxipix` imgproc backend, or nothing when the catalog has none.
+fn next_line(source: &str) -> String {
+    if source.is_empty() {
+        String::new()
+    } else {
+        format!("- **oxipix imgproc backend:** {source}\n")
+    }
+}
+
 /// Renders the tutorial's per-page performance table and automatic divergence warning, if any.
 pub fn tutorial_section(tutorial_id: &str, bench: &Benchmarks) -> String {
     let rows: Vec<&BenchRow> = bench
@@ -290,8 +309,8 @@ pub fn page(catalog: &Catalog, bench: &Benchmarks) -> Page {
         "---\ntitle: Performance benchmarks\n---\n".into(),
         "Incremental performance reference comparing native **OpenCV**, pure Rust (`image` + `imageproc`), and **`oximedia-cv` / `oxipix`** across every implemented tutorial.\n".into(),
         format!(
-            "- **Host / profile:** {} {} (`cargo run --{}`)\n- **OpenCV:** {}\n- **Crates:** `oximedia-cv` {}, `oxipix` {}, `imageproc` {}\n- **Divergence thresholds:** >= {:.1}x (`oximedia` vs pure Rust) or >= {:.1}x vs OpenCV triggers an automated warning callout.\n",
-            e.os, e.arch, e.rust_profile, e.opencv_version, e.oximedia_cv_version, e.oxipix_version, e.imageproc_version, bench.warn_ratio_threshold, bench.opencv_warn_ratio_threshold
+            "- **Host / profile:** {} {} (`cargo run --{}`)\n- **OpenCV:** {}\n- **Crates:** `oximedia-cv` {}, `oxipix` {}, `imageproc` {}\n{}- **Divergence thresholds:** >= {:.1}x (`oximedia` vs pure Rust) or >= {:.1}x vs OpenCV triggers an automated warning callout.\n",
+            e.os, e.arch, e.rust_profile, e.opencv_version, e.oximedia_cv_version, e.oxipix_version, e.imageproc_version, next_line(&e.oxipix_next_source), bench.warn_ratio_threshold, bench.opencv_warn_ratio_threshold
         ),
         "| Tutorial | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust | Notes |".into(),
         "|---|---|---|---|---|---|---|---|".into(),
@@ -331,6 +350,13 @@ mod tests {
     use super::*;
     use crate::model::fixtures::{catalog, coverage};
     use rstest::rstest;
+
+    #[rstest]
+    #[case("", "")]
+    #[case("git branch x", "- **oxipix imgproc backend:** git branch x\n")]
+    fn the_oxipix_imgproc_environment_line_is_optional(#[case] source: &str, #[case] want: &str) {
+        assert_eq!(next_line(source), want);
+    }
 
     #[rstest]
     #[case("a | b", "a \\| b")]

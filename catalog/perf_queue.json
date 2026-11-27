@@ -2,826 +2,542 @@
   "queue": [
     {
       "rank": 1,
-      "id": "template_matching",
-      "tutorial": "tutorial_template_matching",
-      "operation": "Template match (TM_SQDIFF)",
-      "opencv_ms": 1.618,
-      "best_crate": "image/imageproc",
-      "best_gap": 75.34,
-      "ms_lost": 120.282,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 121.9,
-          "ms_opt": 122.14,
-          "gap": 75.34,
-          "gap_opt": 75.49,
-          "noise": 0.0010992616899097622
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV computes the cross-correlation with a block-wise DFT (templmatch.cpp `convolve_dft`, `getOptimalDFTSize`) and gets the window energies from integral images, so the cost does not grow with the template area. `imageproc::template_matching::match_template` evaluates the sum of squared errors directly for every position: 411 x 261 positions x 1600 template pixels is about 170M multiply-adds, single threaded (its `rayon` feature is off).",
-      "fix_target": "oxipix wave 1: SSE as `sum(I^2 window) - 2 * corr + sum(T^2)`, with the correlation by FFT (`realfft`) and the window energy from an integral image.",
-      "plane": "RUSTCVGUID-158",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 2,
       "id": "smoothing_median",
       "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
       "operation": "Median filter (5x5, r=2)",
       "opencv_ms": 0.435,
-      "best_crate": "image/imageproc",
-      "best_gap": 41.32,
-      "ms_lost": 17.54,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 7.03,
+      "ms_lost": 2.624,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 17.975,
-          "ms_opt": 18.637,
-          "gap": 41.32,
-          "gap_opt": 42.84,
-          "noise": 0.007343532684283727
+          "ms": 17.613,
+          "ms_opt": 18.34,
+          "gap": 40.49,
+          "gap_opt": 42.16,
+          "noise": 0.002498154772043377
         },
         {
           "name": "oximedia-cv",
-          "ms": 38.611,
-          "ms_opt": 38.591,
-          "gap": 88.76,
-          "gap_opt": 88.71,
-          "noise": 0.004765481339514647
+          "ms": 38.584,
+          "ms_opt": 37.869,
+          "gap": 88.7,
+          "gap_opt": 87.06,
+          "noise": 0.005701845324486834
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 3.189,
+          "ms_opt": 3.059,
+          "gap": 7.33,
+          "gap_opt": 7.03,
+          "noise": 0.005644402634054562
         }
       ],
-      "status": "researched",
+      "status": "fix-proposed",
       "root_cause": "median_blur.simd.hpp runs sorting networks for 3x3 and 5x5 windows vectorised across 16 pixels and an O(1) column-histogram method only for large kernels. `imageproc::filter::median_filter` already uses a sliding histogram, but it is scalar, one 256-bin histogram per channel, with a median search per pixel; for a 5x5 window that is far more work than a SIMD network.",
-      "fix_target": "oxipix wave 1: selection network (min/max passes) over lanes of pixels for radius 1 and 2, histogram fallback for larger radii.",
+      "fix_target": "oxipix wave 1: selection network (min/max passes) over lanes of pixels for radius 1 and 2, histogram fallback for larger radii. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-159",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/40",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 3,
-      "id": "erosion",
-      "tutorial": "tutorial_erosion_dilatation",
-      "operation": "Erode (5x5 square, r=2)",
-      "opencv_ms": 0.01,
-      "best_crate": "image/imageproc",
-      "best_gap": 28.1,
-      "ms_lost": 0.271,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.281,
-          "ms_opt": 0.3,
-          "gap": 28.1,
-          "gap_opt": 30.0,
-          "noise": 0.021352313167259784
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 3.318,
-          "ms_opt": 2.811,
-          "gap": 331.8,
-          "gap_opt": 281.1,
-          "noise": 0.0024110910186859553
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV erodes with separable running minima on 16 pixels at a time (morph.simd.hpp `MorphRowVec` / `MorphColumnVec`, `ErodeVec8u`). `imageproc::morphology::erode` computes a full distance transform of the mask and thresholds it, which is O(pixels) but with a heavy constant and unrelated to the window size.",
-      "fix_target": "oxipix wave 1: separable min/max over shifted row slices (vectorises to 16 byte lanes), van Herk / Gil-Werman for large radii.",
-      "plane": "RUSTCVGUID-160",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 4,
-      "id": "pyramids",
-      "tutorial": "tutorial_pyramids",
-      "operation": "3-level pyrDown",
-      "opencv_ms": 0.045,
-      "best_crate": "oximedia-cv",
-      "best_gap": 19.4,
-      "ms_lost": 0.828,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 1.867,
-          "ms_opt": 1.981,
-          "gap": 41.49,
-          "gap_opt": 44.02,
-          "noise": 0.02785216925549009
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 0.882,
-          "ms_opt": 0.873,
-          "gap": 19.6,
-          "gap_opt": 19.4,
-          "noise": 0.0022675736961451248
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's `pyrDown` does the 1-4-6-4-1 blur in fixed point, horizontal pass into an int row buffer and vertical pass producing only the even rows, SIMD for 1 to 4 channels (pyramids.cpp `PyrDownVecH` / `PyrDownVecV`). The guide's `imageproc::filter::separable_filter_equal` blurs every pixel in f32 with a generic clamped lookup and then throws away three quarters of the result; the oximedia version also builds an intermediate float image.",
-      "fix_target": "oxipix wave 2: integer separable pass that only computes the kept even rows and columns, per-channel loops over slices.",
-      "plane": "RUSTCVGUID-161",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/42",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 5,
-      "id": "hough_circle",
-      "tutorial": "tutorial_hough_circle",
-      "operation": "Canny + circle Hough (r=15..40)",
-      "opencv_ms": 3.94,
-      "best_crate": "oximedia-cv",
-      "best_gap": 16.22,
-      "ms_lost": 59.949,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "oximedia-cv",
-          "ms": 64.547,
-          "ms_opt": 63.889,
-          "gap": 16.38,
-          "gap_opt": 16.22,
-          "noise": 0.001456303158938448
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's gradient method (hough.cpp, `HoughCircles`) lets each edge pixel vote only along its gradient direction in a 2-D accumulator, then finds the radius from the distances to the centre candidates. `oximedia_cv`'s transform votes for every radius around every edge pixel (a 3-D accumulator, 26 radii here) and builds it from a Canny that is itself 7x slower than OpenCV's.",
-      "fix_target": "oxipix wave 3: gradient-direction circle Hough on top of the oxipix Sobel/Canny of wave 2.",
-      "plane": "RUSTCVGUID-162",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/43",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 6,
-      "id": "opening_closing_hats",
-      "tutorial": "tutorial_opening_closing_hats",
-      "operation": "Top-hat morphology (7x7, r=3)",
-      "opencv_ms": 0.029,
-      "best_crate": "image/imageproc",
-      "best_gap": 14.66,
-      "ms_lost": 0.396,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.425,
-          "ms_opt": 1.135,
-          "gap": 14.66,
-          "gap_opt": 39.14,
-          "noise": 0.004705882352941177
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 13.971,
-          "ms_opt": 10.869,
-          "gap": 481.76,
-          "gap_opt": 374.79,
-          "noise": 0.006012454369765944
-        }
-      ],
-      "status": "researched",
-      "root_cause": "Same mechanism as erosion, twice (opening = erode then dilate): `imageproc::morphology::grayscale_erode/grayscale_dilate` with a `Mask::square(3)` visit every mask offset for every pixel, O(k^2) with bounds handling, against OpenCV's separable vector min/max. The top-hat then subtracts with a per-pixel `get_pixel` closure.",
-      "fix_target": "oxipix wave 1: separable grey-scale erode/dilate, opening/closing and a slice-level top-hat.",
-      "plane": "RUSTCVGUID-163",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/44",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 7,
-      "id": "smoothing_gaussian",
-      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
-      "operation": "Gaussian blur (sigma=1.1)",
-      "opencv_ms": 0.198,
-      "best_crate": "image/imageproc",
-      "best_gap": 9.08,
-      "ms_lost": 1.6,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 1.798,
-          "ms_opt": 1.854,
-          "gap": 9.08,
-          "gap_opt": 9.36,
-          "noise": 0.058954393770856504
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 4.691,
-          "ms_opt": 4.87,
-          "gap": 23.69,
-          "gap_opt": 24.6,
-          "noise": 0.002558089959496909
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's `GaussianBlur` for 8-bit images is a separable fixed-point convolution (smooth.simd.hpp `hlineSmooth` / `vlineSmooth`) with integer kernel weights. `imageproc::filter::gaussian_blur_f32` converts to f32, runs two generic clamped passes and converts back; the work per sample is several times larger.",
-      "fix_target": "oxipix wave 2: separable integer Gaussian (kernel scaled to 2^k) on u8 slices, one row buffer, no per-pixel bounds checks in the interior.",
-      "plane": "RUSTCVGUID-165",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/46",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 8,
-      "id": "smoothing_bilateral",
-      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
-      "operation": "Bilateral filter (d=5, r=2, sc=30)",
-      "opencv_ms": 0.807,
-      "best_crate": "image/imageproc",
-      "best_gap": 7.35,
-      "ms_lost": 5.121,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 9.155,
-          "ms_opt": 5.928,
-          "gap": 11.34,
-          "gap_opt": 7.35,
-          "noise": 0.002403058438012015
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 33.096,
-          "ms_opt": 34.621,
-          "gap": 41.01,
-          "gap_opt": 42.9,
-          "noise": 0.00489485134155185
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV precomputes the spatial weights once and a 256-entry table for the colour weights (bilateral_filter.dispatch.cpp `space_weight`, `color_weight`), so each tap is two table reads. `imageproc::filter::bilateral_filter` evaluates the Gaussian of the colour distance per tap (a fast `exp` approximation, no table) through the `Pixel` API.",
-      "fix_target": "oxipix wave 2: bilateral with a spatial table and a 256-entry colour LUT on interleaved u8 rows.",
-      "plane": "RUSTCVGUID-164",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 9,
-      "id": "homography",
-      "tutorial": "tutorial_homography",
-      "operation": "Perspective unwarp (4-point quad)",
-      "opencv_ms": 0.587,
-      "best_crate": "image/imageproc",
-      "best_gap": 7.14,
-      "ms_lost": 3.607,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 4.372,
-          "ms_opt": 4.194,
-          "gap": 7.45,
-          "gap_opt": 7.14,
-          "noise": 0.05169258920402562
-        },
-        {
-          "name": "oxipix",
-          "ms": 6.823,
-          "ms_opt": 6.369,
-          "gap": 11.62,
-          "gap_opt": 10.85,
-          "noise": 0.022277590502711414
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV warps with `remapBilinear` on fixed-point coordinates (imgwarp.cpp, `INTER_BITS`), computing the source position incrementally along each row and vectorising the interpolation. `imageproc::geometric_transformations::warp_into` / the oxipix unwarp compute a full projective division and an f32 bilinear sample per output pixel through the `Pixel` API.",
-      "fix_target": "oxipix wave 3: row-incremental projective coordinates with fixed-point bilinear sampling on u8 rows.",
-      "plane": "RUSTCVGUID-167",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/48",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 10,
-      "id": "canny",
-      "tutorial": "tutorial_canny_detector",
-      "operation": "Gaussian blur + Canny (50/150)",
-      "opencv_ms": 2.322,
-      "best_crate": "image/imageproc",
-      "best_gap": 6.93,
-      "ms_lost": 13.78,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 17.712,
-          "ms_opt": 16.102,
-          "gap": 7.63,
-          "gap_opt": 6.93,
-          "noise": 0.006662149954832881
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 22.609,
-          "ms_opt": 20.046,
-          "gap": 9.74,
-          "gap_opt": 8.63,
-          "noise": 0.003715334601264983
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's Canny (canny.cpp) takes 16-bit Sobel gradients, classifies the direction by comparing `|gy|` with tan(22.5 deg) x `|gx|` (no trigonometry), keeps the candidates in a stack and runs hysteresis over a padded map. `imageproc::edges::canny` computes `atan2` for every pixel in its non-maximum suppression, works on f32 images and runs a generic clamped Sobel, in addition to its own Gaussian blur.",
-      "fix_target": "oxipix wave 2: i16 separable Sobel, integer direction test, stack-based hysteresis (needs the wave 2 Sobel and Gaussian).",
-      "plane": "RUSTCVGUID-166",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/47",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 11,
-      "id": "warp_affine",
-      "tutorial": "tutorial_warp_affine",
-      "operation": "Rotate 30 deg + scale 0.6",
-      "opencv_ms": 0.264,
-      "best_crate": "oximedia-cv",
-      "best_gap": 6.31,
-      "ms_lost": 1.402,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 2.8,
-          "ms_opt": 2.61,
-          "gap": 10.61,
-          "gap_opt": 9.89,
-          "noise": 0.002142857142857143
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 1.855,
-          "ms_opt": 1.666,
-          "gap": 7.03,
-          "gap_opt": 6.31,
-          "noise": 0.00862533692722372
-        }
-      ],
-      "status": "researched",
-      "root_cause": "Same mechanism as homography, for affine: imgwarp.cpp precomputes the 2x3 matrix in fixed point and steps the source coordinates by constants along each row; the interpolation is SIMD. The Rust crates evaluate the transform and an f32 bilinear sample per pixel through generic accessors.",
-      "fix_target": "oxipix wave 3: fixed-point incremental bilinear warp (shared with homography).",
-      "plane": "RUSTCVGUID-168",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 12,
-      "id": "adding_images",
-      "tutorial": "tutorial_adding_images",
-      "operation": "addWeighted (0.5 / 0.5)",
-      "opencv_ms": 0.038,
-      "best_crate": "image/imageproc",
-      "best_gap": 5.76,
-      "ms_lost": 0.181,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.264,
-          "ms_opt": 0.219,
-          "gap": 6.95,
-          "gap_opt": 5.76,
-          "noise": 0.09090909090909091
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 0.513,
-          "ms_opt": 0.466,
-          "gap": 13.5,
-          "gap_opt": 12.26,
-          "noise": 0.007797270955165692
-        }
-      ],
-      "status": "researched",
-      "root_cause": "`cv::addWeighted` is one SIMD loop over the raw buffers with the weights as constants (arithm.cpp). The Rust versions walk `Pixel` iterators with bounds checks and per-channel f32 arithmetic, and allocate the output image.",
-      "fix_target": "oxipix wave 3: slice-level fixed-point `a * w1 + b * w2` over `as_raw()` buffers that the compiler vectorises.",
-      "plane": "RUSTCVGUID-169",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/50",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 13,
-      "id": "smoothing_box",
-      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
-      "operation": "Box blur (5x5, r=2)",
-      "opencv_ms": 0.239,
-      "best_crate": "image/imageproc",
-      "best_gap": 5.71,
-      "ms_lost": 1.126,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 1.365,
-          "ms_opt": 1.475,
-          "gap": 5.71,
-          "gap_opt": 6.17,
-          "noise": 0.03223443223443223
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 1.535,
-          "ms_opt": 1.561,
-          "gap": 6.42,
-          "gap_opt": 6.53,
-          "noise": 0.011726384364820847
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's `blur` keeps running sums along rows and columns (box_filter.simd.hpp `RowSum` / `ColumnSum`), O(1) per pixel for any window size. The guide builds a box from `separable_filter_equal` with f32 taps, which costs O(window) per pixel.",
-      "fix_target": "oxipix wave 2: running-sum box blur on u8 slices.",
-      "plane": "RUSTCVGUID-170",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/51",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 14,
+      "rank": 2,
       "id": "feature_detection_fast",
       "tutorial": "tutorial_feature_detection",
       "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
-      "opencv_ms": 0.565,
-      "best_crate": "image/imageproc",
-      "best_gap": 5.64,
-      "ms_lost": 2.619,
+      "opencv_ms": 0.576,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 4.22,
+      "ms_lost": 1.855,
       "parity": "mismatch",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.507,
-          "ms_opt": 3.184,
-          "gap": 6.21,
-          "gap_opt": 5.64,
-          "noise": 0.03934987168520103
+          "ms": 3.21,
+          "ms_opt": 3.161,
+          "gap": 5.57,
+          "gap_opt": 5.49,
+          "noise": 0.018068535825545174
         },
         {
           "name": "oximedia-cv",
-          "ms": 7.587,
-          "ms_opt": 7.088,
-          "gap": 13.43,
-          "gap_opt": 12.55,
-          "noise": 0.034005535784895215
+          "ms": 6.966,
+          "ms_opt": 6.991,
+          "gap": 12.09,
+          "gap_opt": 12.14,
+          "noise": 0.007464829170255526
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 2.478,
+          "ms_opt": 2.431,
+          "gap": 4.3,
+          "gap_opt": 4.22,
+          "noise": 0.005649717514124294
         }
       ],
-      "status": "researched",
+      "status": "fix-proposed",
       "root_cause": "OpenCV's FAST rejects most pixels with a high-speed test on the four compass pixels (`pixel[0]`, `pixel[8]`, then 4/12, 2/10, ...) and evaluates 16 pixels per step with SIMD (fast.cpp L205-L260). `imageproc::corners::corners_fast9` evaluates the full ring for every pixel and then computes a score, and the non-max suppression and sorting are added on top; `oximedia_cv::FastDetector` has no early-out either (and misses wrapped arcs, see its issue).",
-      "fix_target": "oxipix wave 3: FAST-9 with compass early-out, 3x3 non-max suppression and top-N selection with `select_nth_unstable`.",
+      "fix_target": "oxipix wave 3: FAST-9 with compass early-out, 3x3 non-max suppression and top-N selection with `select_nth_unstable`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-175",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
       "owner": null,
       "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; reported upstream as https://github.com/cool-japan/oximedia/issues/32."
     },
     {
-      "rank": 15,
-      "id": "sobel",
-      "tutorial": "tutorial_sobel_derivatives",
-      "operation": "Sobel X derivative",
-      "opencv_ms": 0.142,
-      "best_crate": "oximedia-cv",
-      "best_gap": 5.53,
-      "ms_lost": 0.643,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 3.842,
-          "ms_opt": 3.865,
-          "gap": 27.06,
-          "gap_opt": 27.22,
-          "noise": 0.003643935450286309
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 0.785,
-          "ms_opt": 0.785,
-          "gap": 5.53,
-          "gap_opt": 5.53,
-          "noise": 0.01019108280254777
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV computes Sobel as separable [1 2 1] and [-1 0 1] passes on 16-bit data with SIMD (deriv.cpp, filter.simd.hpp). `imageproc::gradients::horizontal_sobel` uses a generic 3x3 `filter_clamped` with per-pixel bounds checks and i16 conversion; the snippet then normalises to u8 per pixel.",
-      "fix_target": "oxipix wave 2: separable i16 Sobel on slices, optional `convertScaleAbs` style output.",
-      "plane": "RUSTCVGUID-171",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/52",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 16,
-      "id": "basic_linear_transform",
-      "tutorial": "tutorial_basic_linear_transform",
-      "operation": "Contrast + brightness (a=1.3, b=40)",
-      "opencv_ms": 0.064,
-      "best_crate": "image/imageproc",
-      "best_gap": 5.37,
-      "ms_lost": 0.28,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.435,
-          "ms_opt": 0.344,
-          "gap": 6.8,
-          "gap_opt": 5.37,
-          "noise": 0.01839080459770115
-        }
-      ],
-      "status": "researched",
-      "root_cause": "`Mat::convertTo(dst, -1, alpha, beta)` is one SIMD saturating loop over the buffer. The Rust snippet maps every `Pixel` with an f32 multiply, add and clamp, and allocates the output.",
-      "fix_target": "oxipix wave 3: slice-level fixed-point scale and shift with saturation.",
-      "plane": "RUSTCVGUID-172",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/53",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 17,
-      "id": "feature_description",
-      "tutorial": "tutorial_feature_description",
-      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
-      "opencv_ms": 2.398,
-      "best_crate": "image/imageproc",
-      "best_gap": 4.91,
-      "ms_lost": 9.371,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 12.52,
-          "ms_opt": 11.769,
-          "gap": 5.22,
-          "gap_opt": 4.91,
-          "noise": 0.04121405750798722
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 16.493,
-          "ms_opt": 16.196,
-          "gap": 6.88,
-          "gap_opt": 6.75,
-          "noise": 0.02025101558236828
-        }
-      ],
-      "status": "researched",
-      "root_cause": "The row is dominated by detection (two FAST runs, see `feature_detection_fast`), followed by the descriptor and Hamming matching of 250 x 250 pairs. OpenCV's BRIEF samples with integral images and compares byte-packed bits with SIMD popcount; the Rust matcher is a scalar double loop over `u128` pairs and `Vec<bool>`-style intermediate results in the shared sampler.",
-      "fix_target": "oxipix wave 3: FAST (above), integral-image BRIEF writing straight into `[u128; 2]`, matcher over packed words with `count_ones`.",
-      "plane": "RUSTCVGUID-185",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 18,
-      "id": "filter_2d",
-      "tutorial": "tutorial_filter_2d",
-      "operation": "2D convolution (5x5 box kernel)",
-      "opencv_ms": 0.662,
-      "best_crate": "image/imageproc",
-      "best_gap": 4.28,
-      "ms_lost": 2.17,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 3.384,
-          "ms_opt": 2.832,
-          "gap": 5.11,
-          "gap_opt": 4.28,
-          "noise": 0.08215130023640663
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 8.362,
-          "ms_opt": 8.494,
-          "gap": 12.63,
-          "gap_opt": 12.83,
-          "noise": 0.004066012915570438
-        }
-      ],
-      "status": "researched",
-      "root_cause": "`cv::filter2D` with a 5x5 kernel runs a SIMD correlation (filter.simd.hpp) on rows that are padded once, so the inner loop has no bounds checks. `imageproc::filter::filter3x3`/the guide's generic kernel path clamps coordinates for every tap and converts through f32 per channel.",
-      "fix_target": "oxipix wave 2: padded-row f32 correlation with a const-generic kernel size, plus a separable fast path when the kernel is rank 1.",
-      "plane": "RUSTCVGUID-174",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 19,
+      "rank": 3,
       "id": "distance_transform",
       "tutorial": "tutorial_distance_transform",
       "operation": "Distance transform (L2)",
-      "opencv_ms": 0.25,
+      "opencv_ms": 0.248,
       "best_crate": "image/imageproc",
-      "best_gap": 3.26,
-      "ms_lost": 0.565,
+      "best_gap": 3.45,
+      "ms_lost": 0.607,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.815,
-          "ms_opt": 0.852,
-          "gap": 3.26,
-          "gap_opt": 3.41,
-          "noise": 0.0098159509202454
+          "ms": 0.855,
+          "ms_opt": 0.894,
+          "gap": 3.45,
+          "gap_opt": 3.6,
+          "noise": 0.011695906432748539
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.996,
+          "ms_opt": 1.02,
+          "gap": 4.02,
+          "gap_opt": 4.11,
+          "noise": 0.006024096385542169
         }
       ],
-      "status": "researched",
+      "status": "fix-proposed",
       "root_cause": "OpenCV's `distanceTransform(DIST_L2, 3)` is a two-pass 3x3 chamfer approximation (distransform.cpp, forward and backward mask), i.e. it does less work than an exact Euclidean transform. `imageproc::distance_transform` is exact (Felzenszwalb and Huttenlocher style) and uses wider intermediate types, so part of the gap is different work, not slowness.",
-      "fix_target": "oxipix wave 3: 3x3 chamfer variant with an exact-Euclidean option, and mark the row's semantic difference.",
+      "fix_target": "oxipix wave 3: 3x3 chamfer variant with an exact-Euclidean option, and mark the row's semantic difference. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-176",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/57",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 20,
-      "id": "hough_lines",
-      "tutorial": "tutorial_hough_lines",
-      "operation": "Canny + standard Hough lines",
-      "opencv_ms": 6.612,
-      "best_crate": "image/imageproc",
-      "best_gap": 3.22,
-      "ms_lost": 14.688,
+      "rank": 4,
+      "id": "homography",
+      "tutorial": "tutorial_homography",
+      "operation": "Perspective unwarp (4-point quad)",
+      "opencv_ms": 0.587,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.4,
+      "ms_lost": 1.408,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 23.222,
-          "ms_opt": 21.3,
-          "gap": 3.51,
-          "gap_opt": 3.22,
-          "noise": 0.004134010851778486
+          "ms": 3.863,
+          "ms_opt": 4.167,
+          "gap": 6.58,
+          "gap_opt": 7.1,
+          "noise": 0.0015531969971524723
         },
         {
-          "name": "oximedia-cv",
-          "ms": 43.283,
-          "ms_opt": 41.513,
-          "gap": 6.55,
-          "gap_opt": 6.28,
-          "noise": 0.007115957766328581
+          "name": "oxipix",
+          "ms": 6.72,
+          "ms_opt": 6.264,
+          "gap": 11.45,
+          "gap_opt": 10.67,
+          "noise": 0.0017857142857142859
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 1.995,
+          "ms_opt": 1.998,
+          "gap": 3.4,
+          "gap_opt": 3.4,
+          "noise": 0.0020050125313283208
         }
       ],
-      "status": "researched",
-      "root_cause": "Almost all of the time is the Canny before the transform (about 18 of 20 ms); OpenCV's `HoughLinesStandard` (hough.cpp) uses precomputed sine and cosine tables and integer rho. The transform itself is 1.0 to 1.5x of OpenCV's.",
-      "fix_target": "Follows the wave 2 Canny; no separate kernel needed.",
-      "plane": "RUSTCVGUID-179",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/60",
+      "status": "fix-proposed",
+      "root_cause": "OpenCV warps with `remapBilinear` on fixed-point coordinates (imgwarp.cpp, `INTER_BITS`), computing the source position incrementally along each row and vectorising the interpolation. `imageproc::geometric_transformations::warp_into` / the oxipix unwarp compute a full projective division and an f32 bilinear sample per output pixel through the `Pixel` API.",
+      "fix_target": "oxipix wave 3: row-incremental projective coordinates with fixed-point bilinear sampling on u8 rows. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-167",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/48",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 21,
-      "id": "psnr",
-      "tutorial": "tutorial_video_input_psnr_ssim",
-      "operation": "PSNR",
-      "opencv_ms": 0.146,
-      "best_crate": "image/imageproc",
-      "best_gap": 2.71,
-      "ms_lost": 0.25,
-      "parity": "n/a",
+      "rank": 5,
+      "id": "smoothing_bilateral",
+      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
+      "operation": "Bilateral filter (d=5, r=2, sc=30)",
+      "opencv_ms": 0.806,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.13,
+      "ms_lost": 1.714,
+      "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.396,
-          "ms_opt": 0.396,
-          "gap": 2.71,
+          "ms": 9.154,
+          "ms_opt": 5.838,
+          "gap": 11.36,
+          "gap_opt": 7.24,
+          "noise": 0.001529386060738475
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 32.873,
+          "ms_opt": 33.331,
+          "gap": 40.79,
+          "gap_opt": 41.35,
+          "noise": 0.0018252060961883613
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 2.705,
+          "ms_opt": 2.52,
+          "gap": 3.36,
+          "gap_opt": 3.13,
+          "noise": 0.005914972273567467
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV precomputes the spatial weights once and a 256-entry table for the colour weights (bilateral_filter.dispatch.cpp `space_weight`, `color_weight`), so each tap is two table reads. `imageproc::filter::bilateral_filter` evaluates the Gaussian of the colour distance per tap (a fast `exp` approximation, no table) through the `Pixel` API.",
+      "fix_target": "oxipix wave 2: bilateral with a spatial table and a 256-entry colour LUT on interleaved u8 rows. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-164",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 6,
+      "id": "feature_description",
+      "tutorial": "tutorial_feature_description",
+      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
+      "opencv_ms": 2.389,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.04,
+      "ms_lost": 4.863,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 12.142,
+          "ms_opt": 11.671,
+          "gap": 5.08,
+          "gap_opt": 4.89,
+          "noise": 0.018283643551309504
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 15.544,
+          "ms_opt": 15.407,
+          "gap": 6.51,
+          "gap_opt": 6.45,
+          "noise": 0.004246011322696861
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 7.574,
+          "ms_opt": 7.252,
+          "gap": 3.17,
+          "gap_opt": 3.04,
+          "noise": 0.0036968576709796672
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "The row is dominated by detection (two FAST runs, see `feature_detection_fast`), followed by the descriptor and Hamming matching of 250 x 250 pairs. OpenCV's BRIEF samples with integral images and compares byte-packed bits with SIMD popcount; the Rust matcher is a scalar double loop over `u128` pairs and `Vec<bool>`-style intermediate results in the shared sampler.",
+      "fix_target": "oxipix wave 3: FAST (above), integral-image BRIEF writing straight into `[u128; 2]`, matcher over packed words with `count_ones`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-185",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 7,
+      "id": "erosion",
+      "tutorial": "tutorial_erosion_dilatation",
+      "operation": "Erode (5x5 square, r=2)",
+      "opencv_ms": 0.01,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.0,
+      "ms_lost": 0.02,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.273,
+          "ms_opt": 0.285,
+          "gap": 27.3,
+          "gap_opt": 28.5,
+          "noise": 0.0
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 3.266,
+          "ms_opt": 2.768,
+          "gap": 326.6,
+          "gap_opt": 276.8,
+          "noise": 0.0030618493570116353
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.03,
+          "ms_opt": 0.03,
+          "gap": 3.0,
+          "gap_opt": 3.0,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV erodes with separable running minima on 16 pixels at a time (morph.simd.hpp `MorphRowVec` / `MorphColumnVec`, `ErodeVec8u`). `imageproc::morphology::erode` computes a full distance transform of the mask and thresholds it, which is O(pixels) but with a heavy constant and unrelated to the window size.",
+      "fix_target": "oxipix wave 1: separable min/max over shifted row slices (vectorises to 16 byte lanes), van Herk / Gil-Werman for large radii. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-160",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 8,
+      "id": "pyramids",
+      "tutorial": "tutorial_pyramids",
+      "operation": "3-level pyrDown",
+      "opencv_ms": 0.045,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 2.71,
+      "ms_lost": 0.077,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 1.821,
+          "ms_opt": 1.807,
+          "gap": 40.47,
+          "gap_opt": 40.16,
+          "noise": 0.004393190554640308
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 0.868,
+          "ms_opt": 0.849,
+          "gap": 19.29,
+          "gap_opt": 18.87,
+          "noise": 0.002304147465437788
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.125,
+          "ms_opt": 0.122,
+          "gap": 2.78,
           "gap_opt": 2.71,
           "noise": 0.0
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 0.407,
-          "ms_opt": 0.407,
-          "gap": 2.79,
-          "gap_opt": 2.79,
-          "noise": 0.0
         }
       ],
-      "status": "researched",
-      "root_cause": "OpenCV computes PSNR with `absdiff`, a float conversion, a multiply and `sum`, each a SIMD pass. The Rust version converts through `Pixel` iterators and accumulates in f64 with bounds checks.",
-      "fix_target": "oxipix wave 3: single fused pass over two slices accumulating integer squared differences.",
-      "plane": "RUSTCVGUID-177",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/58",
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's `pyrDown` does the 1-4-6-4-1 blur in fixed point, horizontal pass into an int row buffer and vertical pass producing only the even rows, SIMD for 1 to 4 channels (pyramids.cpp `PyrDownVecH` / `PyrDownVecV`). The guide's `imageproc::filter::separable_filter_equal` blurs every pixel in f32 with a generic clamped lookup and then throws away three quarters of the result; the oximedia version also builds an intermediate float image.",
+      "fix_target": "oxipix wave 2: integer separable pass that only computes the kept even rows and columns, per-channel loops over slices. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-161",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/42",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 22,
-      "id": "laplace",
-      "tutorial": "tutorial_laplace_operator",
-      "operation": "Gaussian blur + Laplacian edge",
-      "opencv_ms": 0.735,
-      "best_crate": "image/imageproc",
-      "best_gap": 2.65,
-      "ms_lost": 1.212,
+      "rank": 9,
+      "id": "warp_affine",
+      "tutorial": "tutorial_warp_affine",
+      "operation": "Rotate 30 deg + scale 0.6",
+      "opencv_ms": 0.264,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 2.58,
+      "ms_lost": 0.416,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.464,
-          "ms_opt": 1.947,
-          "gap": 4.71,
-          "gap_opt": 2.65,
-          "noise": 0.005196304849884526
+          "ms": 2.525,
+          "ms_opt": 2.565,
+          "gap": 9.56,
+          "gap_opt": 9.72,
+          "noise": 0.0039603960396039604
         },
         {
           "name": "oximedia-cv",
-          "ms": 5.701,
-          "ms_opt": 5.774,
-          "gap": 7.76,
-          "gap_opt": 7.86,
-          "noise": 0.00456060340291177
+          "ms": 1.943,
+          "ms_opt": 1.651,
+          "gap": 7.36,
+          "gap_opt": 6.25,
+          "noise": 0.003088008234688626
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.68,
+          "ms_opt": 0.695,
+          "gap": 2.58,
+          "gap_opt": 2.63,
+          "noise": 0.0058823529411764705
         }
       ],
-      "status": "researched",
-      "root_cause": "OpenCV's 3x3 Laplacian on 8-bit input is a specialised SIMD kernel producing 16-bit output. `imageproc::filter::laplacian_filter` runs the generic clamped 3x3 path, and the snippet adds a Gaussian blur and a per-pixel normalisation pass.",
-      "fix_target": "oxipix wave 2: i16 3x3 Laplacian on padded rows (shares the Sobel code) with slice-level normalisation.",
-      "plane": "RUSTCVGUID-173",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/54",
+      "status": "fix-proposed",
+      "root_cause": "Same mechanism as homography, for affine: imgwarp.cpp precomputes the 2x3 matrix in fixed point and steps the source coordinates by constants along each row; the interpolation is SIMD. The Rust crates evaluate the transform and an f32 bilinear sample per pixel through generic accessors.",
+      "fix_target": "oxipix wave 3: fixed-point incremental bilinear warp (shared with homography). Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-168",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 23,
+      "rank": 10,
+      "id": "opening_closing_hats",
+      "tutorial": "tutorial_opening_closing_hats",
+      "operation": "Top-hat morphology (7x7, r=3)",
+      "opencv_ms": 0.029,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 2.17,
+      "ms_lost": 0.034,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.415,
+          "ms_opt": 1.231,
+          "gap": 14.31,
+          "gap_opt": 42.45,
+          "noise": 0.0
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 14.026,
+          "ms_opt": 10.711,
+          "gap": 483.66,
+          "gap_opt": 369.34,
+          "noise": 0.004277769855981748
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.063,
+          "ms_opt": 0.065,
+          "gap": 2.17,
+          "gap_opt": 2.24,
+          "noise": 0.031746031746031744
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "Same mechanism as erosion, twice (opening = erode then dilate): `imageproc::morphology::grayscale_erode/grayscale_dilate` with a `Mask::square(3)` visit every mask offset for every pixel, O(k^2) with bounds handling, against OpenCV's separable vector min/max. The top-hat then subtracts with a per-pixel `get_pixel` closure.",
+      "fix_target": "oxipix wave 1: separable grey-scale erode/dilate, opening/closing and a slice-level top-hat. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-163",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/44",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 11,
       "id": "ssim",
       "tutorial": "tutorial_video_input_psnr_ssim",
       "operation": "SSIM (11x11 Gaussian)",
-      "opencv_ms": 3.066,
-      "best_crate": "image/imageproc",
-      "best_gap": 1.99,
-      "ms_lost": 3.038,
+      "opencv_ms": 3.083,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.79,
+      "ms_lost": 2.421,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 6.104,
-          "ms_opt": 6.222,
-          "gap": 1.99,
-          "gap_opt": 2.03,
-          "noise": 0.1435124508519004
+          "ms": 5.975,
+          "ms_opt": 5.833,
+          "gap": 1.94,
+          "gap_opt": 1.89,
+          "noise": 0.1295397489539749
         },
         {
           "name": "oximedia-cv",
-          "ms": 108.047,
-          "ms_opt": 93.216,
-          "gap": 35.24,
-          "gap_opt": 30.4,
-          "noise": 0.03877942006719298
+          "ms": 100.466,
+          "ms_opt": 86.584,
+          "gap": 32.59,
+          "gap_opt": 28.08,
+          "noise": 0.0009754543825771904
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 5.523,
+          "ms_opt": 5.504,
+          "gap": 1.79,
+          "gap_opt": 1.79,
+          "noise": 0.008328806807894261
         }
       ],
-      "status": "researched",
+      "status": "fix-proposed",
       "root_cause": "OpenCV's SSIM sample is five Gaussian blurs of f32 images plus element-wise operations, all vectorised. The Rust version uses generic f32 blurs and per-pixel loops; it is already within 2x.",
-      "fix_target": "oxipix wave 3: reuse the wave 2 separable Gaussian in f32 and fuse the element-wise maths.",
+      "fix_target": "oxipix wave 3: reuse the wave 2 separable Gaussian in f32 and fuse the element-wise maths. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-178",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/59",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 24,
+      "rank": 12,
+      "id": "basic_linear_transform",
+      "tutorial": "tutorial_basic_linear_transform",
+      "operation": "Contrast + brightness (a=1.3, b=40)",
+      "opencv_ms": 0.064,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.64,
+      "ms_lost": 0.041,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.449,
+          "ms_opt": 0.341,
+          "gap": 7.02,
+          "gap_opt": 5.33,
+          "noise": 0.004454342984409799
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.129,
+          "ms_opt": 0.105,
+          "gap": 2.02,
+          "gap_opt": 1.64,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "`Mat::convertTo(dst, -1, alpha, beta)` is one SIMD saturating loop over the buffer. The Rust snippet maps every `Pixel` with an f32 multiply, add and clamp, and allocates the output.",
+      "fix_target": "oxipix wave 3: slice-level fixed-point scale and shift with saturation. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-172",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/53",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 13,
       "id": "find_contours",
       "tutorial": "tutorial_find_contours",
       "operation": "Find contours + approxPolyDP",
-      "opencv_ms": 0.158,
+      "opencv_ms": 0.157,
       "best_crate": "oxipix",
-      "best_gap": 1.61,
-      "ms_lost": 0.096,
+      "best_gap": 1.6,
+      "ms_lost": 0.094,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.519,
-          "ms_opt": 0.478,
-          "gap": 3.28,
+          "ms": 0.513,
+          "ms_opt": 0.476,
+          "gap": 3.27,
           "gap_opt": 3.03,
-          "noise": 0.019267822736030827
+          "noise": 0.015594541910331383
         },
         {
           "name": "oxipix",
-          "ms": 0.262,
-          "ms_opt": 0.254,
-          "gap": 1.66,
-          "gap_opt": 1.61,
-          "noise": 0.007633587786259542
+          "ms": 0.265,
+          "ms_opt": 0.251,
+          "gap": 1.69,
+          "gap_opt": 1.6,
+          "noise": 0.01509433962264151
         }
       ],
       "status": "researched",
@@ -833,110 +549,214 @@
       "known_difference": null
     },
     {
-      "rank": 25,
-      "id": "threshold",
-      "tutorial": "tutorial_threshold",
-      "operation": "Otsu binary threshold",
-      "opencv_ms": 0.031,
-      "best_crate": "image/imageproc",
-      "best_gap": 1.48,
-      "ms_lost": 0.015,
-      "parity": "ok",
+      "rank": 14,
+      "id": "adding_images",
+      "tutorial": "tutorial_adding_images",
+      "operation": "addWeighted (0.5 / 0.5)",
+      "opencv_ms": 0.038,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.47,
+      "ms_lost": 0.018,
+      "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.046,
-          "ms_opt": 0.046,
-          "gap": 1.48,
-          "gap_opt": 1.48,
-          "noise": 0.0
+          "ms": 0.249,
+          "ms_opt": 0.215,
+          "gap": 6.55,
+          "gap_opt": 5.66,
+          "noise": 0.008032128514056226
         },
         {
-          "name": "oxipix",
-          "ms": 0.162,
-          "ms_opt": 0.139,
-          "gap": 5.23,
-          "gap_opt": 4.48,
-          "noise": 0.024691358024691357
+          "name": "oximedia-cv",
+          "ms": 0.506,
+          "ms_opt": 0.461,
+          "gap": 13.32,
+          "gap_opt": 12.13,
+          "noise": 0.007905138339920948
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.056,
+          "ms_opt": 0.056,
+          "gap": 1.47,
+          "gap_opt": 1.47,
+          "noise": 0.0
         }
       ],
-      "status": "researched",
-      "root_cause": "OpenCV's Otsu threshold builds the histogram and applies a SIMD compare (thresh.cpp). The Rust versions build the histogram through `Pixel` iterators and write the output with `put_pixel`.",
-      "fix_target": "oxipix wave 3: histogram and threshold on raw slices.",
-      "plane": "RUSTCVGUID-181",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
+      "status": "fix-proposed",
+      "root_cause": "`cv::addWeighted` is one SIMD loop over the raw buffers with the weights as constants (arithm.cpp). The Rust versions walk `Pixel` iterators with bounds checks and per-channel f32 arithmetic, and allocate the output image.",
+      "fix_target": "oxipix wave 3: slice-level fixed-point `a * w1 + b * w2` over `as_raw()` buffers that the compiler vectorises. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-169",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/50",
       "owner": null,
       "known_difference": null
     },
     {
-      "rank": 26,
+      "rank": 15,
+      "id": "smoothing_gaussian",
+      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
+      "operation": "Gaussian blur (sigma=1.1)",
+      "opencv_ms": 0.198,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.31,
+      "ms_lost": 0.062,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 1.728,
+          "ms_opt": 1.723,
+          "gap": 8.73,
+          "gap_opt": 8.7,
+          "noise": 0.0034722222222222225
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 4.695,
+          "ms_opt": 4.788,
+          "gap": 23.71,
+          "gap_opt": 24.18,
+          "noise": 0.0034078807241746537
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.262,
+          "ms_opt": 0.26,
+          "gap": 1.32,
+          "gap_opt": 1.31,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's `GaussianBlur` for 8-bit images is a separable fixed-point convolution (smooth.simd.hpp `hlineSmooth` / `vlineSmooth`) with integer kernel weights. `imageproc::filter::gaussian_blur_f32` converts to f32, runs two generic clamped passes and converts back; the work per sample is several times larger.",
+      "fix_target": "oxipix wave 2: separable integer Gaussian (kernel scaled to 2^k) on u8 slices, one row buffer, no per-pixel bounds checks in the interior. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-165",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/46",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 16,
+      "id": "template_matching",
+      "tutorial": "tutorial_template_matching",
+      "operation": "Template match (TM_SQDIFF)",
+      "opencv_ms": 1.631,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.25,
+      "ms_lost": 0.401,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 114.968,
+          "ms_opt": 118.326,
+          "gap": 70.49,
+          "gap_opt": 72.55,
+          "noise": 0.011133532809129498
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 2.08,
+          "ms_opt": 2.032,
+          "gap": 1.28,
+          "gap_opt": 1.25,
+          "noise": 0.004807692307692308
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV computes the cross-correlation with a block-wise DFT (templmatch.cpp `convolve_dft`, `getOptimalDFTSize`) and gets the window energies from integral images, so the cost does not grow with the template area. `imageproc::template_matching::match_template` evaluates the sum of squared errors directly for every position: 411 x 261 positions x 1600 template pixels is about 170M multiply-adds, single threaded (its `rayon` feature is off).",
+      "fix_target": "oxipix wave 1: SSE as `sum(I^2 window) - 2 * corr + sum(T^2)`, with the correlation by FFT (`realfft`) and the window energy from an integral image. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/5 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-158",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 17,
+      "id": "filter_2d",
+      "tutorial": "tutorial_filter_2d",
+      "operation": "2D convolution (5x5 box kernel)",
+      "opencv_ms": 0.663,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.17,
+      "ms_lost": 0.11,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.308,
+          "ms_opt": 2.639,
+          "gap": 4.99,
+          "gap_opt": 3.98,
+          "noise": 0.005441354292623942
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 8.361,
+          "ms_opt": 8.342,
+          "gap": 12.61,
+          "gap_opt": 12.58,
+          "noise": 0.00669776342542758
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.773,
+          "ms_opt": 0.774,
+          "gap": 1.17,
+          "gap_opt": 1.17,
+          "noise": 0.0025873221216041395
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "`cv::filter2D` with a 5x5 kernel runs a SIMD correlation (filter.simd.hpp) on rows that are padded once, so the inner loop has no bounds checks. `imageproc::filter::filter3x3`/the guide's generic kernel path clamps coordinates for every tap and converts through f32 per channel.",
+      "fix_target": "oxipix wave 2: padded-row f32 correlation with a const-generic kernel size, plus a separable fast path when the kernel is rank 1. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-174",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 18,
       "id": "threshold_inRange",
       "tutorial": "tutorial_threshold_inRange",
       "operation": "HSV red range mask",
       "opencv_ms": 0.125,
-      "best_crate": "image/imageproc",
-      "best_gap": 1.46,
-      "ms_lost": 0.057,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.15,
+      "ms_lost": 0.019,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.197,
-          "ms_opt": 0.182,
-          "gap": 1.58,
-          "gap_opt": 1.46,
+          "ms": 0.194,
+          "ms_opt": 0.179,
+          "gap": 1.55,
+          "gap_opt": 1.43,
+          "noise": 0.010309278350515464
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 0.445,
+          "ms_opt": 0.367,
+          "gap": 3.56,
+          "gap_opt": 2.94,
           "noise": 0.0
         },
         {
-          "name": "oximedia-cv",
-          "ms": 0.452,
-          "ms_opt": 0.374,
-          "gap": 3.62,
-          "gap_opt": 2.99,
-          "noise": 0.004424778761061947
+          "name": "oxipix (imgproc)",
+          "ms": 0.248,
+          "ms_opt": 0.144,
+          "gap": 1.98,
+          "gap_opt": 1.15,
+          "noise": 0.0
         }
       ],
-      "status": "researched",
+      "status": "fix-proposed",
       "root_cause": "OpenCV converts to HSV with a SIMD `cvtColor` (color_hsv.simd.hpp) and `inRange` with SIMD compares. The Rust versions convert per pixel with f32 maths and compare through `Pixel` iterators.",
-      "fix_target": "oxipix wave 3: integer HSV conversion and range test fused in one slice pass.",
+      "fix_target": "oxipix wave 3: integer HSV conversion and range test fused in one slice pass. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-182",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/63",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 27,
-      "id": "equalize",
-      "tutorial": "tutorial_histogram_equalization",
-      "operation": "Histogram equalisation",
-      "opencv_ms": 0.255,
-      "best_crate": "oximedia-cv",
-      "best_gap": 1.21,
-      "ms_lost": 0.054,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.357,
-          "ms_opt": 0.356,
-          "gap": 1.4,
-          "gap_opt": 1.4,
-          "noise": 0.011204481792717087
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 0.31,
-          "ms_opt": 0.309,
-          "gap": 1.22,
-          "gap_opt": 1.21,
-          "noise": 0.0064516129032258064
-        }
-      ],
-      "status": "researched",
-      "root_cause": "Both stages are cheap in OpenCV (histogram, 256-entry LUT, `LUT` SIMD apply); the Rust versions are close (1.2x). The remaining gap is the per-pixel `get_pixel` / `put_pixel` access.",
-      "fix_target": "oxipix wave 3: slice-level histogram and LUT application.",
-      "plane": "RUSTCVGUID-183",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/64",
       "owner": null,
       "known_difference": null
     }
@@ -944,30 +764,82 @@
   "at_parity": [
     {
       "rank": 0,
+      "id": "psnr",
+      "tutorial": "tutorial_video_input_psnr_ssim",
+      "operation": "PSNR",
+      "opencv_ms": 0.147,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.1,
+      "ms_lost": -0.133,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.389,
+          "ms_opt": 0.389,
+          "gap": 2.65,
+          "gap_opt": 2.65,
+          "noise": 0.005141388174807198
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 0.4,
+          "ms_opt": 0.4,
+          "gap": 2.72,
+          "gap_opt": 2.72,
+          "noise": 0.0
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.014,
+          "ms_opt": 0.14,
+          "gap": 0.1,
+          "gap_opt": 0.95,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV computes PSNR with `absdiff`, a float conversion, a multiply and `sum`, each a SIMD pass. The Rust version converts through `Pixel` iterators and accumulates in f64 with bounds checks.",
+      "fix_target": "oxipix wave 3: single fused pass over two slices accumulating integer squared differences. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-177",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/58",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
       "id": "feature_detection_orb",
       "tutorial": "tutorial_feature_detection",
       "operation": "Oriented keypoints (t=30, max=250)",
-      "opencv_ms": 6.544,
+      "opencv_ms": 6.609,
       "best_crate": "image/imageproc",
-      "best_gap": 0.34,
-      "ms_lost": -4.339,
+      "best_gap": 0.33,
+      "ms_lost": -4.425,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.275,
-          "ms_opt": 2.205,
+          "ms": 2.312,
+          "ms_opt": 2.184,
           "gap": 0.35,
-          "gap_opt": 0.34,
-          "noise": 0.007032967032967033
+          "gap_opt": 0.33,
+          "noise": 0.005190311418685122
         },
         {
           "name": "oximedia-cv",
-          "ms": 7.093,
-          "ms_opt": 7.113,
-          "gap": 1.08,
-          "gap_opt": 1.09,
-          "noise": 0.005639362752009023
+          "ms": 6.967,
+          "ms_opt": 6.979,
+          "gap": 1.05,
+          "gap_opt": 1.06,
+          "noise": 0.00775082531936271
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 2.523,
+          "ms_opt": 2.434,
+          "gap": 0.38,
+          "gap_opt": 0.37,
+          "noise": 0.01426872770511296
         }
       ],
       "status": "unprobed",
@@ -975,6 +847,350 @@
       "fix_target": null,
       "plane": null,
       "issue": null,
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "threshold",
+      "tutorial": "tutorial_threshold",
+      "operation": "Otsu binary threshold",
+      "opencv_ms": 0.03,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.93,
+      "ms_lost": -0.002,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.045,
+          "ms_opt": 0.045,
+          "gap": 1.5,
+          "gap_opt": 1.5,
+          "noise": 0.0
+        },
+        {
+          "name": "oxipix",
+          "ms": 0.159,
+          "ms_opt": 0.136,
+          "gap": 5.3,
+          "gap_opt": 4.53,
+          "noise": 0.025157232704402517
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.028,
+          "ms_opt": 0.028,
+          "gap": 0.93,
+          "gap_opt": 0.93,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's Otsu threshold builds the histogram and applies a SIMD compare (thresh.cpp). The Rust versions build the histogram through `Pixel` iterators and write the output with `put_pixel`.",
+      "fix_target": "oxipix wave 3: histogram and threshold on raw slices. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-181",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "equalize",
+      "tutorial": "tutorial_histogram_equalization",
+      "operation": "Histogram equalisation",
+      "opencv_ms": 0.253,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.92,
+      "ms_lost": -0.021,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.351,
+          "ms_opt": 0.351,
+          "gap": 1.39,
+          "gap_opt": 1.39,
+          "noise": 0.011396011396011397
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 0.305,
+          "ms_opt": 0.304,
+          "gap": 1.21,
+          "gap_opt": 1.2,
+          "noise": 0.0
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.311,
+          "ms_opt": 0.232,
+          "gap": 1.23,
+          "gap_opt": 0.92,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "Both stages are cheap in OpenCV (histogram, 256-entry LUT, `LUT` SIMD apply); the Rust versions are close (1.2x). The remaining gap is the per-pixel `get_pixel` / `put_pixel` access.",
+      "fix_target": "oxipix wave 3: slice-level histogram and LUT application. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-183",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/64",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "smoothing_box",
+      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
+      "operation": "Box blur (5x5, r=2)",
+      "opencv_ms": 0.239,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.92,
+      "ms_lost": -0.02,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 1.344,
+          "ms_opt": 1.336,
+          "gap": 5.62,
+          "gap_opt": 5.59,
+          "noise": 0.002976190476190476
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 2.044,
+          "ms_opt": 1.528,
+          "gap": 8.55,
+          "gap_opt": 6.39,
+          "noise": 0.005870841487279843
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.22,
+          "ms_opt": 0.219,
+          "gap": 0.92,
+          "gap_opt": 0.92,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's `blur` keeps running sums along rows and columns (box_filter.simd.hpp `RowSum` / `ColumnSum`), O(1) per pixel for any window size. The guide builds a box from `separable_filter_equal` with f32 taps, which costs O(window) per pixel.",
+      "fix_target": "oxipix wave 2: running-sum box blur on u8 slices. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-170",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/51",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "laplace",
+      "tutorial": "tutorial_laplace_operator",
+      "operation": "Gaussian blur + Laplacian edge",
+      "opencv_ms": 0.733,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.99,
+      "ms_lost": -0.008,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.465,
+          "ms_opt": 1.907,
+          "gap": 4.73,
+          "gap_opt": 2.6,
+          "noise": 0.00404040404040404
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 5.723,
+          "ms_opt": 5.714,
+          "gap": 7.81,
+          "gap_opt": 7.8,
+          "noise": 0.008037742442774769
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.73,
+          "ms_opt": 0.725,
+          "gap": 1.0,
+          "gap_opt": 0.99,
+          "noise": 0.0027397260273972603
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's 3x3 Laplacian on 8-bit input is a specialised SIMD kernel producing 16-bit output. `imageproc::filter::laplacian_filter` runs the generic clamped 3x3 path, and the snippet adds a Gaussian blur and a per-pixel normalisation pass.",
+      "fix_target": "oxipix wave 2: i16 3x3 Laplacian on padded rows (shares the Sobel code) with slice-level normalisation. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-173",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/54",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "sobel",
+      "tutorial": "tutorial_sobel_derivatives",
+      "operation": "Sobel X derivative",
+      "opencv_ms": 0.141,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.62,
+      "ms_lost": -0.053,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.847,
+          "ms_opt": 3.806,
+          "gap": 27.28,
+          "gap_opt": 26.99,
+          "noise": 0.006758513127112035
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 0.784,
+          "ms_opt": 0.738,
+          "gap": 5.56,
+          "gap_opt": 5.23,
+          "noise": 0.01020408163265306
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.089,
+          "ms_opt": 0.088,
+          "gap": 0.63,
+          "gap_opt": 0.62,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV computes Sobel as separable [1 2 1] and [-1 0 1] passes on 16-bit data with SIMD (deriv.cpp, filter.simd.hpp). `imageproc::gradients::horizontal_sobel` uses a generic 3x3 `filter_clamped` with per-pixel bounds checks and i16 conversion; the snippet then normalises to u8 per pixel.",
+      "fix_target": "oxipix wave 2: separable i16 Sobel on slices, optional `convertScaleAbs` style output. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-171",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/52",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "canny",
+      "tutorial": "tutorial_canny_detector",
+      "operation": "Gaussian blur + Canny (50/150)",
+      "opencv_ms": 2.271,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.74,
+      "ms_lost": -0.599,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 17.661,
+          "ms_opt": 15.813,
+          "gap": 7.78,
+          "gap_opt": 6.96,
+          "noise": 0.0026046090255364925
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 22.285,
+          "ms_opt": 19.769,
+          "gap": 9.81,
+          "gap_opt": 8.7,
+          "noise": 0.0033206192506170067
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 1.769,
+          "ms_opt": 1.672,
+          "gap": 0.78,
+          "gap_opt": 0.74,
+          "noise": 0.013566986998304128
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's Canny (canny.cpp) takes 16-bit Sobel gradients, classifies the direction by comparing `|gy|` with tan(22.5 deg) x `|gx|` (no trigonometry), keeps the candidates in a stack and runs hysteresis over a padded map. `imageproc::edges::canny` computes `atan2` for every pixel in its non-maximum suppression, works on f32 images and runs a generic clamped Sobel, in addition to its own Gaussian blur.",
+      "fix_target": "oxipix wave 2: i16 separable Sobel, integer direction test, stack-based hysteresis (needs the wave 2 Sobel and Gaussian). Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-166",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/47",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "hough_lines",
+      "tutorial": "tutorial_hough_lines",
+      "operation": "Canny + standard Hough lines",
+      "opencv_ms": 6.508,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.9,
+      "ms_lost": -0.65,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 22.765,
+          "ms_opt": 20.876,
+          "gap": 3.5,
+          "gap_opt": 3.21,
+          "noise": 0.0038655831320008782
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 42.776,
+          "ms_opt": 39.023,
+          "gap": 6.57,
+          "gap_opt": 6.0,
+          "noise": 0.004441743033476716
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 6.034,
+          "ms_opt": 5.858,
+          "gap": 0.93,
+          "gap_opt": 0.9,
+          "noise": 0.014252568776930725
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "Almost all of the time is the Canny before the transform (about 18 of 20 ms); OpenCV's `HoughLinesStandard` (hough.cpp) uses precomputed sine and cosine tables and integer rho. The transform itself is 1.0 to 1.5x of OpenCV's.",
+      "fix_target": "Canny from https://github.com/yasuomaidana/oxipix/pull/6 and the standard Hough transform with OpenCV's peak rule from https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-179",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/60",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 0,
+      "id": "hough_circle",
+      "tutorial": "tutorial_hough_circle",
+      "operation": "Canny + circle Hough (r=15..40)",
+      "opencv_ms": 3.939,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 0.22,
+      "ms_lost": -3.069,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "oximedia-cv",
+          "ms": 63.274,
+          "ms_opt": 62.756,
+          "gap": 16.06,
+          "gap_opt": 15.93,
+          "noise": 0.0014539937415051995
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.899,
+          "ms_opt": 0.87,
+          "gap": 0.23,
+          "gap_opt": 0.22,
+          "noise": 0.002224694104560623
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's gradient method (hough.cpp, `HoughCircles`) lets each edge pixel vote only along its gradient direction in a 2-D accumulator, then finds the radius from the distances to the centre candidates. `oximedia_cv`'s transform votes for every radius around every edge pixel (a 3-D accumulator, 26 radii here) and builds it from a Canny that is itself 7x slower than OpenCV's.",
+      "fix_target": "oxipix wave 3: gradient-direction circle Hough on top of the oxipix Sobel/Canny of wave 2. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-162",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/43",
       "owner": null,
       "known_difference": null
     }

@@ -167,8 +167,7 @@ mod tests {
     }
 
     const BENCH: &str = r#"{"benchmarks":[{"id":"m","tutorial":"tutorial_mat","section":"core","operation":"op","input":"4x4","opencv_ms":0.1,"opencv_fresh_ms":0.1,"rust_ms":0.5,"oximedia_ms":0.5,"oximedia_crate":"ndarray","oxipix_ticket":"OXI-1","parity":"ok"}]}"#;
-    const QUEUE_META: &str =
-        "items:\n  m: {plane: RUSTCVGUID-1, issue: \"https://github.com/o/r/issues/1\"}\n";
+    const QUEUE_META: &str = "items:\n  m: {plane: RUSTCVGUID-1, issue: \"https://github.com/o/r/issues/1\", root_cause: \"direct sum\"}\n";
 
     /// The consistent repo plus one benchmark that is slower than OpenCV, with or without queue metadata.
     fn queue_repo(meta: Option<&str>) -> TempDir {
@@ -181,7 +180,7 @@ mod tests {
     }
 
     #[rstest]
-    #[case(None, "queue of 1 items written; 2 problems still to fix")]
+    #[case(None, "queue of 1 items written; 3 problems still to fix")]
     #[case(Some(QUEUE_META), "queue of 1 items written; 0 problems still to fix")]
     fn perf_queue_command_writes_the_files(#[case] meta: Option<&str>, #[case] expected: &str) {
         let dir = queue_repo(meta);

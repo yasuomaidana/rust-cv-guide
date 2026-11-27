@@ -210,6 +210,12 @@ fn item_problems(item: &Item) -> Vec<String> {
             item.id, item.best_gap
         ));
     }
+    if item.root_cause.is_none() {
+        out.push(format!(
+            "perf queue item {} has no root_cause: research it against the OpenCV source and record why it is slower",
+            item.id
+        ));
+    }
     let ticket_ok = item
         .plane
         .as_deref()
@@ -353,6 +359,23 @@ pub fn markdown(queue: &Queue) -> String {
     lines.push("| Rank | Operation | Best gap | Per-crate gap vs OpenCV | Parity | Status | Issue | Owner |".into());
     lines.push("|---|---|---|---|---|---|---|---|".into());
     lines.extend(queue.queue.iter().map(queue_row));
+    let why: Vec<String> = queue
+        .queue
+        .iter()
+        .filter_map(|i| {
+            let cause = i.root_cause.as_deref()?;
+            let fix = i.fix_target.as_deref().unwrap_or("not decided yet");
+            Some(format!(
+                "- **{}** ({}): {cause} *Fix:* {fix}",
+                clean(&i.operation),
+                i.status
+            ))
+        })
+        .collect();
+    if !why.is_empty() {
+        lines.push("\n## Why it is slower, and the fix\n".into());
+        lines.extend(why);
+    }
     let known: Vec<String> = queue
         .queue
         .iter()
@@ -545,6 +568,25 @@ mod tests {
                 && table.contains("2.0 ms, 2.0x")
                 && table.contains("—")
         );
+    }
+
+    #[rstest]
+    fn root_causes_and_fixes_are_listed_with_the_ranking(bench: Benchmarks) {
+        let mut m = meta(&[("big", "OXI-7", "https://github.com/o/r/issues/12")]);
+        let item = m.items.get_mut("big").unwrap();
+        item.root_cause = Some("OpenCV uses a DFT.".into());
+        item.fix_target = Some("oxipix wave 1".into());
+        let md = markdown(&build(&bench, &m));
+        assert!(md.contains("## Why it is slower, and the fix"));
+        assert!(md.contains("OpenCV uses a DFT. *Fix:* oxipix wave 1"));
+        assert!(!markdown(&build(&bench, &QueueMeta::default())).contains("## Why it is slower"));
+        let undecided = Meta {
+            root_cause: Some("scalar".into()),
+            ..Meta::default()
+        };
+        let mut only = QueueMeta::default();
+        only.items.insert("big".into(), undecided);
+        assert!(markdown(&build(&bench, &only)).contains("*Fix:* not decided yet"));
     }
 
     #[rstest]

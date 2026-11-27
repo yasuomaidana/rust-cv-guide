@@ -15,7 +15,7 @@ oximedia-cv = { version = "0.2", default-features = false }
 oxipix = "0.1"
 # The imgproc kernels (OXI-94, OXI-95, OXI-96) are not released yet: benchmark them from their branch.
 # Switch to a crates.io version once oxipix publishes them.
-oxipix_next = { package = "oxipix", git = "https://github.com/yasuomaidana/oxipix", branch = "OXI-96-imgproc-wave-3-arithmetic-warps-fast-bri/main", default-features = false, features = ["imgproc"] }
+oxipix_next = { package = "oxipix", git = "https://github.com/yasuomaidana/oxipix", branch = "OXI-95-imgproc-wave-2-separable-blur-box-pyrdow/main", default-features = false, features = ["imgproc"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

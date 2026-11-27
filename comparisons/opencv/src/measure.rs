@@ -200,7 +200,7 @@ pub fn parity(a: Option<Digest>, b: Option<Digest>) -> &'static str {
 }
 
 /// Folds per-backend parity verdicts: any `mismatch` wins, then any `ok`, else `n/a`.
-pub fn combine_parity(checks: [&'static str; 2]) -> &'static str {
+pub fn combine_parity<const N: usize>(checks: [&'static str; N]) -> &'static str {
     ["mismatch", "ok"]
         .into_iter()
         .find(|verdict| checks.contains(verdict))

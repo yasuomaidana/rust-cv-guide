@@ -3,6 +3,7 @@
 mod cases_basic;
 mod cases_imgproc;
 mod measure;
+mod next;
 mod spec;
 
 #[allow(dead_code)]
@@ -155,6 +156,7 @@ struct OptRow {
     id: String,
     rust_ms: Option<f64>,
     oximedia_ms: Option<f64>,
+    oxipix_next_ms: Option<f64>,
 }
 
 #[derive(Deserialize)]
@@ -218,10 +220,12 @@ fn measure_rows(
     specs
         .map(|spec| {
             eprintln!("Running {}", spec.id);
-            let mut row = evaluate(spec, data);
+            let next = next::lookup(spec.id, &assets);
+            let mut row = evaluate(spec.with_next(next), data);
             let optimised = opt.get(&row.id);
             row.rust_opt_ms = optimised.and_then(|o| o.rust_ms);
             row.oximedia_opt_ms = optimised.and_then(|o| o.oximedia_ms);
+            row.oxipix_next_opt_ms = optimised.and_then(|o| o.oxipix_next_ms);
             row.warning_note = notes.get(&row.id).cloned();
             row
         })
@@ -242,6 +246,8 @@ fn environment(ocv: OpenCvOutput, optimised: bool) -> Environment {
         oximedia_cv_version: "0.2.1".into(),
         oxipix_version: "0.1.0".into(),
         imageproc_version: "0.27.0".into(),
+        oxipix_next_source:
+            "oxipix imgproc, git branch OXI-96-imgproc-wave-3 (stacked on OXI-94 and OXI-95)".into(),
         builds,
         opencv_build: ocv.build_info,
     }

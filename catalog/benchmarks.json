@@ -9,6 +9,7 @@
     "oximedia_cv_version": "0.2.1",
     "oxipix_version": "0.1.0",
     "imageproc_version": "0.27.0",
+    "oxipix_next_source": "oxipix imgproc, git branch OXI-96-imgproc-wave-3 (stacked on OXI-94 and OXI-95)",
     "builds": [
       "release",
       "release+fat-lto+cgu1+native"
@@ -36,30 +37,30 @@
       "operation": "addWeighted (0.5 / 0.5)",
       "input": "320x240 RGB",
       "opencv_ms": 0.038,
-      "rust_ms": 0.264,
-      "oximedia_ms": 0.513,
+      "rust_ms": 0.249,
+      "oximedia_ms": 0.506,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.94,
-      "rust_vs_opencv": 6.95,
-      "oximedia_vs_opencv": 13.5,
+      "oximedia_vs_rust": 2.03,
+      "rust_vs_opencv": 6.55,
+      "oximedia_vs_opencv": 13.32,
       "oxipix_ticket": null,
       "warning_note": null,
       "opencv_fresh_ms": 0.038,
-      "rust_opt_ms": 0.219,
-      "oximedia_opt_ms": 0.466,
+      "rust_opt_ms": 0.215,
+      "oximedia_opt_ms": 0.461,
       "rust_stats": {
-        "median": 0.264,
-        "p10": 0.251,
-        "p90": 0.284,
-        "mad": 0.012,
-        "iters": 793
+        "median": 0.249,
+        "p10": 0.247,
+        "p90": 0.297,
+        "mad": 0.001,
+        "iters": 557
       },
       "oximedia_stats": {
-        "median": 0.513,
-        "p10": 0.511,
-        "p90": 0.557,
+        "median": 0.506,
+        "p10": 0.503,
+        "p90": 0.514,
         "mad": 0.002,
-        "iters": 288
+        "iters": 386
       },
       "opencv_digest": {
         "w": 320,
@@ -68,6 +69,17 @@
       },
       "rust_digest": null,
       "oximedia_digest": null,
+      "oxipix_next_ms": 0.056,
+      "oxipix_next_opt_ms": 0.056,
+      "oxipix_next_stats": {
+        "median": 0.056,
+        "p10": 0.056,
+        "p90": 0.056,
+        "mad": 0.0,
+        "iters": 3503
+      },
+      "oxipix_next_digest": null,
+      "oxipix_next_vs_opencv": 1.47,
       "parity": "n/a"
     },
     {
@@ -76,24 +88,24 @@
       "section": "core",
       "operation": "Contrast + brightness (a=1.3, b=40)",
       "input": "600x400 RGB",
-      "opencv_ms": 0.065,
-      "rust_ms": 0.435,
+      "opencv_ms": 0.064,
+      "rust_ms": 0.449,
       "oximedia_ms": null,
       "oximedia_crate": null,
       "oximedia_vs_rust": null,
-      "rust_vs_opencv": 6.69,
+      "rust_vs_opencv": 7.02,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-88",
       "warning_note": null,
       "opencv_fresh_ms": 0.064,
-      "rust_opt_ms": 0.344,
+      "rust_opt_ms": 0.341,
       "oximedia_opt_ms": null,
       "rust_stats": {
-        "median": 0.435,
-        "p10": 0.401,
-        "p90": 0.439,
-        "mad": 0.004,
-        "iters": 492
+        "median": 0.449,
+        "p10": 0.433,
+        "p90": 0.455,
+        "mad": 0.001,
+        "iters": 445
       },
       "oximedia_stats": null,
       "opencv_digest": {
@@ -107,6 +119,21 @@
         "mean": 156.53095972222224
       },
       "oximedia_digest": null,
+      "oxipix_next_ms": 0.129,
+      "oxipix_next_opt_ms": 0.105,
+      "oxipix_next_stats": {
+        "median": 0.129,
+        "p10": 0.129,
+        "p90": 0.129,
+        "mad": 0.0,
+        "iters": 1548
+      },
+      "oxipix_next_digest": {
+        "w": 600,
+        "h": 400,
+        "mean": 156.53095972222224
+      },
+      "oxipix_next_vs_opencv": 2.02,
       "parity": "ok"
     },
     {
@@ -115,35 +142,46 @@
       "section": "app",
       "operation": "PSNR",
       "input": "640x480 grey",
-      "opencv_ms": 0.146,
-      "rust_ms": 0.396,
-      "oximedia_ms": 0.407,
+      "opencv_ms": 0.147,
+      "rust_ms": 0.389,
+      "oximedia_ms": 0.4,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 1.03,
-      "rust_vs_opencv": 2.71,
-      "oximedia_vs_opencv": 2.79,
+      "rust_vs_opencv": 2.65,
+      "oximedia_vs_opencv": 2.72,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 0.146,
-      "rust_opt_ms": 0.396,
-      "oximedia_opt_ms": 0.407,
+      "opencv_fresh_ms": 0.147,
+      "rust_opt_ms": 0.389,
+      "oximedia_opt_ms": 0.4,
       "rust_stats": {
-        "median": 0.396,
-        "p10": 0.395,
-        "p90": 0.399,
-        "mad": 0.0,
-        "iters": 494
+        "median": 0.389,
+        "p10": 0.389,
+        "p90": 0.529,
+        "mad": 0.001,
+        "iters": 511
       },
       "oximedia_stats": {
-        "median": 0.407,
+        "median": 0.4,
         "p10": 0.4,
-        "p90": 0.411,
+        "p90": 0.405,
         "mad": 0.0,
-        "iters": 488
+        "iters": 499
       },
       "opencv_digest": null,
       "rust_digest": null,
       "oximedia_digest": null,
+      "oxipix_next_ms": 0.014,
+      "oxipix_next_opt_ms": 0.14,
+      "oxipix_next_stats": {
+        "median": 0.014,
+        "p10": 0.014,
+        "p90": 0.014,
+        "mad": 0.0,
+        "iters": 5000
+      },
+      "oxipix_next_digest": null,
+      "oxipix_next_vs_opencv": 0.1,
       "parity": "n/a"
     },
     {
@@ -152,35 +190,46 @@
       "section": "app",
       "operation": "SSIM (11x11 Gaussian)",
       "input": "640x480 grey",
-      "opencv_ms": 3.075,
-      "rust_ms": 6.104,
-      "oximedia_ms": 108.047,
+      "opencv_ms": 3.082,
+      "rust_ms": 5.975,
+      "oximedia_ms": 100.466,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 17.7,
-      "rust_vs_opencv": 1.99,
-      "oximedia_vs_opencv": 35.14,
+      "oximedia_vs_rust": 16.81,
+      "rust_vs_opencv": 1.94,
+      "oximedia_vs_opencv": 32.6,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv's SSIM (15.4x slower than pure Rust separable SSIM, 32.6x slower than OpenCV) runs a non-separable 2D 11x11 window loop with per-tap bounds checks per pixel instead of 5 separable 1D passes (cool-japan/oximedia#31).",
-      "opencv_fresh_ms": 3.066,
-      "rust_opt_ms": 6.222,
-      "oximedia_opt_ms": 93.216,
+      "opencv_fresh_ms": 3.083,
+      "rust_opt_ms": 5.833,
+      "oximedia_opt_ms": 86.584,
       "rust_stats": {
-        "median": 6.104,
-        "p10": 5.657,
-        "p90": 7.33,
-        "mad": 0.438,
-        "iters": 24
+        "median": 5.975,
+        "p10": 5.587,
+        "p90": 7.184,
+        "mad": 0.387,
+        "iters": 28
       },
       "oximedia_stats": {
-        "median": 108.047,
-        "p10": 104.236,
-        "p90": 111.323,
-        "mad": 2.095,
+        "median": 100.466,
+        "p10": 100.381,
+        "p90": 100.911,
+        "mad": 0.049,
         "iters": 15
       },
       "opencv_digest": null,
       "rust_digest": null,
       "oximedia_digest": null,
+      "oxipix_next_ms": 5.523,
+      "oxipix_next_opt_ms": 5.504,
+      "oxipix_next_stats": {
+        "median": 5.523,
+        "p10": 5.499,
+        "p90": 5.647,
+        "mad": 0.023,
+        "iters": 30
+      },
+      "oxipix_next_digest": null,
+      "oxipix_next_vs_opencv": 1.79,
       "parity": "n/a"
     },
     {
@@ -189,31 +238,31 @@
       "section": "features",
       "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
       "input": "868x600 grey",
-      "opencv_ms": 0.565,
-      "rust_ms": 3.507,
-      "oximedia_ms": 7.587,
+      "opencv_ms": 0.579,
+      "rust_ms": 3.21,
+      "oximedia_ms": 6.966,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.16,
-      "rust_vs_opencv": 6.21,
-      "oximedia_vs_opencv": 13.43,
+      "oximedia_vs_rust": 2.17,
+      "rust_vs_opencv": 5.54,
+      "oximedia_vs_opencv": 12.03,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv's FastDetector misses corners whose 9-pixel arc wraps around the ring (1424 corners against 2091 in OpenCV and 2204 in imageproc), so its time is for less work. Known difference, see PERF_QUEUE.md.",
-      "opencv_fresh_ms": 0.565,
-      "rust_opt_ms": 3.184,
-      "oximedia_opt_ms": 7.088,
+      "opencv_fresh_ms": 0.576,
+      "rust_opt_ms": 3.161,
+      "oximedia_opt_ms": 6.991,
       "rust_stats": {
-        "median": 3.507,
-        "p10": 3.359,
-        "p90": 3.582,
-        "mad": 0.069,
-        "iters": 55
+        "median": 3.21,
+        "p10": 3.178,
+        "p90": 3.27,
+        "mad": 0.029,
+        "iters": 58
       },
       "oximedia_stats": {
-        "median": 7.587,
-        "p10": 7.078,
-        "p90": 7.716,
-        "mad": 0.129,
-        "iters": 25
+        "median": 6.966,
+        "p10": 6.928,
+        "p90": 7.015,
+        "mad": 0.026,
+        "iters": 28
       },
       "opencv_digest": {
         "w": 2091,
@@ -230,6 +279,21 @@
         "h": 1,
         "mean": 0.0
       },
+      "oxipix_next_ms": 2.478,
+      "oxipix_next_opt_ms": 2.431,
+      "oxipix_next_stats": {
+        "median": 2.478,
+        "p10": 2.468,
+        "p90": 2.501,
+        "mad": 0.007,
+        "iters": 72
+      },
+      "oxipix_next_digest": {
+        "w": 2097,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 4.28,
       "parity": "mismatch"
     },
     {
@@ -238,31 +302,31 @@
       "section": "features",
       "operation": "Oriented keypoints (t=30, max=250)",
       "input": "868x600 grey",
-      "opencv_ms": 6.625,
-      "rust_ms": 2.275,
-      "oximedia_ms": 7.093,
+      "opencv_ms": 6.599,
+      "rust_ms": 2.312,
+      "oximedia_ms": 6.967,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 3.12,
-      "rust_vs_opencv": 0.34,
-      "oximedia_vs_opencv": 1.07,
+      "oximedia_vs_rust": 3.01,
+      "rust_vs_opencv": 0.35,
+      "oximedia_vs_opencv": 1.06,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv's FastDetector (about 7 ms) is about 3x slower than imageproc's oriented FAST (about 2 ms) on the same 868x600 photo. Tracked in the perf queue under feature_detection_fast and feature_description.",
-      "opencv_fresh_ms": 6.544,
-      "rust_opt_ms": 2.205,
-      "oximedia_opt_ms": 7.113,
+      "opencv_fresh_ms": 6.609,
+      "rust_opt_ms": 2.184,
+      "oximedia_opt_ms": 6.979,
       "rust_stats": {
-        "median": 2.275,
-        "p10": 2.258,
-        "p90": 2.32,
-        "mad": 0.008,
-        "iters": 82
+        "median": 2.312,
+        "p10": 2.305,
+        "p90": 2.341,
+        "mad": 0.006,
+        "iters": 80
       },
       "oximedia_stats": {
-        "median": 7.093,
-        "p10": 7.068,
-        "p90": 7.142,
-        "mad": 0.02,
-        "iters": 27
+        "median": 6.967,
+        "p10": 6.938,
+        "p90": 7.086,
+        "mad": 0.027,
+        "iters": 28
       },
       "opencv_digest": {
         "w": 250,
@@ -279,6 +343,21 @@
         "h": 1,
         "mean": 0.0
       },
+      "oxipix_next_ms": 2.523,
+      "oxipix_next_opt_ms": 2.434,
+      "oxipix_next_stats": {
+        "median": 2.523,
+        "p10": 2.505,
+        "p90": 2.665,
+        "mad": 0.018,
+        "iters": 53
+      },
+      "oxipix_next_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 0.38,
       "parity": "ok"
     },
     {
@@ -287,30 +366,30 @@
       "section": "features",
       "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
       "input": "868x600 vs 856x593 grey",
-      "opencv_ms": 2.402,
-      "rust_ms": 12.52,
-      "oximedia_ms": 16.493,
+      "opencv_ms": 2.385,
+      "rust_ms": 12.142,
+      "oximedia_ms": 15.544,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.32,
-      "rust_vs_opencv": 5.21,
-      "oximedia_vs_opencv": 6.87,
+      "oximedia_vs_rust": 1.28,
+      "rust_vs_opencv": 5.09,
+      "oximedia_vs_opencv": 6.52,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 2.398,
-      "rust_opt_ms": 11.769,
-      "oximedia_opt_ms": 16.196,
+      "opencv_fresh_ms": 2.389,
+      "rust_opt_ms": 11.671,
+      "oximedia_opt_ms": 15.407,
       "rust_stats": {
-        "median": 12.52,
-        "p10": 12.081,
-        "p90": 12.941,
-        "mad": 0.258,
-        "iters": 16
+        "median": 12.142,
+        "p10": 11.992,
+        "p90": 12.315,
+        "mad": 0.111,
+        "iters": 15
       },
       "oximedia_stats": {
-        "median": 16.493,
-        "p10": 15.803,
-        "p90": 16.661,
-        "mad": 0.167,
+        "median": 15.544,
+        "p10": 15.499,
+        "p90": 15.563,
+        "mad": 0.033,
         "iters": 12
       },
       "opencv_digest": {
@@ -328,6 +407,21 @@
         "h": 2,
         "mean": 0.0
       },
+      "oxipix_next_ms": 7.574,
+      "oxipix_next_opt_ms": 7.252,
+      "oxipix_next_stats": {
+        "median": 7.574,
+        "p10": 7.555,
+        "p90": 7.597,
+        "mad": 0.014,
+        "iters": 25
+      },
+      "oxipix_next_digest": {
+        "w": 227,
+        "h": 2,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 3.18,
       "parity": "ok"
     },
     {
@@ -336,31 +430,31 @@
       "section": "features",
       "operation": "Perspective unwarp (4-point quad)",
       "input": "640x480 RGB",
-      "opencv_ms": 0.595,
-      "rust_ms": 4.372,
-      "oximedia_ms": 6.823,
+      "opencv_ms": 0.587,
+      "rust_ms": 3.863,
+      "oximedia_ms": 6.72,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 1.56,
-      "rust_vs_opencv": 7.35,
-      "oximedia_vs_opencv": 11.47,
+      "oximedia_vs_rust": 1.74,
+      "rust_vs_opencv": 6.58,
+      "oximedia_vs_opencv": 11.45,
       "oxipix_ticket": null,
       "warning_note": null,
       "opencv_fresh_ms": 0.587,
-      "rust_opt_ms": 4.194,
-      "oximedia_opt_ms": 6.369,
+      "rust_opt_ms": 4.167,
+      "oximedia_opt_ms": 6.264,
       "rust_stats": {
-        "median": 4.372,
-        "p10": 4.179,
-        "p90": 4.521,
-        "mad": 0.113,
-        "iters": 47
+        "median": 3.863,
+        "p10": 3.858,
+        "p90": 3.877,
+        "mad": 0.003,
+        "iters": 48
       },
       "oximedia_stats": {
-        "median": 6.823,
-        "p10": 6.72,
-        "p90": 6.845,
-        "mad": 0.076,
-        "iters": 28
+        "median": 6.72,
+        "p10": 6.707,
+        "p90": 6.747,
+        "mad": 0.006,
+        "iters": 29
       },
       "opencv_digest": {
         "w": 640,
@@ -377,6 +471,21 @@
         "h": 480,
         "mean": 225.9252419704861
       },
+      "oxipix_next_ms": 1.995,
+      "oxipix_next_opt_ms": 1.998,
+      "oxipix_next_stats": {
+        "median": 1.995,
+        "p10": 1.991,
+        "p90": 2.005,
+        "mad": 0.002,
+        "iters": 96
+      },
+      "oxipix_next_digest": {
+        "w": 640,
+        "h": 480,
+        "mean": 225.37308702256945
+      },
+      "oxipix_next_vs_opencv": 3.4,
       "parity": "ok"
     },
     {
@@ -386,30 +495,30 @@
       "operation": "Otsu binary threshold",
       "input": "384x303 grey",
       "opencv_ms": 0.03,
-      "rust_ms": 0.046,
-      "oximedia_ms": 0.162,
+      "rust_ms": 0.045,
+      "oximedia_ms": 0.159,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 3.52,
-      "rust_vs_opencv": 1.53,
-      "oximedia_vs_opencv": 5.4,
+      "oximedia_vs_rust": 3.53,
+      "rust_vs_opencv": 1.5,
+      "oximedia_vs_opencv": 5.3,
       "oxipix_ticket": "OXI-89",
       "warning_note": "The oxipix threshold helper runs a per-pixel GrayImage::from_fn wrapper over otsu_threshold (~3.6x slower than imageproc's tight slice loop; native slice thresholding tracked in OXI-89).",
-      "opencv_fresh_ms": 0.031,
-      "rust_opt_ms": 0.046,
-      "oximedia_opt_ms": 0.139,
+      "opencv_fresh_ms": 0.03,
+      "rust_opt_ms": 0.045,
+      "oximedia_opt_ms": 0.136,
       "rust_stats": {
-        "median": 0.046,
-        "p10": 0.045,
+        "median": 0.045,
+        "p10": 0.044,
         "p90": 0.046,
         "mad": 0.0,
-        "iters": 4363
+        "iters": 4436
       },
       "oximedia_stats": {
-        "median": 0.162,
-        "p10": 0.16,
-        "p90": 0.166,
+        "median": 0.159,
+        "p10": 0.157,
+        "p90": 0.163,
         "mad": 0.002,
-        "iters": 1170
+        "iters": 1246
       },
       "opencv_digest": {
         "w": 384,
@@ -426,6 +535,21 @@
         "h": 303,
         "mean": 98.87956373762377
       },
+      "oxipix_next_ms": 0.028,
+      "oxipix_next_opt_ms": 0.028,
+      "oxipix_next_stats": {
+        "median": 0.028,
+        "p10": 0.028,
+        "p90": 0.028,
+        "mad": 0.0,
+        "iters": 5000
+      },
+      "oxipix_next_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 98.87956373762377
+      },
+      "oxipix_next_vs_opencv": 0.93,
       "parity": "ok"
     },
     {
@@ -434,31 +558,31 @@
       "section": "imgproc",
       "operation": "HSV red range mask",
       "input": "320x240 RGB",
-      "opencv_ms": 0.124,
-      "rust_ms": 0.197,
-      "oximedia_ms": 0.452,
+      "opencv_ms": 0.125,
+      "rust_ms": 0.194,
+      "oximedia_ms": 0.445,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 2.29,
-      "rust_vs_opencv": 1.59,
-      "oximedia_vs_opencv": 3.65,
+      "rust_vs_opencv": 1.55,
+      "oximedia_vs_opencv": 3.56,
       "oxipix_ticket": "OXI-90",
       "warning_note": null,
       "opencv_fresh_ms": 0.125,
-      "rust_opt_ms": 0.182,
-      "oximedia_opt_ms": 0.374,
+      "rust_opt_ms": 0.179,
+      "oximedia_opt_ms": 0.367,
       "rust_stats": {
-        "median": 0.197,
-        "p10": 0.196,
-        "p90": 0.199,
-        "mad": 0.0,
-        "iters": 1003
+        "median": 0.194,
+        "p10": 0.193,
+        "p90": 0.196,
+        "mad": 0.001,
+        "iters": 1019
       },
       "oximedia_stats": {
-        "median": 0.452,
+        "median": 0.445,
         "p10": 0.445,
-        "p90": 0.456,
-        "mad": 0.001,
-        "iters": 447
+        "p90": 0.45,
+        "mad": 0.0,
+        "iters": 441
       },
       "opencv_digest": {
         "w": 320,
@@ -475,6 +599,21 @@
         "h": 240,
         "mean": 3.5892578125
       },
+      "oxipix_next_ms": 0.248,
+      "oxipix_next_opt_ms": 0.144,
+      "oxipix_next_stats": {
+        "median": 0.248,
+        "p10": 0.248,
+        "p90": 0.252,
+        "mad": 0.0,
+        "iters": 789
+      },
+      "oxipix_next_digest": {
+        "w": 320,
+        "h": 240,
+        "mean": 3.771875
+      },
+      "oxipix_next_vs_opencv": 1.98,
       "parity": "ok"
     },
     {
@@ -483,31 +622,31 @@
       "section": "imgproc",
       "operation": "Histogram equalisation",
       "input": "640x480 grey",
-      "opencv_ms": 0.255,
-      "rust_ms": 0.357,
-      "oximedia_ms": 0.31,
+      "opencv_ms": 0.254,
+      "rust_ms": 0.351,
+      "oximedia_ms": 0.305,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 0.87,
-      "rust_vs_opencv": 1.4,
-      "oximedia_vs_opencv": 1.22,
+      "rust_vs_opencv": 1.38,
+      "oximedia_vs_opencv": 1.2,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 0.255,
-      "rust_opt_ms": 0.356,
-      "oximedia_opt_ms": 0.309,
+      "opencv_fresh_ms": 0.253,
+      "rust_opt_ms": 0.351,
+      "oximedia_opt_ms": 0.304,
       "rust_stats": {
-        "median": 0.357,
-        "p10": 0.354,
-        "p90": 0.362,
+        "median": 0.351,
+        "p10": 0.347,
+        "p90": 0.356,
         "mad": 0.002,
-        "iters": 543
+        "iters": 563
       },
       "oximedia_stats": {
-        "median": 0.31,
-        "p10": 0.309,
-        "p90": 0.318,
-        "mad": 0.001,
-        "iters": 642
+        "median": 0.305,
+        "p10": 0.304,
+        "p90": 0.31,
+        "mad": 0.0,
+        "iters": 654
       },
       "opencv_digest": {
         "w": 868,
@@ -524,6 +663,21 @@
         "h": 600,
         "mean": 127.90311251920123
       },
+      "oxipix_next_ms": 0.311,
+      "oxipix_next_opt_ms": 0.232,
+      "oxipix_next_stats": {
+        "median": 0.311,
+        "p10": 0.311,
+        "p90": 0.32,
+        "mad": 0.0,
+        "iters": 641
+      },
+      "oxipix_next_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 127.90311251920123
+      },
+      "oxipix_next_vs_opencv": 1.22,
       "parity": "ok"
     },
     {
@@ -533,30 +687,30 @@
       "operation": "Erode (5x5 square, r=2)",
       "input": "384x303 grey",
       "opencv_ms": 0.01,
-      "rust_ms": 0.281,
-      "oximedia_ms": 3.318,
+      "rust_ms": 0.273,
+      "oximedia_ms": 3.266,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 11.81,
-      "rust_vs_opencv": 28.1,
-      "oximedia_vs_opencv": 331.8,
+      "oximedia_vs_rust": 11.96,
+      "rust_vs_opencv": 27.3,
+      "oximedia_vs_opencv": 326.6,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv erode is 11.4x slower than imageproc (335x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30).",
       "opencv_fresh_ms": 0.01,
-      "rust_opt_ms": 0.3,
-      "oximedia_opt_ms": 2.811,
+      "rust_opt_ms": 0.285,
+      "oximedia_opt_ms": 2.768,
       "rust_stats": {
-        "median": 0.281,
-        "p10": 0.278,
-        "p90": 0.286,
-        "mad": 0.003,
-        "iters": 549
+        "median": 0.273,
+        "p10": 0.273,
+        "p90": 0.278,
+        "mad": 0.0,
+        "iters": 567
       },
       "oximedia_stats": {
-        "median": 3.318,
-        "p10": 3.314,
-        "p90": 3.334,
-        "mad": 0.004,
-        "iters": 58
+        "median": 3.266,
+        "p10": 3.261,
+        "p90": 3.3,
+        "mad": 0.005,
+        "iters": 61
       },
       "opencv_digest": {
         "w": 384,
@@ -573,6 +727,21 @@
         "h": 303,
         "mean": 60.82418007425743
       },
+      "oxipix_next_ms": 0.03,
+      "oxipix_next_opt_ms": 0.03,
+      "oxipix_next_stats": {
+        "median": 0.03,
+        "p10": 0.03,
+        "p90": 0.031,
+        "mad": 0.0,
+        "iters": 5000
+      },
+      "oxipix_next_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 60.82418007425743
+      },
+      "oxipix_next_vs_opencv": 3.0,
       "parity": "ok"
     },
     {
@@ -582,29 +751,29 @@
       "operation": "Top-hat morphology (7x7, r=3)",
       "input": "384x303 grey",
       "opencv_ms": 0.029,
-      "rust_ms": 0.425,
-      "oximedia_ms": 13.971,
+      "rust_ms": 0.415,
+      "oximedia_ms": 14.026,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 32.87,
-      "rust_vs_opencv": 14.66,
-      "oximedia_vs_opencv": 481.76,
+      "oximedia_vs_rust": 33.8,
+      "rust_vs_opencv": 14.31,
+      "oximedia_vs_opencv": 483.66,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv top_hat is 33.8x slower than imageproc (507x slower than OpenCV) for a 7x7 square window due to non-separable 2D erode/dilate with per-pixel iter_active() coordinate division and bounds checks (cool-japan/oximedia#30).",
       "opencv_fresh_ms": 0.029,
-      "rust_opt_ms": 1.135,
-      "oximedia_opt_ms": 10.869,
+      "rust_opt_ms": 1.231,
+      "oximedia_opt_ms": 10.711,
       "rust_stats": {
-        "median": 0.425,
-        "p10": 0.424,
-        "p90": 0.428,
-        "mad": 0.001,
-        "iters": 459
+        "median": 0.415,
+        "p10": 0.414,
+        "p90": 0.42,
+        "mad": 0.0,
+        "iters": 472
       },
       "oximedia_stats": {
-        "median": 13.971,
-        "p10": 13.943,
-        "p90": 14.168,
-        "mad": 0.042,
+        "median": 14.026,
+        "p10": 13.927,
+        "p90": 14.056,
+        "mad": 0.03,
         "iters": 15
       },
       "opencv_digest": {
@@ -622,6 +791,21 @@
         "h": 303,
         "mean": 12.701887376237623
       },
+      "oxipix_next_ms": 0.063,
+      "oxipix_next_opt_ms": 0.065,
+      "oxipix_next_stats": {
+        "median": 0.063,
+        "p10": 0.061,
+        "p90": 0.066,
+        "mad": 0.001,
+        "iters": 2142
+      },
+      "oxipix_next_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 12.701887376237623
+      },
+      "oxipix_next_vs_opencv": 2.17,
       "parity": "ok"
     },
     {
@@ -630,24 +814,24 @@
       "section": "imgproc",
       "operation": "Distance transform (L2)",
       "input": "384x303 mask",
-      "opencv_ms": 0.25,
-      "rust_ms": 0.815,
+      "opencv_ms": 0.248,
+      "rust_ms": 0.855,
       "oximedia_ms": null,
       "oximedia_crate": null,
       "oximedia_vs_rust": null,
-      "rust_vs_opencv": 3.26,
+      "rust_vs_opencv": 3.45,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-91",
       "warning_note": null,
-      "opencv_fresh_ms": 0.25,
-      "rust_opt_ms": 0.852,
+      "opencv_fresh_ms": 0.248,
+      "rust_opt_ms": 0.894,
       "oximedia_opt_ms": null,
       "rust_stats": {
-        "median": 0.815,
-        "p10": 0.81,
-        "p90": 0.825,
-        "mad": 0.004,
-        "iters": 194
+        "median": 0.855,
+        "p10": 0.85,
+        "p90": 0.878,
+        "mad": 0.005,
+        "iters": 181
       },
       "oximedia_stats": null,
       "opencv_digest": null,
@@ -657,6 +841,21 @@
         "mean": 0.0
       },
       "oximedia_digest": null,
+      "oxipix_next_ms": 0.996,
+      "oxipix_next_opt_ms": 1.02,
+      "oxipix_next_stats": {
+        "median": 0.996,
+        "p10": 0.992,
+        "p90": 1.009,
+        "mad": 0.003,
+        "iters": 150
+      },
+      "oxipix_next_digest": {
+        "w": 116352,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 4.02,
       "parity": "n/a"
     },
     {
@@ -666,30 +865,30 @@
       "operation": "Find contours + approxPolyDP",
       "input": "560x420 mask",
       "opencv_ms": 0.16,
-      "rust_ms": 0.519,
-      "oximedia_ms": 0.262,
+      "rust_ms": 0.513,
+      "oximedia_ms": 0.265,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 0.5,
-      "rust_vs_opencv": 3.24,
-      "oximedia_vs_opencv": 1.64,
+      "oximedia_vs_rust": 0.52,
+      "rust_vs_opencv": 3.21,
+      "oximedia_vs_opencv": 1.66,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 0.158,
-      "rust_opt_ms": 0.478,
-      "oximedia_opt_ms": 0.254,
+      "opencv_fresh_ms": 0.157,
+      "rust_opt_ms": 0.476,
+      "oximedia_opt_ms": 0.251,
       "rust_stats": {
-        "median": 0.519,
-        "p10": 0.513,
-        "p90": 0.529,
-        "mad": 0.005,
-        "iters": 361
+        "median": 0.513,
+        "p10": 0.508,
+        "p90": 0.526,
+        "mad": 0.004,
+        "iters": 359
       },
       "oximedia_stats": {
-        "median": 0.262,
-        "p10": 0.26,
-        "p90": 0.271,
-        "mad": 0.001,
-        "iters": 653
+        "median": 0.265,
+        "p10": 0.263,
+        "p90": 0.273,
+        "mad": 0.002,
+        "iters": 639
       },
       "opencv_digest": null,
       "rust_digest": {
@@ -702,6 +901,11 @@
         "h": 1,
         "mean": 0.0
       },
+      "oxipix_next_ms": null,
+      "oxipix_next_opt_ms": null,
+      "oxipix_next_stats": null,
+      "oxipix_next_digest": null,
+      "oxipix_next_vs_opencv": null,
       "parity": "n/a"
     },
     {
@@ -711,30 +915,30 @@
       "operation": "Box blur (5x5, r=2)",
       "input": "451x300 RGB",
       "opencv_ms": 0.239,
-      "rust_ms": 1.365,
-      "oximedia_ms": 1.535,
+      "rust_ms": 1.344,
+      "oximedia_ms": 2.044,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.12,
-      "rust_vs_opencv": 5.71,
-      "oximedia_vs_opencv": 6.42,
+      "oximedia_vs_rust": 1.52,
+      "rust_vs_opencv": 5.62,
+      "oximedia_vs_opencv": 8.55,
       "oxipix_ticket": null,
       "warning_note": null,
       "opencv_fresh_ms": 0.239,
-      "rust_opt_ms": 1.475,
-      "oximedia_opt_ms": 1.561,
+      "rust_opt_ms": 1.336,
+      "oximedia_opt_ms": 1.528,
       "rust_stats": {
-        "median": 1.365,
-        "p10": 1.343,
-        "p90": 1.485,
-        "mad": 0.022,
-        "iters": 147
+        "median": 1.344,
+        "p10": 1.341,
+        "p90": 1.349,
+        "mad": 0.002,
+        "iters": 148
       },
       "oximedia_stats": {
-        "median": 1.535,
-        "p10": 1.524,
-        "p90": 1.559,
-        "mad": 0.009,
-        "iters": 117
+        "median": 2.044,
+        "p10": 2.036,
+        "p90": 2.084,
+        "mad": 0.006,
+        "iters": 97
       },
       "opencv_digest": {
         "w": 451,
@@ -751,6 +955,21 @@
         "h": 300,
         "mean": 114.82390490268538
       },
+      "oxipix_next_ms": 0.22,
+      "oxipix_next_opt_ms": 0.219,
+      "oxipix_next_stats": {
+        "median": 0.22,
+        "p10": 0.22,
+        "p90": 0.223,
+        "mad": 0.0,
+        "iters": 855
+      },
+      "oxipix_next_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.30662478442966
+      },
+      "oxipix_next_vs_opencv": 0.92,
       "parity": "ok"
     },
     {
@@ -760,29 +979,29 @@
       "operation": "Gaussian blur (sigma=1.1)",
       "input": "451x300 RGB",
       "opencv_ms": 0.198,
-      "rust_ms": 1.798,
-      "oximedia_ms": 4.691,
+      "rust_ms": 1.728,
+      "oximedia_ms": 4.695,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.61,
-      "rust_vs_opencv": 9.08,
-      "oximedia_vs_opencv": 23.69,
+      "oximedia_vs_rust": 2.72,
+      "rust_vs_opencv": 8.73,
+      "oximedia_vs_opencv": 23.71,
       "oxipix_ticket": null,
       "warning_note": "oximedia-cv GaussianBlur is 2.7x slower than image::imageops::blur (23.9x slower than OpenCV) due to per-channel plane splitting and generic 2D/separable float passes without integer SIMD vectorisation (cool-japan/oximedia#29).",
       "opencv_fresh_ms": 0.198,
-      "rust_opt_ms": 1.854,
-      "oximedia_opt_ms": 4.87,
+      "rust_opt_ms": 1.723,
+      "oximedia_opt_ms": 4.788,
       "rust_stats": {
-        "median": 1.798,
-        "p10": 1.728,
-        "p90": 1.909,
-        "mad": 0.053,
+        "median": 1.728,
+        "p10": 1.724,
+        "p90": 1.739,
+        "mad": 0.003,
         "iters": 115
       },
       "oximedia_stats": {
-        "median": 4.691,
-        "p10": 4.68,
-        "p90": 4.705,
-        "mad": 0.006,
+        "median": 4.695,
+        "p10": 4.683,
+        "p90": 4.706,
+        "mad": 0.008,
         "iters": 42
       },
       "opencv_digest": {
@@ -800,6 +1019,21 @@
         "h": 300,
         "mean": 115.30566888396157
       },
+      "oxipix_next_ms": 0.262,
+      "oxipix_next_opt_ms": 0.26,
+      "oxipix_next_stats": {
+        "median": 0.262,
+        "p10": 0.262,
+        "p90": 0.263,
+        "mad": 0.0,
+        "iters": 755
+      },
+      "oxipix_next_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.31295392953929
+      },
+      "oxipix_next_vs_opencv": 1.32,
       "parity": "ok"
     },
     {
@@ -809,29 +1043,29 @@
       "operation": "Median filter (5x5, r=2)",
       "input": "451x300 RGB",
       "opencv_ms": 0.435,
-      "rust_ms": 17.975,
-      "oximedia_ms": 38.611,
+      "rust_ms": 17.613,
+      "oximedia_ms": 38.584,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.15,
-      "rust_vs_opencv": 41.32,
-      "oximedia_vs_opencv": 88.76,
+      "oximedia_vs_rust": 2.19,
+      "rust_vs_opencv": 40.49,
+      "oximedia_vs_opencv": 88.7,
       "oxipix_ticket": "OXI-93",
       "warning_note": "Median 5x5 is 41.0x (imageproc) to 90.0x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93).",
       "opencv_fresh_ms": 0.435,
-      "rust_opt_ms": 18.637,
-      "oximedia_opt_ms": 38.591,
+      "rust_opt_ms": 18.34,
+      "oximedia_opt_ms": 37.869,
       "rust_stats": {
-        "median": 17.975,
-        "p10": 17.873,
-        "p90": 18.468,
-        "mad": 0.066,
-        "iters": 10
+        "median": 17.613,
+        "p10": 17.576,
+        "p90": 17.661,
+        "mad": 0.022,
+        "iters": 11
       },
       "oximedia_stats": {
-        "median": 38.611,
-        "p10": 38.495,
-        "p90": 38.851,
-        "mad": 0.092,
+        "median": 38.584,
+        "p10": 38.467,
+        "p90": 38.984,
+        "mad": 0.11,
         "iters": 10
       },
       "opencv_digest": {
@@ -849,6 +1083,21 @@
         "h": 300,
         "mean": 115.33751909337275
       },
+      "oxipix_next_ms": 3.189,
+      "oxipix_next_opt_ms": 3.059,
+      "oxipix_next_stats": {
+        "median": 3.189,
+        "p10": 3.176,
+        "p90": 3.206,
+        "mad": 0.009,
+        "iters": 62
+      },
+      "oxipix_next_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.33751909337275
+      },
+      "oxipix_next_vs_opencv": 7.33,
       "parity": "ok"
     },
     {
@@ -857,30 +1106,30 @@
       "section": "imgproc",
       "operation": "Bilateral filter (d=5, r=2, sc=30)",
       "input": "451x300 RGB",
-      "opencv_ms": 0.806,
-      "rust_ms": 9.155,
-      "oximedia_ms": 33.096,
+      "opencv_ms": 0.808,
+      "rust_ms": 9.154,
+      "oximedia_ms": 32.873,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 3.62,
-      "rust_vs_opencv": 11.36,
-      "oximedia_vs_opencv": 41.06,
+      "oximedia_vs_rust": 3.59,
+      "rust_vs_opencv": 11.33,
+      "oximedia_vs_opencv": 40.68,
       "oxipix_ticket": "OXI-93",
       "warning_note": "oximedia-cv bilateral filter is 3.6x slower than imageproc (41.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93).",
-      "opencv_fresh_ms": 0.807,
-      "rust_opt_ms": 5.928,
-      "oximedia_opt_ms": 34.621,
+      "opencv_fresh_ms": 0.806,
+      "rust_opt_ms": 5.838,
+      "oximedia_opt_ms": 33.331,
       "rust_stats": {
-        "median": 9.155,
-        "p10": 9.143,
-        "p90": 9.256,
-        "mad": 0.011,
+        "median": 9.154,
+        "p10": 9.144,
+        "p90": 9.21,
+        "mad": 0.007,
         "iters": 21
       },
       "oximedia_stats": {
-        "median": 33.096,
-        "p10": 33.005,
-        "p90": 33.23,
-        "mad": 0.081,
+        "median": 32.873,
+        "p10": 32.841,
+        "p90": 32.956,
+        "mad": 0.03,
         "iters": 10
       },
       "opencv_digest": {
@@ -898,6 +1147,21 @@
         "h": 300,
         "mean": 115.31819413648682
       },
+      "oxipix_next_ms": 2.705,
+      "oxipix_next_opt_ms": 2.52,
+      "oxipix_next_stats": {
+        "median": 2.705,
+        "p10": 2.694,
+        "p90": 2.729,
+        "mad": 0.008,
+        "iters": 73
+      },
+      "oxipix_next_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.3129637841833
+      },
+      "oxipix_next_vs_opencv": 3.35,
       "parity": "ok"
     },
     {
@@ -906,30 +1170,30 @@
       "section": "imgproc",
       "operation": "2D convolution (5x5 box kernel)",
       "input": "451x300 RGB",
-      "opencv_ms": 0.662,
-      "rust_ms": 3.384,
-      "oximedia_ms": 8.362,
+      "opencv_ms": 0.663,
+      "rust_ms": 3.308,
+      "oximedia_ms": 8.361,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.47,
-      "rust_vs_opencv": 5.11,
-      "oximedia_vs_opencv": 12.63,
+      "oximedia_vs_rust": 2.53,
+      "rust_vs_opencv": 4.99,
+      "oximedia_vs_opencv": 12.61,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 0.662,
-      "rust_opt_ms": 2.832,
-      "oximedia_opt_ms": 8.494,
+      "opencv_fresh_ms": 0.663,
+      "rust_opt_ms": 2.639,
+      "oximedia_opt_ms": 8.342,
       "rust_stats": {
-        "median": 3.384,
-        "p10": 3.23,
-        "p90": 3.524,
-        "mad": 0.139,
-        "iters": 61
+        "median": 3.308,
+        "p10": 3.298,
+        "p90": 3.368,
+        "mad": 0.009,
+        "iters": 59
       },
       "oximedia_stats": {
-        "median": 8.362,
-        "p10": 8.329,
-        "p90": 8.398,
-        "mad": 0.017,
+        "median": 8.361,
+        "p10": 8.321,
+        "p90": 8.422,
+        "mad": 0.028,
         "iters": 23
       },
       "opencv_digest": {
@@ -947,6 +1211,21 @@
         "h": 300,
         "mean": 115.3069696969697
       },
+      "oxipix_next_ms": 0.773,
+      "oxipix_next_opt_ms": 0.774,
+      "oxipix_next_stats": {
+        "median": 0.773,
+        "p10": 0.772,
+        "p90": 0.78,
+        "mad": 0.001,
+        "iters": 255
+      },
+      "oxipix_next_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.3069696969697
+      },
+      "oxipix_next_vs_opencv": 1.17,
       "parity": "ok"
     },
     {
@@ -955,30 +1234,30 @@
       "section": "imgproc",
       "operation": "Gaussian blur + Laplacian edge",
       "input": "640x480 grey",
-      "opencv_ms": 0.735,
-      "rust_ms": 3.464,
-      "oximedia_ms": 5.701,
+      "opencv_ms": 0.734,
+      "rust_ms": 3.465,
+      "oximedia_ms": 5.723,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 1.65,
-      "rust_vs_opencv": 4.71,
-      "oximedia_vs_opencv": 7.76,
+      "rust_vs_opencv": 4.72,
+      "oximedia_vs_opencv": 7.8,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 0.735,
-      "rust_opt_ms": 1.947,
-      "oximedia_opt_ms": 5.774,
+      "opencv_fresh_ms": 0.733,
+      "rust_opt_ms": 1.907,
+      "oximedia_opt_ms": 5.714,
       "rust_stats": {
-        "median": 3.464,
-        "p10": 3.447,
-        "p90": 3.491,
-        "mad": 0.009,
-        "iters": 57
+        "median": 3.465,
+        "p10": 3.448,
+        "p90": 3.482,
+        "mad": 0.007,
+        "iters": 56
       },
       "oximedia_stats": {
-        "median": 5.701,
-        "p10": 5.66,
-        "p90": 5.724,
-        "mad": 0.013,
+        "median": 5.723,
+        "p10": 5.68,
+        "p90": 5.791,
+        "mad": 0.023,
         "iters": 34
       },
       "opencv_digest": {
@@ -996,6 +1275,21 @@
         "h": 600,
         "mean": 15.664516129032258
       },
+      "oxipix_next_ms": 0.73,
+      "oxipix_next_opt_ms": 0.725,
+      "oxipix_next_stats": {
+        "median": 0.73,
+        "p10": 0.729,
+        "p90": 0.744,
+        "mad": 0.001,
+        "iters": 256
+      },
+      "oxipix_next_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 16.096783794162825
+      },
+      "oxipix_next_vs_opencv": 0.99,
       "parity": "ok"
     },
     {
@@ -1005,30 +1299,30 @@
       "operation": "Sobel X derivative",
       "input": "640x480 grey",
       "opencv_ms": 0.141,
-      "rust_ms": 3.842,
-      "oximedia_ms": 0.785,
+      "rust_ms": 3.847,
+      "oximedia_ms": 0.784,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 0.2,
-      "rust_vs_opencv": 27.25,
-      "oximedia_vs_opencv": 5.57,
+      "rust_vs_opencv": 27.28,
+      "oximedia_vs_opencv": 5.56,
       "oxipix_ticket": null,
       "warning_note": "Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (27.2x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice.",
-      "opencv_fresh_ms": 0.142,
-      "rust_opt_ms": 3.865,
-      "oximedia_opt_ms": 0.785,
+      "opencv_fresh_ms": 0.141,
+      "rust_opt_ms": 3.806,
+      "oximedia_opt_ms": 0.738,
       "rust_stats": {
-        "median": 3.842,
-        "p10": 3.832,
-        "p90": 3.863,
-        "mad": 0.007,
+        "median": 3.847,
+        "p10": 3.831,
+        "p90": 3.929,
+        "mad": 0.013,
         "iters": 51
       },
       "oximedia_stats": {
-        "median": 0.785,
+        "median": 0.784,
         "p10": 0.779,
         "p90": 0.812,
         "mad": 0.004,
-        "iters": 234
+        "iters": 245
       },
       "opencv_digest": {
         "w": 868,
@@ -1045,6 +1339,21 @@
         "h": 600,
         "mean": 39.656754992319506
       },
+      "oxipix_next_ms": 0.089,
+      "oxipix_next_opt_ms": 0.088,
+      "oxipix_next_stats": {
+        "median": 0.089,
+        "p10": 0.089,
+        "p90": 0.09,
+        "mad": 0.0,
+        "iters": 1793
+      },
+      "oxipix_next_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 39.656754992319506
+      },
+      "oxipix_next_vs_opencv": 0.63,
       "parity": "ok"
     },
     {
@@ -1053,30 +1362,30 @@
       "section": "imgproc",
       "operation": "Gaussian blur + Canny (50/150)",
       "input": "640x480 grey",
-      "opencv_ms": 2.267,
-      "rust_ms": 17.712,
-      "oximedia_ms": 22.609,
+      "opencv_ms": 2.285,
+      "rust_ms": 17.661,
+      "oximedia_ms": 22.285,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.28,
-      "rust_vs_opencv": 7.81,
-      "oximedia_vs_opencv": 9.97,
+      "oximedia_vs_rust": 1.26,
+      "rust_vs_opencv": 7.73,
+      "oximedia_vs_opencv": 9.75,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 2.322,
-      "rust_opt_ms": 16.102,
-      "oximedia_opt_ms": 20.046,
+      "opencv_fresh_ms": 2.271,
+      "rust_opt_ms": 15.813,
+      "oximedia_opt_ms": 19.769,
       "rust_stats": {
-        "median": 17.712,
-        "p10": 17.624,
-        "p90": 18.122,
-        "mad": 0.059,
+        "median": 17.661,
+        "p10": 17.621,
+        "p90": 17.684,
+        "mad": 0.023,
         "iters": 15
       },
       "oximedia_stats": {
-        "median": 22.609,
-        "p10": 22.547,
-        "p90": 22.703,
-        "mad": 0.042,
+        "median": 22.285,
+        "p10": 22.238,
+        "p90": 22.369,
+        "mad": 0.037,
         "iters": 15
       },
       "opencv_digest": {
@@ -1094,6 +1403,21 @@
         "h": 600,
         "mean": 13.57796658986175
       },
+      "oxipix_next_ms": 1.769,
+      "oxipix_next_opt_ms": 1.672,
+      "oxipix_next_stats": {
+        "median": 1.769,
+        "p10": 1.753,
+        "p90": 1.806,
+        "mad": 0.012,
+        "iters": 98
+      },
+      "oxipix_next_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 13.857056451612904
+      },
+      "oxipix_next_vs_opencv": 0.77,
       "parity": "ok"
     },
     {
@@ -1102,30 +1426,30 @@
       "section": "imgproc",
       "operation": "Canny + standard Hough lines",
       "input": "640x480 grey",
-      "opencv_ms": 6.569,
-      "rust_ms": 23.222,
-      "oximedia_ms": 43.283,
+      "opencv_ms": 6.559,
+      "rust_ms": 22.765,
+      "oximedia_ms": 42.776,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.86,
-      "rust_vs_opencv": 3.54,
-      "oximedia_vs_opencv": 6.59,
+      "oximedia_vs_rust": 1.88,
+      "rust_vs_opencv": 3.47,
+      "oximedia_vs_opencv": 6.52,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 6.612,
-      "rust_opt_ms": 21.3,
-      "oximedia_opt_ms": 41.513,
+      "opencv_fresh_ms": 6.508,
+      "rust_opt_ms": 20.876,
+      "oximedia_opt_ms": 39.023,
       "rust_stats": {
-        "median": 23.222,
-        "p10": 22.772,
-        "p90": 23.485,
-        "mad": 0.048,
+        "median": 22.765,
+        "p10": 22.654,
+        "p90": 22.806,
+        "mad": 0.044,
         "iters": 10
       },
       "oximedia_stats": {
-        "median": 43.283,
-        "p10": 42.593,
-        "p90": 43.437,
-        "mad": 0.154,
+        "median": 42.776,
+        "p10": 42.586,
+        "p90": 42.876,
+        "mad": 0.095,
         "iters": 10
       },
       "opencv_digest": {
@@ -1143,6 +1467,21 @@
         "h": 1,
         "mean": 0.0
       },
+      "oxipix_next_ms": 6.034,
+      "oxipix_next_opt_ms": 5.858,
+      "oxipix_next_stats": {
+        "median": 6.034,
+        "p10": 5.984,
+        "p90": 6.124,
+        "mad": 0.043,
+        "iters": 31
+      },
+      "oxipix_next_digest": {
+        "w": 21,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 0.92,
       "parity": "ok"
     },
     {
@@ -1151,24 +1490,24 @@
       "section": "imgproc",
       "operation": "Canny + circle Hough (r=15..40)",
       "input": "384x303 grey",
-      "opencv_ms": 3.964,
+      "opencv_ms": 3.968,
       "rust_ms": null,
-      "oximedia_ms": 64.547,
+      "oximedia_ms": 63.274,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": null,
       "rust_vs_opencv": null,
-      "oximedia_vs_opencv": 16.28,
+      "oximedia_vs_opencv": 15.95,
       "oxipix_ticket": null,
       "warning_note": null,
-      "opencv_fresh_ms": 3.94,
+      "opencv_fresh_ms": 3.939,
       "rust_opt_ms": null,
-      "oximedia_opt_ms": 63.889,
+      "oximedia_opt_ms": 62.756,
       "rust_stats": null,
       "oximedia_stats": {
-        "median": 64.547,
-        "p10": 63.343,
-        "p90": 64.547,
-        "mad": 0.047,
+        "median": 63.274,
+        "p10": 63.2,
+        "p90": 63.32,
+        "mad": 0.046,
         "iters": 5
       },
       "opencv_digest": null,
@@ -1178,6 +1517,21 @@
         "h": 1,
         "mean": 0.0
       },
+      "oxipix_next_ms": 0.899,
+      "oxipix_next_opt_ms": 0.87,
+      "oxipix_next_stats": {
+        "median": 0.899,
+        "p10": 0.897,
+        "p90": 0.904,
+        "mad": 0.001,
+        "iters": 199
+      },
+      "oxipix_next_digest": {
+        "w": 24,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oxipix_next_vs_opencv": 0.23,
       "parity": "n/a"
     },
     {
@@ -1187,30 +1541,30 @@
       "operation": "3-level pyrDown",
       "input": "451x300 RGB",
       "opencv_ms": 0.045,
-      "rust_ms": 1.867,
-      "oximedia_ms": 0.882,
+      "rust_ms": 1.821,
+      "oximedia_ms": 0.868,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 0.47,
-      "rust_vs_opencv": 41.49,
-      "oximedia_vs_opencv": 19.6,
+      "oximedia_vs_rust": 0.48,
+      "rust_vs_opencv": 40.47,
+      "oximedia_vs_opencv": 19.29,
       "oxipix_ticket": null,
       "warning_note": "Pure Rust imageops::resize(Gaussian) is 40.5x slower than OpenCV pyrDown (and 2.1x slower than oximedia-cv pyr_down) because it runs a full variable-radius Gaussian resampler rather than a fixed 5-tap separable pyramid downsample.",
       "opencv_fresh_ms": 0.045,
-      "rust_opt_ms": 1.981,
-      "oximedia_opt_ms": 0.873,
+      "rust_opt_ms": 1.807,
+      "oximedia_opt_ms": 0.849,
       "rust_stats": {
-        "median": 1.867,
-        "p10": 1.845,
-        "p90": 2.08,
-        "mad": 0.026,
-        "iters": 109
+        "median": 1.821,
+        "p10": 1.815,
+        "p90": 1.841,
+        "mad": 0.004,
+        "iters": 108
       },
       "oximedia_stats": {
-        "median": 0.882,
-        "p10": 0.881,
-        "p90": 0.889,
+        "median": 0.868,
+        "p10": 0.867,
+        "p90": 0.875,
         "mad": 0.001,
-        "iters": 206
+        "iters": 229
       },
       "opencv_digest": {
         "w": 57,
@@ -1227,6 +1581,21 @@
         "h": 38,
         "mean": 115.44567559248999
       },
+      "oxipix_next_ms": 0.125,
+      "oxipix_next_opt_ms": 0.122,
+      "oxipix_next_stats": {
+        "median": 0.125,
+        "p10": 0.124,
+        "p90": 0.127,
+        "mad": 0.0,
+        "iters": 1480
+      },
+      "oxipix_next_digest": {
+        "w": 57,
+        "h": 38,
+        "mean": 115.30886426592798
+      },
+      "oxipix_next_vs_opencv": 2.78,
       "parity": "ok"
     },
     {
@@ -1236,30 +1605,30 @@
       "operation": "Rotate 30 deg + scale 0.6",
       "input": "512x512 RGB",
       "opencv_ms": 0.264,
-      "rust_ms": 2.8,
-      "oximedia_ms": 1.855,
+      "rust_ms": 2.525,
+      "oximedia_ms": 1.943,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 0.66,
-      "rust_vs_opencv": 10.61,
-      "oximedia_vs_opencv": 7.03,
+      "oximedia_vs_rust": 0.77,
+      "rust_vs_opencv": 9.56,
+      "oximedia_vs_opencv": 7.36,
       "oxipix_ticket": null,
       "warning_note": null,
       "opencv_fresh_ms": 0.264,
-      "rust_opt_ms": 2.61,
-      "oximedia_opt_ms": 1.666,
+      "rust_opt_ms": 2.565,
+      "oximedia_opt_ms": 1.651,
       "rust_stats": {
-        "median": 2.8,
-        "p10": 2.796,
-        "p90": 2.807,
-        "mad": 0.003,
-        "iters": 71
+        "median": 2.525,
+        "p10": 2.519,
+        "p90": 2.54,
+        "mad": 0.005,
+        "iters": 78
       },
       "oximedia_stats": {
-        "median": 1.855,
-        "p10": 1.846,
-        "p90": 1.883,
-        "mad": 0.008,
-        "iters": 106
+        "median": 1.943,
+        "p10": 1.939,
+        "p90": 1.951,
+        "mad": 0.003,
+        "iters": 102
       },
       "opencv_digest": {
         "w": 512,
@@ -1276,6 +1645,21 @@
         "h": 512,
         "mean": 41.095420837402344
       },
+      "oxipix_next_ms": 0.68,
+      "oxipix_next_opt_ms": 0.695,
+      "oxipix_next_stats": {
+        "median": 0.68,
+        "p10": 0.677,
+        "p90": 0.688,
+        "mad": 0.002,
+        "iters": 290
+      },
+      "oxipix_next_digest": {
+        "w": 512,
+        "h": 512,
+        "mean": 41.10751469930013
+      },
+      "oxipix_next_vs_opencv": 2.58,
       "parity": "ok"
     },
     {
@@ -1284,29 +1668,40 @@
       "section": "imgproc",
       "operation": "Template match (TM_SQDIFF)",
       "input": "451x300 vs 40x40 grey",
-      "opencv_ms": 1.609,
-      "rust_ms": 121.9,
+      "opencv_ms": 1.635,
+      "rust_ms": 114.968,
       "oximedia_ms": null,
       "oximedia_crate": null,
       "oximedia_vs_rust": null,
-      "rust_vs_opencv": 75.76,
+      "rust_vs_opencv": 70.32,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-92",
       "warning_note": "imageproc template matching is 74.4x slower than OpenCV because it evaluates naive spatial O(W*H*w*h) sliding sums instead of FFT cross-correlation (oxipix support tracked in OXI-92).",
-      "opencv_fresh_ms": 1.618,
-      "rust_opt_ms": 122.14,
+      "opencv_fresh_ms": 1.631,
+      "rust_opt_ms": 118.326,
       "oximedia_opt_ms": null,
       "rust_stats": {
-        "median": 121.9,
-        "p10": 120.666,
-        "p90": 121.967,
-        "mad": 0.067,
+        "median": 114.968,
+        "p10": 114.029,
+        "p90": 115.66,
+        "mad": 0.64,
         "iters": 10
       },
       "oximedia_stats": null,
       "opencv_digest": null,
       "rust_digest": null,
       "oximedia_digest": null,
+      "oxipix_next_ms": 2.08,
+      "oxipix_next_opt_ms": 2.032,
+      "oxipix_next_stats": {
+        "median": 2.08,
+        "p10": 2.072,
+        "p90": 2.09,
+        "mad": 0.005,
+        "iters": 95
+      },
+      "oxipix_next_digest": null,
+      "oxipix_next_vs_opencv": 1.27,
       "parity": "n/a"
     }
   ]

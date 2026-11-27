@@ -16,6 +16,8 @@ pub struct Environment {
     pub oximedia_cv_version: String,
     pub oxipix_version: String,
     pub imageproc_version: String,
+    /// Where the `oxipix_next` backend comes from.
+    pub oxipix_next_source: String,
     /// Rust builds measured, e.g. `release`, `release+lto+native`.
     pub builds: Vec<String>,
     /// HAL / SIMD / threading lines from `cv::getBuildInformation()`.
@@ -47,6 +49,12 @@ pub struct BenchRow {
     pub opencv_digest: Option<Digest>,
     pub rust_digest: Option<Digest>,
     pub oximedia_digest: Option<Digest>,
+    /// `oxipix` imgproc kernels (git branch): time, optimised-build time, spread, fingerprint and gap to OpenCV.
+    pub oxipix_next_ms: Option<f64>,
+    pub oxipix_next_opt_ms: Option<f64>,
+    pub oxipix_next_stats: Option<Stats>,
+    pub oxipix_next_digest: Option<Digest>,
+    pub oxipix_next_vs_opencv: Option<f64>,
     /// `ok`, `mismatch`, or `n/a` when a side has no comparable image output.
     pub parity: String,
 }
@@ -140,6 +148,23 @@ pub struct BenchSpec<'a> {
     pub oxi_op: Option<Box<dyn FnMut() + 'a>>,
     pub rust_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
     pub oxi_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
+    pub next_op: Option<Box<dyn FnMut() + 'a>>,
+    pub next_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
+}
+
+/// The timed closure and the one-off digest closure of a backend.
+pub type Ops<'a> = (
+    Option<Box<dyn FnMut() + 'a>>,
+    Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
+);
+
+impl<'a> BenchSpec<'a> {
+    /// Adds the `oxipix` imgproc backend.
+    pub fn with_next(mut self, (op, digest): Ops<'a>) -> Self {
+        self.next_op = op;
+        self.next_digest = digest;
+        self
+    }
 }
 
 /// Declares a two-backend (`rust` vs `oximedia-cv`/`oxipix`) benchmark specification without boilerplate.
@@ -213,6 +238,8 @@ macro_rules! bench_spec {
             oxi_op,
             rust_digest,
             oxi_digest,
+            next_op: None,
+            next_digest: None,
         }
     }};
 }
@@ -242,13 +269,17 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
     let opencv_digest = ocv.digests.get(spec.id).copied();
     let rust_digest = spec.rust_digest.and_then(|mut d| d());
     let oximedia_digest = spec.oxi_digest.and_then(|mut d| d());
+    let next_digest = spec.next_digest.and_then(|mut d| d());
     let rust_stats = spec.rust_op.map(|op| time_stats(spec.iters, op));
     let oximedia_stats = spec.oxi_op.map(|op| time_stats(spec.iters, op));
+    let next_stats = spec.next_op.map(|op| time_stats(spec.iters, op));
+    let next_ms = next_stats.map(|s| s.median);
     let rust_ms = rust_stats.map(|s| s.median);
     let oximedia_ms = oximedia_stats.map(|s| s.median);
     let parity = combine_parity([
         parity(opencv_digest, rust_digest),
         parity(opencv_digest, oximedia_digest),
+        parity(opencv_digest, next_digest),
     ]);
     BenchRow {
         id: spec.id.into(),
@@ -273,6 +304,11 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         opencv_digest,
         rust_digest,
         oximedia_digest,
+        oxipix_next_ms: next_ms,
+        oxipix_next_opt_ms: None,
+        oxipix_next_stats: next_stats,
+        oxipix_next_digest: next_digest,
+        oxipix_next_vs_opencv: ratio(next_ms, opencv_ms),
         parity: parity.into(),
     }
 }

@@ -1,0 +1,82 @@
+# Hand-kept facts about each perf queue item. Generated rows live in catalog/perf_queue.json.
+# Set owner (your GitHub user) in a pull request to claim an item; status moves
+# unprobed -> probe-fair -> researched -> fix-proposed -> fixed.
+items:
+  adding_images:
+    plane: "RUSTCVGUID-169"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/50"
+  basic_linear_transform:
+    plane: "RUSTCVGUID-172"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/53"
+  canny:
+    plane: "RUSTCVGUID-166"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/47"
+  distance_transform:
+    plane: "RUSTCVGUID-176"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/57"
+  equalize:
+    plane: "RUSTCVGUID-183"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/64"
+  erosion:
+    plane: "RUSTCVGUID-160"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/41"
+  feature_detection_fast:
+    plane: "RUSTCVGUID-175"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/56"
+  filter_2d:
+    plane: "RUSTCVGUID-174"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/55"
+  find_contours:
+    plane: "RUSTCVGUID-180"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/61"
+  homography:
+    plane: "RUSTCVGUID-167"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/48"
+  hough_circle:
+    plane: "RUSTCVGUID-162"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/43"
+  hough_lines:
+    plane: "RUSTCVGUID-179"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/60"
+  laplace:
+    plane: "RUSTCVGUID-173"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/54"
+  opening_closing_hats:
+    plane: "RUSTCVGUID-163"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/44"
+  psnr:
+    plane: "RUSTCVGUID-177"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/58"
+  pyramids:
+    plane: "RUSTCVGUID-161"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/42"
+  smoothing_bilateral:
+    plane: "RUSTCVGUID-164"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/45"
+  smoothing_box:
+    plane: "RUSTCVGUID-170"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/51"
+  smoothing_gaussian:
+    plane: "RUSTCVGUID-165"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/46"
+  smoothing_median:
+    plane: "RUSTCVGUID-159"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/40"
+  sobel:
+    plane: "RUSTCVGUID-171"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/52"
+  ssim:
+    plane: "RUSTCVGUID-178"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/59"
+  template_matching:
+    plane: "RUSTCVGUID-158"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/39"
+  threshold:
+    plane: "RUSTCVGUID-181"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/62"
+  threshold_inRange:
+    plane: "RUSTCVGUID-182"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/63"
+  warp_affine:
+    plane: "RUSTCVGUID-168"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/49"

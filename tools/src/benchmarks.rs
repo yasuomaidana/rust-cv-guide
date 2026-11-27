@@ -32,8 +32,28 @@ pub struct Environment {
     pub imageproc_version: String,
 }
 
+/// Spread of one timing series (milliseconds), as written by the benchmark harness.
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+pub struct Stats {
+    #[serde(default)]
+    pub median: f64,
+    #[serde(default)]
+    pub mad: f64,
+}
+
+impl Stats {
+    /// Relative noise floor `2 * MAD / median`: a gap smaller than this is not a real difference.
+    pub fn noise(&self) -> f64 {
+        if self.median > 0.0 {
+            2.0 * self.mad / self.median
+        } else {
+            0.0
+        }
+    }
+}
+
 /// One measured comparison row across OpenCV, pure Rust, and `oximedia-cv` / `oxipix`.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct BenchRow {
     pub id: String,
     pub tutorial: String,
@@ -58,6 +78,20 @@ pub struct BenchRow {
     pub oxipix_ticket: Option<String>,
     #[serde(default)]
     pub warning_note: Option<String>,
+    /// OpenCV timed with a freshly allocated output, comparable with the Rust snippets.
+    #[serde(default)]
+    pub opencv_fresh_ms: Option<f64>,
+    #[serde(default)]
+    pub rust_opt_ms: Option<f64>,
+    #[serde(default)]
+    pub oximedia_opt_ms: Option<f64>,
+    #[serde(default)]
+    pub rust_stats: Option<Stats>,
+    #[serde(default)]
+    pub oximedia_stats: Option<Stats>,
+    /// `ok`, `mismatch` (backends do different work) or `n/a`.
+    #[serde(default)]
+    pub parity: String,
 }
 
 /// Deserialized `catalog/benchmarks.json`.
@@ -284,9 +318,10 @@ pub fn page(catalog: &Catalog, bench: &Benchmarks) -> Page {
             clean(note)
         ));
     }
+    let summary = crate::perf_queue::summary(&crate::perf_queue::build(bench, &Default::default()));
     Page {
         path: "docs/benchmarks.md".into(),
-        content: format!("{}\n", lines.join("\n")),
+        content: format!("{}\n\n{summary}", lines.join("\n")),
     }
 }
 
@@ -322,6 +357,7 @@ mod tests {
             oximedia_vs_opencv: o.map(|v| v / 0.1),
             oxipix_ticket: None,
             warning_note: note.map(str::to_string),
+            ..BenchRow::default()
         }
     }
 

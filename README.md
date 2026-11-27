@@ -16,7 +16,7 @@ Not affiliated with OpenCV. The content is original; links go to docs.opencv.org
 | `.github/dendrite/directives.toml` | Quality policy enforced by CI and agents |
 
 Planned: `catalog/` (OpenCV tree and coverage status), `tools/` (catalog checks), `snippets/` (compiled examples),
-`comparisons/opencv/` (benchmarks).
+`comparisons/opencv/` (benchmarks). See [PERF_QUEUE.md](PERF_QUEUE.md) for the ranked list of operations where Rust is slower than OpenCV, and [CONTRIBUTING.md](CONTRIBUTING.md) to help.
 
 ## Develop
 

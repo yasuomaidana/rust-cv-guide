@@ -5,6 +5,7 @@ pub mod check;
 pub mod generate;
 pub mod load;
 pub mod model;
+pub mod perf_queue;
 pub mod proof;
 pub mod roadmap;
 
@@ -18,10 +19,11 @@ use std::path::Path;
 pub fn run(args: &[String], root: &Path) -> Result<String, String> {
     match args.first().map(String::as_str) {
         Some("check") => {
-            verified(root).map(|_| "catalog, coverage and crates are consistent".into())
+            checked(root).map(|_| "catalog, coverage and crates are consistent".into())
         }
         Some("generate") => generate(root),
-        _ => Err("usage: cvg-tools <check|generate>".into()),
+        Some("perf-queue") => perf_queue_files(root),
+        _ => Err("usage: cvg-tools <check|generate|perf-queue>".into()),
     }
 }
 
@@ -30,6 +32,51 @@ struct Inputs {
     coverage: Coverage,
     sources: Sources,
     benchmarks: Benchmarks,
+    queue: perf_queue::QueueMeta,
+}
+
+/// Writes the queue files from the benchmarks without enforcing issue links; says which items lack one.
+fn perf_queue_files(root: &Path) -> Result<String, String> {
+    let benchmarks = load::benchmarks(root)?;
+    let meta = load::queue_meta(root)?;
+    let queue = perf_queue::build(&benchmarks, &meta);
+    for (path, content) in perf_queue::outputs(&queue) {
+        let path = root.join(path);
+        fs::create_dir_all(path.parent().unwrap_or(root)).map_err(at(&path))?;
+        fs::write(&path, content).map_err(at(&path))?;
+    }
+    let missing = perf_queue::problems(&benchmarks, &meta);
+    Ok(format!(
+        "queue of {} items written; {} problems still to fix\n{}",
+        queue.queue.len(),
+        missing.len(),
+        missing.join("\n")
+    ))
+}
+
+/// `verified`, plus a check that the committed queue files are what `generate` would write.
+fn checked(root: &Path) -> Result<Inputs, String> {
+    let inputs = verified(root)?;
+    let stale: Vec<String> = queue_outputs(&inputs)
+        .into_iter()
+        .filter(|(path, content)| {
+            fs::read_to_string(root.join(path)).ok().as_ref() != Some(content)
+        })
+        .map(|(path, _)| format!("{path} is out of date: run `cargo run -p cvg-tools -- generate`"))
+        .collect();
+    if stale.is_empty() {
+        Ok(inputs)
+    } else {
+        Err(stale.join("\n"))
+    }
+}
+
+/// The queue files for the loaded benchmarks; none while there are no benchmarks.
+fn queue_outputs(inputs: &Inputs) -> Vec<(String, String)> {
+    if inputs.benchmarks.benchmarks.is_empty() {
+        return Vec::new();
+    }
+    perf_queue::outputs(&perf_queue::build(&inputs.benchmarks, &inputs.queue))
 }
 
 fn verified(root: &Path) -> Result<Inputs, String> {
@@ -38,13 +85,16 @@ fn verified(root: &Path) -> Result<Inputs, String> {
     let coverage = load::coverage(root)?;
     let sources = load::sources(root)?;
     let benchmarks = load::benchmarks(root)?;
-    let problems = check::problems(&catalog, &coverage, &crates, &sources, &benchmarks);
+    let queue = load::queue_meta(root)?;
+    let mut problems = check::problems(&catalog, &coverage, &crates, &sources, &benchmarks);
+    problems.extend(perf_queue::problems(&benchmarks, &queue));
     if problems.is_empty() {
         Ok(Inputs {
             catalog,
             coverage,
             sources,
             benchmarks,
+            queue,
         })
     } else {
         Err(problems.join("\n"))
@@ -69,7 +119,17 @@ fn generate(root: &Path) -> Result<String, String> {
         fs::create_dir_all(path.parent().unwrap_or(&site)).map_err(at(&path))?;
         fs::write(&path, &page.content).map_err(at(&path))?;
     }
-    Ok(format!("wrote {} pages", pages.len()))
+    let extra = queue_outputs(&inputs);
+    for (path, content) in &extra {
+        let path = root.join(path);
+        fs::create_dir_all(path.parent().unwrap_or(root)).map_err(at(&path))?;
+        fs::write(&path, content).map_err(at(&path))?;
+    }
+    Ok(format!(
+        "wrote {} pages and {} queue files",
+        pages.len(),
+        extra.len()
+    ))
 }
 
 #[cfg(test)]
@@ -139,7 +199,10 @@ mod tests {
         let stale = dir.path().join("website/docs/opencv/old/gone.md");
         fs::create_dir_all(stale.parent().unwrap()).unwrap();
         fs::write(&stale, "x").unwrap();
-        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 2 pages");
+        assert_eq!(
+            call("generate", dir.path()).unwrap(),
+            "wrote 2 pages and 0 queue files"
+        );
         assert!(!stale.exists());
         assert!(dir.path().join("website/docs/roadmap.md").exists());
         assert!(dir.path().join("website/docs/benchmarks.md").exists());

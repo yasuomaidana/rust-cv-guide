@@ -2,6 +2,9 @@
 title: "Changing the contrast and brightness of an image!"
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 **Status:** covered
 
 OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/core/basic_linear_transform/basic_linear_transform.markdown).
@@ -9,6 +12,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 ## Rust crates
 
 - [image](https://crates.io/crates/image)
+- [opencv](https://crates.io/crates/opencv)
 
 
 ## Goal
@@ -33,6 +37,9 @@ Pure Rust uses `image::RgbImage::from_fn` to iterate over every coordinate and e
 :::note oximedia / oxipix status
 Neither `oximedia-cv` 0.2.1 nor `oxipix` 0.1.0 currently provides a point-wise `α · p + β` contrast/brightness operator (`OXI-85` covers receipt CLAHE/unsharp enhancement only). An **oxipix** feature ticket (`OXI-88`) has been opened to expose `linear_transform(img, alpha, beta)` with CPU + optional `wgpu` acceleration.
 :::
+
+<Tabs groupId="implementation">
+<TabItem value="image" label="image" default>
 
 ```rust
 //! OpenCV tutorial `tutorial_basic_linear_transform` in pure Rust.
@@ -70,6 +77,38 @@ pub fn main() {
     println!("{}", report());
 }
 ```
+
+</TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_basic_linear_transform` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example basic_linear_transform` inside `snippets-opencv`.
+
+use cvg_opencv::{mat_rgb, rgb_mat};
+use image::RgbImage;
+use opencv::core::Mat;
+use opencv::prelude::*;
+
+/// `alpha * pixel + beta`, saturated: contrast and brightness (`Mat::convertTo`).
+pub fn linear_transform(image: &RgbImage, alpha: f32, beta: f32) -> RgbImage {
+    let (src, mut dst) = (rgb_mat(image).expect("mat"), Mat::default());
+    src.convert_to(&mut dst, -1, f64::from(alpha), f64::from(beta))
+        .expect("convertTo");
+    mat_rgb(&dst).expect("image")
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::sample("coffee.png");
+    println!(
+        "brightest channel: {:?}",
+        linear_transform(&photo, 1.3, 40.0).iter().max()
+    );
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Explanation
 
@@ -110,4 +149,4 @@ raising `α` and `β` together.
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Contrast + brightness (a=1.3, b=40) | 600x400 RGB | 0.063 ms | 0.449 ms | — (OXI-88) | — |
+| Contrast + brightness (a=1.3, b=40) | 600x400 RGB | 0.064 ms | 0.450 ms | — (OXI-88) | — |

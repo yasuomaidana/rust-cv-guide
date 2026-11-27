@@ -37,7 +37,30 @@ fn snippet_names(entry: &Entry) -> Vec<&str> {
     main.into_iter().chain(others).collect()
 }
 
+/// Native-only examples (the `opencv` crate) cannot run in the browser or in the workspace; `snippets-opencv`
+/// compiles them and its tests compare them with the pure-Rust twins.
+fn is_native(name: &str) -> bool {
+    name.starts_with("opencv_")
+}
+
+fn native_problems(id: &str, name: &str, sources: &Sources) -> Vec<String> {
+    let reference = format!("snippets/examples/{name}.rs");
+    // Once in the manifest as an `[[example]]` and once in the tests that compare it with its twin.
+    let proven = sources.native.matches(&reference).count() >= 2;
+    (!proven)
+        .then(|| {
+            format!(
+                "tutorial {id} native example {name} is not compiled and tested by snippets-opencv"
+            )
+        })
+        .into_iter()
+        .collect()
+}
+
 fn example_problems(id: &str, name: &str, sources: &Sources) -> Vec<String> {
+    if is_native(name) {
+        return native_problems(id, name, sources);
+    }
     let untested = (!sources.tests.contains_key(name))
         .then(|| format!("tutorial {id} example {name} has no snippets/tests/{name}.rs"));
     let not_live = (!sources.live.contains(&format!("examples/{name}.rs")))
@@ -173,6 +196,31 @@ mod tests {
         break_it(&mut broken);
         let found = check(full_entry(Status::Covered), &broken);
         assert!(found.iter().any(|p| p == expected), "{found:?}");
+    }
+
+    #[rstest]
+    #[case("", false)]
+    #[case("path = \"../snippets/examples/opencv_core/blend.rs\"", false)]
+    #[case(
+        "path = \"../snippets/examples/opencv_core/blend.rs\"\n#[path = \"../../snippets/examples/opencv_core/blend.rs\"]",
+        true
+    )]
+    fn native_examples_are_proven_by_the_standalone_crate(
+        #[case] native: &str,
+        #[case] proven: bool,
+    ) {
+        let mut s = sources();
+        s.snippets
+            .insert("opencv_core/blend".into(), "fn x() {}".into());
+        s.native = native.into();
+        let found = check(entry_with_alternative("ndarray", "opencv_core/blend"), &s);
+        assert_eq!(found.is_empty(), proven, "{found:?}");
+        assert!(
+            proven
+                || found
+                    .iter()
+                    .any(|f| f.contains("not compiled and tested by snippets-opencv"))
+        );
     }
 
     #[test]

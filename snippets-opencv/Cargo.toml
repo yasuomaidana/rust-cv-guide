@@ -1,0 +1,67 @@
+[package]
+name = "cvg-opencv"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "The guide's tutorials with the `opencv` crate (needs a native OpenCV 5.x); standalone because CI does not have one"
+
+[dependencies]
+image = { version = "0.25", default-features = false }
+opencv = { version = "0.102", default-features = false, features = ["imgproc", "geometry"] }
+
+[dev-dependencies]
+cvg-snippets = { path = "../snippets" }
+imageproc = { version = "0.27", default-features = false }
+rstest = "0.29"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+
+# Examples live next to the other tutorials so the pages can show them; this crate compiles them.
+[[example]]
+name = "smoothing"
+path = "../snippets/examples/opencv_filters/smoothing.rs"
+
+[[example]]
+name = "canny"
+path = "../snippets/examples/opencv_filters/canny.rs"
+
+[[example]]
+name = "sobel"
+path = "../snippets/examples/opencv_filters/sobel.rs"
+
+[[example]]
+name = "laplace"
+path = "../snippets/examples/opencv_filters/laplace.rs"
+
+[[example]]
+name = "warp_affine"
+path = "../snippets/examples/opencv_geom/warp_affine.rs"
+
+[[example]]
+name = "pyramids"
+path = "../snippets/examples/opencv_geom/pyramids.rs"
+
+[[example]]
+name = "template_matching"
+path = "../snippets/examples/opencv_geom/template_matching.rs"
+
+[[example]]
+name = "threshold"
+path = "../snippets/examples/opencv_color/threshold.rs"
+
+[[example]]
+name = "equalize"
+path = "../snippets/examples/opencv_color/equalize.rs"
+
+[[example]]
+name = "adding_images"
+path = "../snippets/examples/opencv_core/adding_images.rs"
+
+[[example]]
+name = "basic_linear_transform"
+path = "../snippets/examples/opencv_core/basic_linear_transform.rs"
+
+[[example]]
+name = "erosion"
+path = "../snippets/examples/opencv_morph/erosion.rs"
+
+[workspace]

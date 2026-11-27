@@ -14,6 +14,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
 - [oximedia-cv](https://crates.io/crates/oximedia-cv)
+- [opencv](https://crates.io/crates/opencv)
 
 ## Goal
 
@@ -156,6 +157,43 @@ pub fn main() {
 ```
 
 </TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_pyramids` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example pyramids` inside `snippets-opencv`.
+
+use cvg_opencv::{mat_rgb, rgb_mat};
+use image::RgbImage;
+use opencv::core::{BORDER_DEFAULT, Mat, Size};
+use opencv::imgproc;
+
+/// Goes down `levels` times with `cv::pyrDown`, then, if `back` is set, up the same number of times with `cv::pyrUp`.
+pub fn pyramid(input: &RgbImage, levels: u32, back: bool) -> RgbImage {
+    let mut current = rgb_mat(input).expect("mat");
+    for _ in 0..levels {
+        let mut next = Mat::default();
+        imgproc::pyr_down(&current, &mut next, Size::default(), BORDER_DEFAULT).expect("pyrDown");
+        current = next;
+    }
+    for _ in 0..if back { levels } else { 0 } {
+        let mut next = Mat::default();
+        imgproc::pyr_up(&current, &mut next, Size::default(), BORDER_DEFAULT).expect("pyrUp");
+        current = next;
+    }
+    mat_rgb(&current).expect("image")
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::sample("chelsea.png");
+    println!(
+        "three levels down: {:?}",
+        pyramid(&photo, 3, false).dimensions()
+    );
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Explanation
@@ -193,7 +231,7 @@ sizes = 451x300, 226x150, 113x75, 57x38, 456x304
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| 3-level pyrDown | 451x300 RGB | 0.045 ms | 1.818 ms | 0.869 ms | 0.48x |
+| 3-level pyrDown | 451x300 RGB | 0.045 ms | 1.824 ms | 0.869 ms | 0.48x |
 
 :::warning Performance difference
 

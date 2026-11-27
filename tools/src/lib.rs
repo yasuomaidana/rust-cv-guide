@@ -2,6 +2,7 @@
 
 pub mod benchmarks;
 pub mod check;
+pub mod choose;
 pub mod generate;
 pub mod load;
 pub mod model;

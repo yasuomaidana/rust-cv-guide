@@ -109,6 +109,11 @@ pub struct BenchRow {
     /// The same kernels on all threads (`parallel` feature).
     #[serde(default)]
     pub oxipix_next_mt_ms: Option<f64>,
+    /// The guide's `opencv` crate example (with the `image` <-> `Mat` copies) on one thread and on all threads.
+    #[serde(default)]
+    pub opencv_crate_ms: Option<f64>,
+    #[serde(default)]
+    pub opencv_crate_mt_ms: Option<f64>,
     #[serde(default)]
     pub oxipix_next_stats: Option<Stats>,
     /// `ok`, `mismatch` (backends do different work) or `n/a`.

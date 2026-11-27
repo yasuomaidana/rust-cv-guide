@@ -7,6 +7,9 @@ out="${1:-../../catalog/benchmarks.json}"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-/opt/homebrew/opt/opencv/lib/pkgconfig}"
+# The `opencv` crate needs clang to generate its bindings and the OpenCV libraries at run time.
+export LIBCLANG_PATH="${LIBCLANG_PATH:-/opt/homebrew/opt/llvm/lib}"
+export DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH:-/opt/homebrew/opt/opencv/lib:/opt/homebrew/opt/llvm/lib}"
 
 clang++ -O3 -std=c++17 bench.cpp $(pkg-config --cflags --libs opencv5) -o "$work/bench_cpp"
 "$work/bench_cpp" ../../snippets/assets > "$work/opencv.json"

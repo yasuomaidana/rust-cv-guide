@@ -14,6 +14,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
 - [oximedia-cv](https://crates.io/crates/oximedia-cv)
+- [opencv](https://crates.io/crates/opencv)
 
 
 ## Goal
@@ -100,6 +101,55 @@ pub fn main() {
 ```
 
 </TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_canny_detector` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example canny` inside `snippets-opencv`.
+
+use cvg_opencv::{gray_mat, mat_gray};
+use image::GrayImage;
+use opencv::core::{AlgorithmHint, BORDER_DEFAULT, Mat, Size};
+use opencv::imgproc;
+
+/// Blur to calm the noise, then Canny with hysteresis thresholds `low` and `high` (`L2gradient` as in `imageproc`).
+pub fn detect_edges(input: &GrayImage, low: f32, high: f32) -> GrayImage {
+    let (src, mut blurred, mut edges) = (
+        gray_mat(input).expect("mat"),
+        Mat::default(),
+        Mat::default(),
+    );
+    let hint = AlgorithmHint::ALGO_HINT_DEFAULT;
+    imgproc::gaussian_blur(
+        &src,
+        &mut blurred,
+        Size::new(0, 0),
+        1.4,
+        0.0,
+        BORDER_DEFAULT,
+        hint,
+    )
+    .expect("blur");
+    imgproc::canny(
+        &blurred,
+        &mut edges,
+        f64::from(low),
+        f64::from(high),
+        3,
+        true,
+    )
+    .expect("canny");
+    mat_gray(&edges).expect("image")
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::gray_sample("building.jpg");
+    let edges = detect_edges(&photo, 50.0, 150.0);
+    println!("edge pixels: {}", edges.iter().filter(|v| **v > 0).count());
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Explanation
@@ -135,4 +185,4 @@ The window edges and floor lines come out as thin connected curves, and the smoo
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Gaussian blur + Canny (50/150) | 640x480 grey | 2.281 ms | 17.690 ms | 22.319 ms | 1.26x |
+| Gaussian blur + Canny (50/150) | 640x480 grey | 2.272 ms | 17.651 ms | 22.223 ms | 1.26x |

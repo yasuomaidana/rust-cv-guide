@@ -63,6 +63,9 @@ pub struct BenchRow {
     pub oxipix_next_vs_opencv: Option<f64>,
     /// The `oxipix` imgproc kernels on all threads (`parallel` feature above its size threshold).
     pub oxipix_next_mt_ms: Option<f64>,
+    /// The `opencv` crate example (with the `image` <-> `Mat` copies) on one thread and on all threads.
+    pub opencv_crate_ms: Option<f64>,
+    pub opencv_crate_mt_ms: Option<f64>,
     /// `ok`, `mismatch`, or `n/a` when a side has no comparable image output.
     pub parity: String,
 }
@@ -161,8 +164,14 @@ pub struct BenchSpec<'a> {
     pub next_op: Option<Box<dyn FnMut() + 'a>>,
     /// The same `oxipix` call timed on all threads (the plain `next_op` runs on one).
     pub next_mt_op: Option<Box<dyn FnMut() + 'a>>,
+    /// The guide's `opencv` crate example (includes the `image` <-> `Mat` copies), on one thread and on all threads.
+    pub ocv_op: Option<Box<dyn FnMut() + 'a>>,
+    pub ocv_mt_op: Option<Box<dyn FnMut() + 'a>>,
     pub next_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
 }
+
+/// A timed closure, if the backend has one.
+pub type TimedOp<'a> = Option<Box<dyn FnMut() + 'a>>;
 
 /// The timed closure and the one-off digest closure of a backend.
 pub type Ops<'a> = (
@@ -171,6 +180,17 @@ pub type Ops<'a> = (
 );
 
 impl<'a> BenchSpec<'a> {
+    /// Adds the `opencv` crate backend: one-thread and all-threads timed closures.
+    pub fn with_ocv(
+        mut self,
+        one: Option<Box<dyn FnMut() + 'a>>,
+        all: Option<Box<dyn FnMut() + 'a>>,
+    ) -> Self {
+        self.ocv_op = one;
+        self.ocv_mt_op = all;
+        self
+    }
+
     /// Adds the all-threads timing of the `oxipix` imgproc backend.
     pub fn with_next_mt(mut self, op: Option<Box<dyn FnMut() + 'a>>) -> Self {
         self.next_mt_op = op;
@@ -258,6 +278,8 @@ macro_rules! bench_spec {
             oxi_digest,
             next_op: None,
             next_mt_op: None,
+            ocv_op: None,
+            ocv_mt_op: None,
             next_digest: None,
         }
     }};
@@ -299,6 +321,8 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
     let next_stats = spec.next_op.map(|op| time_stats(spec.iters, op));
     let next_ms = next_stats.map(|s| s.median);
     let next_mt_ms = spec.next_mt_op.map(|op| time_ms(spec.iters, op));
+    let crate_ms = spec.ocv_op.map(|op| time_ms(spec.iters, op));
+    let crate_mt_ms = spec.ocv_mt_op.map(|op| time_ms(spec.iters, op));
     let rust_ms = rust_stats.map(|s| s.median);
     let oximedia_ms = oximedia_stats.map(|s| s.median);
     let parity = combine_parity([
@@ -336,6 +360,8 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         oxipix_next_digest: next_digest,
         oxipix_next_vs_opencv: ratio(next_ms, opencv_ms),
         oxipix_next_mt_ms: next_mt_ms,
+        opencv_crate_ms: crate_ms,
+        opencv_crate_mt_ms: crate_mt_ms,
         parity: parity.into(),
     }
 }

@@ -14,6 +14,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
 - [oximedia-cv](https://crates.io/crates/oximedia-cv)
+- [opencv](https://crates.io/crates/opencv)
 
 
 ## Goal
@@ -148,6 +149,47 @@ pub fn main() {
 ```
 
 </TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_sobel_derivatives` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example sobel` inside `snippets-opencv`.
+
+use cvg_opencv::{gray_mat, mat_gray};
+use image::GrayImage;
+use opencv::core::{self, BORDER_DEFAULT, CV_16S, Mat};
+use opencv::imgproc;
+
+/// `cv::Sobel` in x, as an 8-bit picture (`convertScaleAbs`).
+pub fn grad_x(input: &GrayImage) -> GrayImage {
+    let (src, mut gradient, mut abs) = (
+        gray_mat(input).expect("mat"),
+        Mat::default(),
+        Mat::default(),
+    );
+    imgproc::sobel(
+        &src,
+        &mut gradient,
+        CV_16S,
+        1,
+        0,
+        3,
+        1.0,
+        0.0,
+        BORDER_DEFAULT,
+    )
+    .expect("sobel");
+    core::convert_scale_abs(&gradient, &mut abs, 1.0, 0.0).expect("abs");
+    mat_gray(&abs).expect("image")
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::gray_sample("building.jpg");
+    println!("strongest: {:?}", grad_x(&photo).iter().max());
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Explanation
@@ -185,7 +227,7 @@ This point lies on a horizontal ledge: the x derivative is small and the y deriv
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Sobel X derivative | 640x480 grey | 0.142 ms | 3.845 ms | 0.786 ms | 0.20x |
+| Sobel X derivative | 640x480 grey | 0.142 ms | 3.846 ms | 0.786 ms | 0.20x |
 
 :::warning Performance difference
 

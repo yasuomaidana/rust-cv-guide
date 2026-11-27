@@ -8,3 +8,4 @@
 - [RUSTCVGUID-187] `oxipix_next` backend: `Cargo.toml` depends on the oxipix `imgproc` branch, `src/next.rs` maps every row to the matching kernel with the tutorial's parameters, rows carry `oxipix_next_ms`, `oxipix_next_opt_ms`, `oxipix_next_stats`, `oxipix_next_digest`.
 - [RUSTCVGUID-188] `opencv_mt_ms` on every row, `size_sweep` rows (`src/sweep.rs`, `run_sweep` in `bench.cpp`), `opencv_threads` and `opencv_opencl` in the environment.
 - [RUSTCVGUID-188] `oxipix_next_mt_ms`: oxipix kernels on all threads, measured in a rayon pool; the dependency now enables oxipix `parallel` and points at the OXI-97 branch.
+- [RUSTCVGUID-189] `opencv_crate_ms` and `opencv_crate_mt_ms` on rows and sweep rows (`src/ocv.rs`, the guide's `opencv` examples included by path); `run.sh` sets the clang and OpenCV library paths the crate needs.

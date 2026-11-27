@@ -15,6 +15,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 - [imageproc](https://crates.io/crates/imageproc)
 - [oximedia-cv](https://crates.io/crates/oximedia-cv)
 - [oxipix](https://crates.io/crates/oxipix)
+- [opencv](https://crates.io/crates/opencv)
 
 
 ## Goal
@@ -133,6 +134,48 @@ pub fn main() {
 ```
 
 </TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_erosion_dilatation` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example erosion` inside `snippets-opencv`.
+
+use cvg_opencv::{gray_mat, mat_gray};
+use image::GrayImage;
+use opencv::core::{BORDER_CONSTANT, Mat, Point, Size};
+use opencv::imgproc;
+
+/// Erosion with a square window of `2 * radius + 1` pixels (`cv::erode`).
+pub fn shrink(mask: &GrayImage, radius: u8) -> GrayImage {
+    let side = 2 * i32::from(radius) + 1;
+    let kernel = imgproc::get_structuring_element(
+        imgproc::MORPH_RECT,
+        Size::new(side, side),
+        Point::new(-1, -1),
+    )
+    .expect("kernel");
+    let (src, mut dst) = (gray_mat(mask).expect("mat"), Mat::default());
+    let outside = imgproc::morphology_default_border_value().expect("border");
+    imgproc::erode(
+        &src,
+        &mut dst,
+        &kernel,
+        Point::new(-1, -1),
+        1,
+        BORDER_CONSTANT,
+        outside,
+    )
+    .expect("erode");
+    mat_gray(&dst).expect("image")
+}
+
+pub fn main() {
+    let coins = cvg_snippets::common::gray_sample("coins.png");
+    println!("size: {:?}", shrink(&coins, 2).dimensions());
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Explanation
@@ -170,7 +213,7 @@ dilation adds about a quarter.
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Erode (5x5 square, r=2) | 384x303 grey | 0.010 ms | 0.271 ms | 3.269 ms | 12.06x |
+| Erode (5x5 square, r=2) | 384x303 grey | 0.010 ms | 0.271 ms | 3.268 ms | 12.06x |
 
 :::warning Performance difference
 

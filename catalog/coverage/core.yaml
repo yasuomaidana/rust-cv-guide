@@ -1,8 +1,8 @@
 # status: unreviewed | covered | partial | gap | not-planned.
 # covered/partial: crates, snippet (examples/<snippet>.rs) and a guide body are required; gap/not-planned: reason.
 tutorials:
-  tutorial_adding_images: {status: covered, crates: [image, imageproc, oximedia-cv], snippet: core/adding_images, alternatives: [{crate: oximedia-cv, snippet: oximedia_core/adding_images}]}
-  tutorial_basic_linear_transform: {status: covered, crates: [image], oxipix_ticket: OXI-88, snippet: core/basic_linear_transform}
+  tutorial_adding_images: {status: covered, crates: [image, imageproc, oximedia-cv, opencv], snippet: core/adding_images, alternatives: [{crate: oximedia-cv, snippet: oximedia_core/adding_images}, {crate: opencv, snippet: opencv_core/adding_images}]}
+  tutorial_basic_linear_transform: {status: covered, crates: [image, opencv], oxipix_ticket: OXI-88, snippet: core/basic_linear_transform, alternatives: [{crate: opencv, snippet: opencv_core/basic_linear_transform}]}
   tutorial_discrete_fourier_transform: {status: unreviewed, crates: []}
   tutorial_file_input_output_with_xml_yml: {status: unreviewed, crates: []}
   tutorial_how_to_scan_images: {status: unreviewed, crates: []}

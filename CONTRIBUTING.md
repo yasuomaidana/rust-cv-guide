@@ -14,3 +14,7 @@ The [performance queue](PERF_QUEUE.md) lists every operation where the best Rust
 A row where `parity` is `mismatch` compares different work (different output size, mean, or element count). Fix the benchmark first, because its ratio cannot be trusted.
 
 New tutorials need a benchmark row. If the best Rust backend is more than 5% slower than OpenCV (and more than the measured noise), `cvg-tools check` requires a queue entry with an issue link.
+
+## The `opencv` crate examples
+
+`snippets-opencv/` compiles the guide's `opencv` examples (stored in `snippets/examples/opencv_*`) and tests them against their pure-Rust twins. It needs a native OpenCV 5.x and clang, so it is not part of the workspace or of CI: see its README for the commands. A new tutorial that has an OpenCV equivalent should get an `opencv_*` example, an `[[example]]` entry and a parity test there, and an `alternatives` entry for the `opencv` crate in `catalog/coverage/`.

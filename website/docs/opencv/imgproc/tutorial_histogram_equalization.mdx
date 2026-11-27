@@ -14,6 +14,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
 - [oximedia-cv](https://crates.io/crates/oximedia-cv)
+- [opencv](https://crates.io/crates/opencv)
 
 
 ## Goal
@@ -94,6 +95,31 @@ pub fn main() {
 ```
 
 </TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_histogram_equalization` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example equalize` inside `snippets-opencv`.
+
+use cvg_opencv::{gray_mat, mat_gray};
+use image::GrayImage;
+use opencv::core::Mat;
+use opencv::imgproc;
+
+/// Spreads the grey levels so their cumulative distribution is close to linear (`cv::equalizeHist`).
+pub fn equalize(input: &GrayImage) -> GrayImage {
+    let (src, mut dst) = (gray_mat(input).expect("mat"), Mat::default());
+    imgproc::equalize_hist(&src, &mut dst).expect("equalizeHist");
+    mat_gray(&dst).expect("image")
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::gray_sample("building.jpg");
+    println!("brightest: {:?}", equalize(&photo).iter().max());
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Explanation
@@ -126,4 +152,4 @@ The hazy sky and the dark facade now use more of the grey range, so the structur
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Histogram equalisation | 640x480 grey | 0.254 ms | 0.351 ms | 0.304 ms | 0.87x |
+| Histogram equalisation | 640x480 grey | 0.253 ms | 0.351 ms | 0.304 ms | 0.87x |

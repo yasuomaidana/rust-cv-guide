@@ -8,7 +8,25 @@
     "rust_profile": "release",
     "oximedia_cv_version": "0.2.1",
     "oxipix_version": "0.1.0",
-    "imageproc_version": "0.27.0"
+    "imageproc_version": "0.27.0",
+    "builds": [
+      "release",
+      "release+fat-lto+cgu1+native"
+    ],
+    "opencv_build": [
+      "Baseline:                    NEON FP16 NEON_DOTPROD NEON_FP16",
+      "Dispatched code generation:  NEON_BF16",
+      "C++ flags (Release):         -fsigned-char -W -Wall -Wreturn-type -Wnon-virtual-dtor -Waddress -Wsequence-point -Wformat -Wformat-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Wno-delete-non-virtual-dtor -Wno-unnamed-type-template-args -Wno-comment -Wimplicit-fallthrough=3 -fdiagnostics-show-option -Qunused-arguments -Wno-semicolon-before-method-body -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -Wno-deprecated-copy -O3 -DNDEBUG  -DNDEBUG",
+      "Parallel framework:            TBB (ver 2023.2 interface 12200)",
+      "Custom HAL:                  YES (carotene (ver 0.0.1) KleidiCV (ver 26.09))"
+    ]
+  },
+  "calibration": {
+    "alloc_320x240x3": 0.003,
+    "alloc_451x300x3": 0.004,
+    "alloc_640x480x1": 0.004,
+    "alloc_640x480x3": 0.011,
+    "empty_closure": 0.0
   },
   "benchmarks": [
     {
@@ -17,15 +35,40 @@
       "section": "core",
       "operation": "addWeighted (0.5 / 0.5)",
       "input": "320x240 RGB",
-      "opencv_ms": 0.035,
-      "rust_ms": 0.316,
-      "oximedia_ms": 0.539,
+      "opencv_ms": 0.038,
+      "rust_ms": 0.248,
+      "oximedia_ms": 0.507,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.71,
-      "rust_vs_opencv": 9.03,
-      "oximedia_vs_opencv": 15.4,
+      "oximedia_vs_rust": 2.04,
+      "rust_vs_opencv": 6.53,
+      "oximedia_vs_opencv": 13.34,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.038,
+      "rust_opt_ms": 0.215,
+      "oximedia_opt_ms": 0.461,
+      "rust_stats": {
+        "median": 0.248,
+        "p10": 0.247,
+        "p90": 0.257,
+        "mad": 0.001,
+        "iters": 731
+      },
+      "oximedia_stats": {
+        "median": 0.507,
+        "p10": 0.504,
+        "p90": 0.52,
+        "mad": 0.002,
+        "iters": 364
+      },
+      "opencv_digest": {
+        "w": 320,
+        "h": 240,
+        "mean": 57.5455
+      },
+      "rust_digest": null,
+      "oximedia_digest": null,
+      "parity": "n/a"
     },
     {
       "id": "basic_linear_transform",
@@ -41,7 +84,30 @@
       "rust_vs_opencv": 7.06,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-88",
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.064,
+      "rust_opt_ms": 0.341,
+      "oximedia_opt_ms": null,
+      "rust_stats": {
+        "median": 0.452,
+        "p10": 0.439,
+        "p90": 0.458,
+        "mad": 0.001,
+        "iters": 438
+      },
+      "oximedia_stats": null,
+      "opencv_digest": {
+        "w": 600,
+        "h": 400,
+        "mean": 156.491
+      },
+      "rust_digest": {
+        "w": 600,
+        "h": 400,
+        "mean": 156.53095972222224
+      },
+      "oximedia_digest": null,
+      "parity": "ok"
     },
     {
       "id": "psnr",
@@ -57,7 +123,28 @@
       "rust_vs_opencv": 2.65,
       "oximedia_vs_opencv": 2.72,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.147,
+      "rust_opt_ms": 0.389,
+      "oximedia_opt_ms": 0.401,
+      "rust_stats": {
+        "median": 0.389,
+        "p10": 0.389,
+        "p90": 0.395,
+        "mad": 0.0,
+        "iters": 496
+      },
+      "oximedia_stats": {
+        "median": 0.4,
+        "p10": 0.4,
+        "p90": 0.406,
+        "mad": 0.0,
+        "iters": 499
+      },
+      "opencv_digest": null,
+      "rust_digest": null,
+      "oximedia_digest": null,
+      "parity": "n/a"
     },
     {
       "id": "ssim",
@@ -65,15 +152,36 @@
       "section": "app",
       "operation": "SSIM (11x11 Gaussian)",
       "input": "640x480 grey",
-      "opencv_ms": 3.087,
-      "rust_ms": 6.541,
-      "oximedia_ms": 100.723,
+      "opencv_ms": 3.111,
+      "rust_ms": 6.462,
+      "oximedia_ms": 100.538,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 15.4,
-      "rust_vs_opencv": 2.12,
-      "oximedia_vs_opencv": 32.63,
+      "oximedia_vs_rust": 15.56,
+      "rust_vs_opencv": 2.08,
+      "oximedia_vs_opencv": 32.32,
       "oxipix_ticket": null,
-      "warning_note": "oximedia-cv's SSIM (15.4x slower than pure Rust separable SSIM, 32.6x slower than OpenCV) runs a non-separable 2D 11x11 window loop with per-tap bounds checks per pixel instead of 5 separable 1D passes (cool-japan/oximedia#31)."
+      "warning_note": "oximedia-cv's SSIM (15.4x slower than pure Rust separable SSIM, 32.6x slower than OpenCV) runs a non-separable 2D 11x11 window loop with per-tap bounds checks per pixel instead of 5 separable 1D passes (cool-japan/oximedia#31).",
+      "opencv_fresh_ms": 3.146,
+      "rust_opt_ms": 6.394,
+      "oximedia_opt_ms": 88.539,
+      "rust_stats": {
+        "median": 6.462,
+        "p10": 5.971,
+        "p90": 7.783,
+        "mad": 0.462,
+        "iters": 26
+      },
+      "oximedia_stats": {
+        "median": 100.538,
+        "p10": 100.384,
+        "p90": 100.792,
+        "mad": 0.081,
+        "iters": 15
+      },
+      "opencv_digest": null,
+      "rust_digest": null,
+      "oximedia_digest": null,
+      "parity": "n/a"
     },
     {
       "id": "feature_detection_fast",
@@ -81,15 +189,48 @@
       "section": "features",
       "operation": "FAST-9 keypoints (t=30, max=250)",
       "input": "640x480 grey",
-      "opencv_ms": 0.571,
-      "rust_ms": 2.343,
-      "oximedia_ms": 7.002,
+      "opencv_ms": 0.576,
+      "rust_ms": 2.334,
+      "oximedia_ms": 6.965,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.99,
-      "rust_vs_opencv": 4.1,
-      "oximedia_vs_opencv": 12.26,
+      "oximedia_vs_rust": 2.98,
+      "rust_vs_opencv": 4.05,
+      "oximedia_vs_opencv": 12.09,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": "Not like-for-like: OpenCV returns every FAST corner after non-max suppression (2091 here) while the tutorial caps at 250 strongest. Tracked under RUSTCVGUID-156.",
+      "opencv_fresh_ms": 0.593,
+      "rust_opt_ms": 2.209,
+      "oximedia_opt_ms": 7.01,
+      "rust_stats": {
+        "median": 2.334,
+        "p10": 2.301,
+        "p90": 2.415,
+        "mad": 0.031,
+        "iters": 72
+      },
+      "oximedia_stats": {
+        "median": 6.965,
+        "p10": 6.94,
+        "p90": 6.993,
+        "mad": 0.014,
+        "iters": 27
+      },
+      "opencv_digest": {
+        "w": 2091,
+        "h": 1,
+        "mean": 0.0
+      },
+      "rust_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oximedia_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "parity": "mismatch"
     },
     {
       "id": "feature_detection_orb",
@@ -97,15 +238,48 @@
       "section": "features",
       "operation": "ORB keypoints (t=30, max=250)",
       "input": "640x480 grey",
-      "opencv_ms": 6.603,
-      "rust_ms": 2.464,
-      "oximedia_ms": 3.935,
+      "opencv_ms": 6.629,
+      "rust_ms": 2.176,
+      "oximedia_ms": 3.778,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.6,
-      "rust_vs_opencv": 0.37,
-      "oximedia_vs_opencv": 0.6,
+      "oximedia_vs_rust": 1.74,
+      "rust_vs_opencv": 0.33,
+      "oximedia_vs_opencv": 0.57,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 6.725,
+      "rust_opt_ms": 2.25,
+      "oximedia_opt_ms": 3.646,
+      "rust_stats": {
+        "median": 2.176,
+        "p10": 2.165,
+        "p90": 2.209,
+        "mad": 0.008,
+        "iters": 82
+      },
+      "oximedia_stats": {
+        "median": 3.778,
+        "p10": 3.72,
+        "p90": 3.877,
+        "mad": 0.045,
+        "iters": 48
+      },
+      "opencv_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "rust_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oximedia_digest": {
+        "w": 250,
+        "h": 1,
+        "mean": 0.0
+      },
+      "parity": "ok"
     },
     {
       "id": "feature_description",
@@ -113,15 +287,36 @@
       "section": "features",
       "operation": "Binary feature matching (250 kp)",
       "input": "324x223 vs 512x384 grey",
-      "opencv_ms": 4.357,
-      "rust_ms": 3.931,
-      "oximedia_ms": 2.734,
+      "opencv_ms": 4.353,
+      "rust_ms": 3.907,
+      "oximedia_ms": 2.504,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 0.7,
+      "oximedia_vs_rust": 0.64,
       "rust_vs_opencv": 0.9,
-      "oximedia_vs_opencv": 0.63,
+      "oximedia_vs_opencv": 0.58,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 4.346,
+      "rust_opt_ms": 3.818,
+      "oximedia_opt_ms": 2.398,
+      "rust_stats": {
+        "median": 3.907,
+        "p10": 3.871,
+        "p90": 4.015,
+        "mad": 0.028,
+        "iters": 49
+      },
+      "oximedia_stats": {
+        "median": 2.504,
+        "p10": 2.484,
+        "p90": 2.606,
+        "mad": 0.018,
+        "iters": 71
+      },
+      "opencv_digest": null,
+      "rust_digest": null,
+      "oximedia_digest": null,
+      "parity": "n/a"
     },
     {
       "id": "homography",
@@ -129,15 +324,48 @@
       "section": "features",
       "operation": "Perspective unwarp (4-point quad)",
       "input": "640x480 RGB",
-      "opencv_ms": 0.587,
-      "rust_ms": 4.146,
-      "oximedia_ms": 6.804,
+      "opencv_ms": 0.589,
+      "rust_ms": 4.136,
+      "oximedia_ms": 6.734,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 1.64,
-      "rust_vs_opencv": 7.06,
-      "oximedia_vs_opencv": 11.59,
+      "oximedia_vs_rust": 1.63,
+      "rust_vs_opencv": 7.02,
+      "oximedia_vs_opencv": 11.43,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.587,
+      "rust_opt_ms": 4.135,
+      "oximedia_opt_ms": 6.278,
+      "rust_stats": {
+        "median": 4.136,
+        "p10": 4.109,
+        "p90": 4.182,
+        "mad": 0.019,
+        "iters": 47
+      },
+      "oximedia_stats": {
+        "median": 6.734,
+        "p10": 6.712,
+        "p90": 6.844,
+        "mad": 0.015,
+        "iters": 29
+      },
+      "opencv_digest": {
+        "w": 640,
+        "h": 480,
+        "mean": 225.925
+      },
+      "rust_digest": {
+        "w": 640,
+        "h": 480,
+        "mean": 225.835712890625
+      },
+      "oximedia_digest": {
+        "w": 640,
+        "h": 480,
+        "mean": 225.9252419704861
+      },
+      "parity": "ok"
     },
     {
       "id": "threshold",
@@ -145,15 +373,48 @@
       "section": "imgproc",
       "operation": "Otsu binary threshold",
       "input": "384x303 grey",
-      "opencv_ms": 0.031,
+      "opencv_ms": 0.03,
       "rust_ms": 0.045,
-      "oximedia_ms": 0.16,
+      "oximedia_ms": 0.159,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 3.56,
-      "rust_vs_opencv": 1.45,
-      "oximedia_vs_opencv": 5.16,
+      "oximedia_vs_rust": 3.53,
+      "rust_vs_opencv": 1.5,
+      "oximedia_vs_opencv": 5.3,
       "oxipix_ticket": "OXI-89",
-      "warning_note": "The oxipix threshold helper runs a per-pixel GrayImage::from_fn wrapper over otsu_threshold (~3.6x slower than imageproc's tight slice loop; native slice thresholding tracked in OXI-89)."
+      "warning_note": "The oxipix threshold helper runs a per-pixel GrayImage::from_fn wrapper over otsu_threshold (~3.6x slower than imageproc's tight slice loop; native slice thresholding tracked in OXI-89).",
+      "opencv_fresh_ms": 0.031,
+      "rust_opt_ms": 0.045,
+      "oximedia_opt_ms": 0.137,
+      "rust_stats": {
+        "median": 0.045,
+        "p10": 0.044,
+        "p90": 0.046,
+        "mad": 0.0,
+        "iters": 4511
+      },
+      "oximedia_stats": {
+        "median": 0.159,
+        "p10": 0.157,
+        "p90": 0.165,
+        "mad": 0.002,
+        "iters": 1215
+      },
+      "opencv_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 98.8796
+      },
+      "rust_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 98.87956373762377
+      },
+      "oximedia_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 98.87956373762377
+      },
+      "parity": "ok"
     },
     {
       "id": "threshold_inRange",
@@ -162,14 +423,47 @@
       "operation": "HSV red range mask",
       "input": "320x240 RGB",
       "opencv_ms": 0.125,
-      "rust_ms": 0.194,
-      "oximedia_ms": 0.449,
+      "rust_ms": 0.193,
+      "oximedia_ms": 0.447,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.31,
-      "rust_vs_opencv": 1.55,
-      "oximedia_vs_opencv": 3.59,
+      "oximedia_vs_rust": 2.32,
+      "rust_vs_opencv": 1.54,
+      "oximedia_vs_opencv": 3.58,
       "oxipix_ticket": "OXI-90",
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.125,
+      "rust_opt_ms": 0.18,
+      "oximedia_opt_ms": 0.368,
+      "rust_stats": {
+        "median": 0.193,
+        "p10": 0.193,
+        "p90": 0.196,
+        "mad": 0.0,
+        "iters": 1020
+      },
+      "oximedia_stats": {
+        "median": 0.447,
+        "p10": 0.446,
+        "p90": 0.456,
+        "mad": 0.001,
+        "iters": 437
+      },
+      "opencv_digest": {
+        "w": 320,
+        "h": 240,
+        "mean": 3.69219
+      },
+      "rust_digest": {
+        "w": 320,
+        "h": 240,
+        "mean": 3.5892578125
+      },
+      "oximedia_digest": {
+        "w": 320,
+        "h": 240,
+        "mean": 3.5892578125
+      },
+      "parity": "ok"
     },
     {
       "id": "equalize",
@@ -177,15 +471,48 @@
       "section": "imgproc",
       "operation": "Histogram equalisation",
       "input": "640x480 grey",
-      "opencv_ms": 0.253,
-      "rust_ms": 0.357,
-      "oximedia_ms": 0.309,
+      "opencv_ms": 0.255,
+      "rust_ms": 0.352,
+      "oximedia_ms": 0.305,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 0.87,
-      "rust_vs_opencv": 1.41,
-      "oximedia_vs_opencv": 1.22,
+      "rust_vs_opencv": 1.38,
+      "oximedia_vs_opencv": 1.2,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.255,
+      "rust_opt_ms": 0.351,
+      "oximedia_opt_ms": 0.305,
+      "rust_stats": {
+        "median": 0.352,
+        "p10": 0.349,
+        "p90": 0.357,
+        "mad": 0.002,
+        "iters": 565
+      },
+      "oximedia_stats": {
+        "median": 0.305,
+        "p10": 0.304,
+        "p90": 0.311,
+        "mad": 0.001,
+        "iters": 654
+      },
+      "opencv_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 127.731
+      },
+      "rust_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 127.70424923195084
+      },
+      "oximedia_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 127.90311251920123
+      },
+      "parity": "ok"
     },
     {
       "id": "erosion",
@@ -194,14 +521,47 @@
       "operation": "Erode (5x5 square, r=2)",
       "input": "384x303 grey",
       "opencv_ms": 0.01,
-      "rust_ms": 0.294,
-      "oximedia_ms": 3.347,
+      "rust_ms": 0.277,
+      "oximedia_ms": 3.274,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 11.38,
-      "rust_vs_opencv": 29.4,
-      "oximedia_vs_opencv": 334.7,
+      "oximedia_vs_rust": 11.82,
+      "rust_vs_opencv": 27.7,
+      "oximedia_vs_opencv": 327.4,
       "oxipix_ticket": null,
-      "warning_note": "oximedia-cv erode is 11.4x slower than imageproc (335x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30)."
+      "warning_note": "oximedia-cv erode is 11.4x slower than imageproc (335x slower than OpenCV) because StructuringElement::iter_active recomputes (i % w, i / w) offsets and checks bounds per tap with no separable rectangular fast path (cool-japan/oximedia#30).",
+      "opencv_fresh_ms": 0.01,
+      "rust_opt_ms": 0.287,
+      "oximedia_opt_ms": 2.778,
+      "rust_stats": {
+        "median": 0.277,
+        "p10": 0.277,
+        "p90": 0.282,
+        "mad": 0.0,
+        "iters": 562
+      },
+      "oximedia_stats": {
+        "median": 3.274,
+        "p10": 3.263,
+        "p90": 3.347,
+        "mad": 0.008,
+        "iters": 58
+      },
+      "opencv_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 60.8242
+      },
+      "rust_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 60.82418007425743
+      },
+      "oximedia_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 60.82418007425743
+      },
+      "parity": "ok"
     },
     {
       "id": "opening_closing_hats",
@@ -209,15 +569,48 @@
       "section": "imgproc",
       "operation": "Top-hat morphology (7x7, r=3)",
       "input": "384x303 grey",
-      "opencv_ms": 0.028,
-      "rust_ms": 0.42,
-      "oximedia_ms": 14.203,
+      "opencv_ms": 0.029,
+      "rust_ms": 0.412,
+      "oximedia_ms": 13.958,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 33.82,
-      "rust_vs_opencv": 15.0,
-      "oximedia_vs_opencv": 507.25,
+      "oximedia_vs_rust": 33.88,
+      "rust_vs_opencv": 14.21,
+      "oximedia_vs_opencv": 481.31,
       "oxipix_ticket": null,
-      "warning_note": "oximedia-cv top_hat is 33.8x slower than imageproc (507x slower than OpenCV) for a 7x7 square window due to non-separable 2D erode/dilate with per-pixel iter_active() coordinate division and bounds checks (cool-japan/oximedia#30)."
+      "warning_note": "oximedia-cv top_hat is 33.8x slower than imageproc (507x slower than OpenCV) for a 7x7 square window due to non-separable 2D erode/dilate with per-pixel iter_active() coordinate division and bounds checks (cool-japan/oximedia#30).",
+      "opencv_fresh_ms": 0.029,
+      "rust_opt_ms": 1.133,
+      "oximedia_opt_ms": 10.752,
+      "rust_stats": {
+        "median": 0.412,
+        "p10": 0.411,
+        "p90": 0.418,
+        "mad": 0.001,
+        "iters": 476
+      },
+      "oximedia_stats": {
+        "median": 13.958,
+        "p10": 13.938,
+        "p90": 14.007,
+        "mad": 0.016,
+        "iters": 15
+      },
+      "opencv_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 12.7019
+      },
+      "rust_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 12.701887376237623
+      },
+      "oximedia_digest": {
+        "w": 384,
+        "h": 303,
+        "mean": 12.701887376237623
+      },
+      "parity": "ok"
     },
     {
       "id": "distance_transform",
@@ -225,15 +618,34 @@
       "section": "imgproc",
       "operation": "Distance transform (L2)",
       "input": "384x303 mask",
-      "opencv_ms": 0.248,
-      "rust_ms": 0.893,
+      "opencv_ms": 0.249,
+      "rust_ms": 0.836,
       "oximedia_ms": null,
       "oximedia_crate": null,
       "oximedia_vs_rust": null,
-      "rust_vs_opencv": 3.6,
+      "rust_vs_opencv": 3.36,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-91",
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.249,
+      "rust_opt_ms": 0.929,
+      "oximedia_opt_ms": null,
+      "rust_stats": {
+        "median": 0.836,
+        "p10": 0.827,
+        "p90": 0.862,
+        "mad": 0.007,
+        "iters": 197
+      },
+      "oximedia_stats": null,
+      "opencv_digest": null,
+      "rust_digest": {
+        "w": 116352,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oximedia_digest": null,
+      "parity": "n/a"
     },
     {
       "id": "find_contours",
@@ -242,14 +654,43 @@
       "operation": "Find contours + approxPolyDP",
       "input": "560x420 mask",
       "opencv_ms": 0.158,
-      "rust_ms": 0.539,
-      "oximedia_ms": 0.29,
+      "rust_ms": 0.517,
+      "oximedia_ms": 0.265,
       "oximedia_crate": "oxipix",
-      "oximedia_vs_rust": 0.54,
-      "rust_vs_opencv": 3.41,
-      "oximedia_vs_opencv": 1.84,
+      "oximedia_vs_rust": 0.51,
+      "rust_vs_opencv": 3.27,
+      "oximedia_vs_opencv": 1.68,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.158,
+      "rust_opt_ms": 0.48,
+      "oximedia_opt_ms": 0.252,
+      "rust_stats": {
+        "median": 0.517,
+        "p10": 0.512,
+        "p90": 0.532,
+        "mad": 0.004,
+        "iters": 357
+      },
+      "oximedia_stats": {
+        "median": 0.265,
+        "p10": 0.262,
+        "p90": 0.273,
+        "mad": 0.003,
+        "iters": 611
+      },
+      "opencv_digest": null,
+      "rust_digest": {
+        "w": 169,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oximedia_digest": {
+        "w": 174,
+        "h": 1,
+        "mean": 0.0
+      },
+      "parity": "n/a"
     },
     {
       "id": "smoothing_box",
@@ -257,15 +698,48 @@
       "section": "imgproc",
       "operation": "Box blur (5x5, r=2)",
       "input": "451x300 RGB",
-      "opencv_ms": 0.241,
-      "rust_ms": 1.399,
-      "oximedia_ms": 1.558,
+      "opencv_ms": 0.24,
+      "rust_ms": 1.344,
+      "oximedia_ms": 1.53,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.11,
-      "rust_vs_opencv": 5.8,
-      "oximedia_vs_opencv": 6.46,
+      "oximedia_vs_rust": 1.14,
+      "rust_vs_opencv": 5.6,
+      "oximedia_vs_opencv": 6.38,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.239,
+      "rust_opt_ms": 1.341,
+      "oximedia_opt_ms": 1.53,
+      "rust_stats": {
+        "median": 1.344,
+        "p10": 1.341,
+        "p90": 1.353,
+        "mad": 0.003,
+        "iters": 148
+      },
+      "oximedia_stats": {
+        "median": 1.53,
+        "p10": 1.52,
+        "p90": 1.556,
+        "mad": 0.007,
+        "iters": 129
+      },
+      "opencv_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.306
+      },
+      "rust_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 114.50236265089923
+      },
+      "oximedia_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 114.82390490268538
+      },
+      "parity": "ok"
     },
     {
       "id": "smoothing_gaussian",
@@ -274,14 +748,47 @@
       "operation": "Gaussian blur (sigma=1.1)",
       "input": "451x300 RGB",
       "opencv_ms": 0.198,
-      "rust_ms": 1.742,
-      "oximedia_ms": 4.726,
+      "rust_ms": 1.731,
+      "oximedia_ms": 4.71,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.71,
-      "rust_vs_opencv": 8.8,
-      "oximedia_vs_opencv": 23.87,
+      "oximedia_vs_rust": 2.72,
+      "rust_vs_opencv": 8.74,
+      "oximedia_vs_opencv": 23.79,
       "oxipix_ticket": null,
-      "warning_note": "oximedia-cv GaussianBlur is 2.7x slower than image::imageops::blur (23.9x slower than OpenCV) due to per-channel plane splitting and generic 2D/separable float passes without integer SIMD vectorisation (cool-japan/oximedia#29)."
+      "warning_note": "oximedia-cv GaussianBlur is 2.7x slower than image::imageops::blur (23.9x slower than OpenCV) due to per-channel plane splitting and generic 2D/separable float passes without integer SIMD vectorisation (cool-japan/oximedia#29).",
+      "opencv_fresh_ms": 0.198,
+      "rust_opt_ms": 1.762,
+      "oximedia_opt_ms": 4.792,
+      "rust_stats": {
+        "median": 1.731,
+        "p10": 1.726,
+        "p90": 1.759,
+        "mad": 0.005,
+        "iters": 114
+      },
+      "oximedia_stats": {
+        "median": 4.71,
+        "p10": 4.694,
+        "p90": 4.725,
+        "mad": 0.009,
+        "iters": 42
+      },
+      "opencv_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.305
+      },
+      "rust_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 114.3079453067258
+      },
+      "oximedia_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.30566888396157
+      },
+      "parity": "ok"
     },
     {
       "id": "smoothing_median",
@@ -290,14 +797,47 @@
       "operation": "Median filter (5x5, r=2)",
       "input": "451x300 RGB",
       "opencv_ms": 0.435,
-      "rust_ms": 17.852,
-      "oximedia_ms": 39.155,
+      "rust_ms": 18.108,
+      "oximedia_ms": 38.57,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.19,
-      "rust_vs_opencv": 41.04,
-      "oximedia_vs_opencv": 90.01,
+      "oximedia_vs_rust": 2.13,
+      "rust_vs_opencv": 41.63,
+      "oximedia_vs_opencv": 88.67,
       "oxipix_ticket": "OXI-93",
-      "warning_note": "Median 5x5 is 41.0x (imageproc) to 90.0x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93)."
+      "warning_note": "Median 5x5 is 41.0x (imageproc) to 90.0x (oximedia-cv) slower than OpenCV: oximedia-cv heap-allocates a Vec and calls sort_unstable() at every pixel instead of using a 256-bin sliding histogram (cool-japan/oximedia#29, OXI-93).",
+      "opencv_fresh_ms": 0.435,
+      "rust_opt_ms": 18.476,
+      "oximedia_opt_ms": 38.532,
+      "rust_stats": {
+        "median": 18.108,
+        "p10": 18.053,
+        "p90": 18.231,
+        "mad": 0.037,
+        "iters": 11
+      },
+      "oximedia_stats": {
+        "median": 38.57,
+        "p10": 38.402,
+        "p90": 38.772,
+        "mad": 0.132,
+        "iters": 10
+      },
+      "opencv_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.338
+      },
+      "rust_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.33751909337275
+      },
+      "oximedia_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.33751909337275
+      },
+      "parity": "ok"
     },
     {
       "id": "smoothing_bilateral",
@@ -305,15 +845,48 @@
       "section": "imgproc",
       "operation": "Bilateral filter (d=5, r=2, sc=30)",
       "input": "451x300 RGB",
-      "opencv_ms": 0.811,
-      "rust_ms": 9.438,
-      "oximedia_ms": 33.618,
+      "opencv_ms": 0.809,
+      "rust_ms": 9.183,
+      "oximedia_ms": 33.042,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 3.56,
-      "rust_vs_opencv": 11.64,
-      "oximedia_vs_opencv": 41.45,
+      "oximedia_vs_rust": 3.6,
+      "rust_vs_opencv": 11.35,
+      "oximedia_vs_opencv": 40.84,
       "oxipix_ticket": "OXI-93",
-      "warning_note": "oximedia-cv bilateral filter is 3.6x slower than imageproc (41.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93)."
+      "warning_note": "oximedia-cv bilateral filter is 3.6x slower than imageproc (41.5x slower than OpenCV): it runs 3 grayscale passes in f64 calling f64::exp() inside the 4-deep loop without a 256-entry range LUT (cool-japan/oximedia#29, OXI-93).",
+      "opencv_fresh_ms": 0.809,
+      "rust_opt_ms": 5.877,
+      "oximedia_opt_ms": 33.549,
+      "rust_stats": {
+        "median": 9.183,
+        "p10": 9.158,
+        "p90": 9.318,
+        "mad": 0.025,
+        "iters": 21
+      },
+      "oximedia_stats": {
+        "median": 33.042,
+        "p10": 32.93,
+        "p90": 33.372,
+        "mad": 0.061,
+        "iters": 10
+      },
+      "opencv_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.315
+      },
+      "rust_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 114.82374230105937
+      },
+      "oximedia_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.31819413648682
+      },
+      "parity": "ok"
     },
     {
       "id": "filter_2d",
@@ -321,15 +894,48 @@
       "section": "imgproc",
       "operation": "2D convolution (5x5 box kernel)",
       "input": "451x300 RGB",
-      "opencv_ms": 0.662,
-      "rust_ms": 3.356,
-      "oximedia_ms": 8.47,
+      "opencv_ms": 0.665,
+      "rust_ms": 3.239,
+      "oximedia_ms": 8.367,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 2.52,
-      "rust_vs_opencv": 5.07,
-      "oximedia_vs_opencv": 12.79,
+      "oximedia_vs_rust": 2.58,
+      "rust_vs_opencv": 4.87,
+      "oximedia_vs_opencv": 12.58,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.669,
+      "rust_opt_ms": 2.641,
+      "oximedia_opt_ms": 8.398,
+      "rust_stats": {
+        "median": 3.239,
+        "p10": 3.232,
+        "p90": 3.277,
+        "mad": 0.006,
+        "iters": 61
+      },
+      "oximedia_stats": {
+        "median": 8.367,
+        "p10": 8.316,
+        "p90": 8.471,
+        "mad": 0.05,
+        "iters": 22
+      },
+      "opencv_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.306
+      },
+      "rust_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 114.80847499384085
+      },
+      "oximedia_digest": {
+        "w": 451,
+        "h": 300,
+        "mean": 115.3069696969697
+      },
+      "parity": "ok"
     },
     {
       "id": "laplace",
@@ -338,14 +944,47 @@
       "operation": "Gaussian blur + Laplacian edge",
       "input": "640x480 grey",
       "opencv_ms": 0.681,
-      "rust_ms": 3.545,
-      "oximedia_ms": 5.816,
+      "rust_ms": 3.458,
+      "oximedia_ms": 5.729,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.64,
-      "rust_vs_opencv": 5.21,
-      "oximedia_vs_opencv": 8.54,
+      "oximedia_vs_rust": 1.66,
+      "rust_vs_opencv": 5.08,
+      "oximedia_vs_opencv": 8.41,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.686,
+      "rust_opt_ms": 3.459,
+      "oximedia_opt_ms": 5.716,
+      "rust_stats": {
+        "median": 3.458,
+        "p10": 3.445,
+        "p90": 3.49,
+        "mad": 0.008,
+        "iters": 57
+      },
+      "oximedia_stats": {
+        "median": 5.729,
+        "p10": 5.673,
+        "p90": 5.762,
+        "mad": 0.024,
+        "iters": 34
+      },
+      "opencv_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 18.7269
+      },
+      "rust_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 15.616895161290323
+      },
+      "oximedia_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 15.664516129032258
+      },
+      "parity": "mismatch"
     },
     {
       "id": "sobel",
@@ -354,14 +993,47 @@
       "operation": "Sobel X derivative",
       "input": "640x480 grey",
       "opencv_ms": 0.142,
-      "rust_ms": 3.855,
-      "oximedia_ms": 0.782,
+      "rust_ms": 3.854,
+      "oximedia_ms": 0.789,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": 0.2,
-      "rust_vs_opencv": 27.15,
-      "oximedia_vs_opencv": 5.51,
+      "rust_vs_opencv": 27.14,
+      "oximedia_vs_opencv": 5.56,
       "oxipix_ticket": null,
-      "warning_note": "Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (27.2x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice."
+      "warning_note": "Pure Rust imageproc Sobel X is ~4.9x slower than oximedia-cv (27.2x slower than OpenCV) because horizontal_sobel allocates an intermediate i16 buffer and remaps pixels separately, while oximedia-cv writes directly on the flat slice.",
+      "opencv_fresh_ms": 0.142,
+      "rust_opt_ms": 3.815,
+      "oximedia_opt_ms": 0.734,
+      "rust_stats": {
+        "median": 3.854,
+        "p10": 3.832,
+        "p90": 3.903,
+        "mad": 0.015,
+        "iters": 51
+      },
+      "oximedia_stats": {
+        "median": 0.789,
+        "p10": 0.78,
+        "p90": 0.816,
+        "mad": 0.007,
+        "iters": 254
+      },
+      "opencv_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 39.6016
+      },
+      "rust_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 39.656754992319506
+      },
+      "oximedia_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 39.656754992319506
+      },
+      "parity": "ok"
     },
     {
       "id": "canny",
@@ -369,15 +1041,48 @@
       "section": "imgproc",
       "operation": "Gaussian blur + Canny (50/150)",
       "input": "640x480 grey",
-      "opencv_ms": 2.565,
-      "rust_ms": 20.491,
-      "oximedia_ms": 22.498,
+      "opencv_ms": 2.555,
+      "rust_ms": 20.807,
+      "oximedia_ms": 23.107,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.1,
-      "rust_vs_opencv": 7.99,
-      "oximedia_vs_opencv": 8.77,
+      "oximedia_vs_rust": 1.11,
+      "rust_vs_opencv": 8.14,
+      "oximedia_vs_opencv": 9.04,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 2.548,
+      "rust_opt_ms": 18.016,
+      "oximedia_opt_ms": 19.826,
+      "rust_stats": {
+        "median": 20.807,
+        "p10": 20.013,
+        "p90": 25.164,
+        "mad": 0.794,
+        "iters": 15
+      },
+      "oximedia_stats": {
+        "median": 23.107,
+        "p10": 22.676,
+        "p90": 23.704,
+        "mad": 0.224,
+        "iters": 15
+      },
+      "opencv_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 15.2897
+      },
+      "rust_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 8.961722350230415
+      },
+      "oximedia_digest": {
+        "w": 868,
+        "h": 600,
+        "mean": 13.57796658986175
+      },
+      "parity": "mismatch"
     },
     {
       "id": "hough_lines",
@@ -385,15 +1090,48 @@
       "section": "imgproc",
       "operation": "Canny + standard Hough lines",
       "input": "640x480 grey",
-      "opencv_ms": 11.952,
-      "rust_ms": 22.122,
-      "oximedia_ms": 42.99,
+      "opencv_ms": 12.024,
+      "rust_ms": 22.621,
+      "oximedia_ms": 48.712,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 1.94,
-      "rust_vs_opencv": 1.85,
-      "oximedia_vs_opencv": 3.6,
+      "oximedia_vs_rust": 2.15,
+      "rust_vs_opencv": 1.88,
+      "oximedia_vs_opencv": 4.05,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 11.95,
+      "rust_opt_ms": 20.185,
+      "oximedia_opt_ms": 39.276,
+      "rust_stats": {
+        "median": 22.621,
+        "p10": 21.933,
+        "p90": 23.877,
+        "mad": 0.313,
+        "iters": 10
+      },
+      "oximedia_stats": {
+        "median": 48.712,
+        "p10": 44.824,
+        "p90": 71.345,
+        "mad": 2.367,
+        "iters": 10
+      },
+      "opencv_digest": {
+        "w": 1018,
+        "h": 1,
+        "mean": 0.0
+      },
+      "rust_digest": {
+        "w": 13,
+        "h": 1,
+        "mean": 0.0
+      },
+      "oximedia_digest": {
+        "w": 11,
+        "h": 1,
+        "mean": 0.0
+      },
+      "parity": "mismatch"
     },
     {
       "id": "hough_circle",
@@ -401,15 +1139,34 @@
       "section": "imgproc",
       "operation": "Canny + circle Hough (r=15..40)",
       "input": "384x303 grey",
-      "opencv_ms": 3.951,
+      "opencv_ms": 3.993,
       "rust_ms": null,
-      "oximedia_ms": 64.559,
+      "oximedia_ms": 64.737,
       "oximedia_crate": "oximedia-cv",
       "oximedia_vs_rust": null,
       "rust_vs_opencv": null,
-      "oximedia_vs_opencv": 16.34,
+      "oximedia_vs_opencv": 16.21,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 3.973,
+      "rust_opt_ms": null,
+      "oximedia_opt_ms": 62.782,
+      "rust_stats": null,
+      "oximedia_stats": {
+        "median": 64.737,
+        "p10": 63.799,
+        "p90": 64.905,
+        "mad": 0.599,
+        "iters": 5
+      },
+      "opencv_digest": null,
+      "rust_digest": null,
+      "oximedia_digest": {
+        "w": 23,
+        "h": 1,
+        "mean": 0.0
+      },
+      "parity": "n/a"
     },
     {
       "id": "pyramids",
@@ -418,14 +1175,47 @@
       "operation": "3-level pyrDown",
       "input": "451x300 RGB",
       "opencv_ms": 0.045,
-      "rust_ms": 1.822,
-      "oximedia_ms": 0.878,
+      "rust_ms": 1.836,
+      "oximedia_ms": 0.892,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 0.48,
-      "rust_vs_opencv": 40.49,
-      "oximedia_vs_opencv": 19.51,
+      "oximedia_vs_rust": 0.49,
+      "rust_vs_opencv": 40.8,
+      "oximedia_vs_opencv": 19.82,
       "oxipix_ticket": null,
-      "warning_note": "Pure Rust imageops::resize(Gaussian) is 40.5x slower than OpenCV pyrDown (and 2.1x slower than oximedia-cv pyr_down) because it runs a full variable-radius Gaussian resampler rather than a fixed 5-tap separable pyramid downsample."
+      "warning_note": "Pure Rust imageops::resize(Gaussian) is 40.5x slower than OpenCV pyrDown (and 2.1x slower than oximedia-cv pyr_down) because it runs a full variable-radius Gaussian resampler rather than a fixed 5-tap separable pyramid downsample.",
+      "opencv_fresh_ms": 0.045,
+      "rust_opt_ms": 1.808,
+      "oximedia_opt_ms": 0.844,
+      "rust_stats": {
+        "median": 1.836,
+        "p10": 1.821,
+        "p90": 1.906,
+        "mad": 0.013,
+        "iters": 94
+      },
+      "oximedia_stats": {
+        "median": 0.892,
+        "p10": 0.875,
+        "p90": 1.009,
+        "mad": 0.012,
+        "iters": 213
+      },
+      "opencv_digest": {
+        "w": 57,
+        "h": 38,
+        "mean": 115.276
+      },
+      "rust_digest": {
+        "w": 57,
+        "h": 38,
+        "mean": 112.5076946752847
+      },
+      "oximedia_digest": {
+        "w": 57,
+        "h": 38,
+        "mean": 115.44567559248999
+      },
+      "parity": "ok"
     },
     {
       "id": "warp_affine",
@@ -433,15 +1223,48 @@
       "section": "imgproc",
       "operation": "Rotate 30 deg + scale 0.6",
       "input": "512x512 RGB",
-      "opencv_ms": 0.264,
-      "rust_ms": 2.748,
-      "oximedia_ms": 1.881,
+      "opencv_ms": 0.266,
+      "rust_ms": 2.874,
+      "oximedia_ms": 1.909,
       "oximedia_crate": "oximedia-cv",
-      "oximedia_vs_rust": 0.68,
-      "rust_vs_opencv": 10.41,
-      "oximedia_vs_opencv": 7.13,
+      "oximedia_vs_rust": 0.66,
+      "rust_vs_opencv": 10.8,
+      "oximedia_vs_opencv": 7.18,
       "oxipix_ticket": null,
-      "warning_note": null
+      "warning_note": null,
+      "opencv_fresh_ms": 0.266,
+      "rust_opt_ms": 2.566,
+      "oximedia_opt_ms": 1.635,
+      "rust_stats": {
+        "median": 2.874,
+        "p10": 2.821,
+        "p90": 3.09,
+        "mad": 0.042,
+        "iters": 64
+      },
+      "oximedia_stats": {
+        "median": 1.909,
+        "p10": 1.886,
+        "p90": 2.023,
+        "mad": 0.021,
+        "iters": 98
+      },
+      "opencv_digest": {
+        "w": 512,
+        "h": 512,
+        "mean": 41.2557
+      },
+      "rust_digest": {
+        "w": 512,
+        "h": 512,
+        "mean": 40.97337341308594
+      },
+      "oximedia_digest": {
+        "w": 512,
+        "h": 512,
+        "mean": 41.095420837402344
+      },
+      "parity": "ok"
     },
     {
       "id": "template_matching",
@@ -449,15 +1272,30 @@
       "section": "imgproc",
       "operation": "Template match (TM_SQDIFF)",
       "input": "451x300 vs 40x40 grey",
-      "opencv_ms": 1.648,
-      "rust_ms": 122.636,
+      "opencv_ms": 1.599,
+      "rust_ms": 120.149,
       "oximedia_ms": null,
       "oximedia_crate": null,
       "oximedia_vs_rust": null,
-      "rust_vs_opencv": 74.42,
+      "rust_vs_opencv": 75.14,
       "oximedia_vs_opencv": null,
       "oxipix_ticket": "OXI-92",
-      "warning_note": "imageproc template matching is 74.4x slower than OpenCV because it evaluates naive spatial O(W*H*w*h) sliding sums instead of FFT cross-correlation (oxipix support tracked in OXI-92)."
+      "warning_note": "imageproc template matching is 74.4x slower than OpenCV because it evaluates naive spatial O(W*H*w*h) sliding sums instead of FFT cross-correlation (oxipix support tracked in OXI-92).",
+      "opencv_fresh_ms": 1.609,
+      "rust_opt_ms": 120.798,
+      "oximedia_opt_ms": null,
+      "rust_stats": {
+        "median": 120.149,
+        "p10": 119.963,
+        "p90": 121.879,
+        "mad": 0.186,
+        "iters": 10
+      },
+      "oximedia_stats": null,
+      "opencv_digest": null,
+      "rust_digest": null,
+      "oximedia_digest": null,
+      "parity": "n/a"
     }
   ]
 }

@@ -11,17 +11,22 @@
 using Clock = std::chrono::steady_clock;
 
 template <class Fn>
+double time_once(Fn& fn) {
+    auto t0 = Clock::now();
+    fn();
+    auto t1 = Clock::now();
+    return std::chrono::duration<double, std::milli>(t1 - t0).count();
+}
+
+// Same rule as the Rust side: at least `iters` samples and at least 200 ms in total, capped at 5000.
+template <class Fn>
 double bench_ms(int warmup, int iters, Fn fn) {
-    for (int i = 0; i < warmup; ++i) fn();
+    double first = 0.0;
+    for (int i = 0; i < warmup; ++i) first = std::max(first, time_once(fn));
+    int wanted = std::clamp(static_cast<int>(200.0 / std::max(first, 1e-6)), iters, 5000);
     std::vector<double> samples;
-    samples.reserve(static_cast<size_t>(iters));
-    for (int i = 0; i < iters; ++i) {
-        auto t0 = Clock::now();
-        fn();
-        auto t1 = Clock::now();
-        std::chrono::duration<double, std::milli> elapsed = t1 - t0;
-        samples.push_back(elapsed.count());
-    }
+    samples.reserve(static_cast<size_t>(wanted));
+    for (int i = 0; i < wanted; ++i) samples.push_back(time_once(fn));
     std::sort(samples.begin(), samples.end());
     return samples[samples.size() / 2];
 }
@@ -30,6 +35,43 @@ struct Row {
     std::string id;
     double ms;
 };
+
+struct Digest {
+    std::string id;
+    int w, h;
+    double mean;
+};
+
+static std::string json_escape(const std::string& in) {
+    std::string out;
+    for (char c : in) {
+        if (c == '"' || c == '\\') out += '\\';
+        out += c;
+    }
+    return out;
+}
+
+// HAL, SIMD and threading lines from cv::getBuildInformation(), recorded next to the timings.
+static std::vector<std::string> build_lines() {
+    static const char* keys[] = {"Parallel framework", "Custom HAL", "Baseline", "Dispatched code", "Intel IPP", "C++ flags (Release)", "Link-Time Optimization"};
+    std::vector<std::string> out;
+    std::string info = cv::getBuildInformation();
+    size_t start = 0;
+    while (start < info.size()) {
+        size_t end = info.find('\n', start);
+        if (end == std::string::npos) end = info.size();
+        std::string line = info.substr(start, end - start);
+        for (const char* key : keys) {
+            if (line.find(key) != std::string::npos) {
+                size_t first = line.find_first_not_of(' ');
+                out.push_back(line.substr(first == std::string::npos ? 0 : first));
+                break;
+            }
+        }
+        start = end + 1;
+    }
+    return out;
+}
 
 static cv::Mat asset(const std::string& dir, const std::string& name, int flags) {
     cv::Mat m = cv::imread(dir + "/" + name, flags);
@@ -107,11 +149,28 @@ int main(int argc, char** argv) {
     cv::Mat tmpl = chelsea_gray(cv::Rect((chelsea_gray.cols - 40) / 2, chelsea_gray.rows * 2 / 5 - 20, 40, 40)).clone();
 
     std::vector<Row> rows;
+    std::vector<Digest> digests;
+    cv::Mat dst;
+    // For ops whose result is a list rather than `dst`: replaces the image digest with the element count.
+    auto set_count_digest = [&](const char* id, size_t count) {
+        digests.erase(std::remove_if(digests.begin(), digests.end(), [&](const Digest& d) { return d.id == id; }), digests.end());
+        digests.push_back({id, static_cast<int>(count), 1, 0.0});
+    };
+    // Times each op twice: reusing `dst` (the OpenCV idiom) and releasing it first so every call
+    // allocates its output like the Rust snippets do. The last fresh run also yields the digest.
     auto push = [&](const char* id, int iters, auto fn) {
         rows.push_back({id, bench_ms(3, iters, fn)});
+        auto fresh = [&] { dst.release(); fn(); };
+        rows.push_back({std::string(id) + "__fresh", bench_ms(3, iters, fresh)});
+        dst.release();
+        fn();
+        if (!dst.empty() && dst.depth() == CV_8U) {
+            cv::Scalar m = cv::mean(dst);
+            double sum = 0.0;
+            for (int c = 0; c < dst.channels(); ++c) sum += m[c];
+            digests.push_back({id, dst.cols, dst.rows, sum / dst.channels()});
+        }
     };
-
-    cv::Mat dst;
     push("adding_images", 50, [&] { cv::addWeighted(linux_logo, 0.5, win_logo, 0.5, 0.0, dst); });
     push("basic_linear_transform", 50, [&] { coffee.convertTo(dst, -1, 1.3, 40.0); });
 
@@ -136,6 +195,7 @@ int main(int argc, char** argv) {
 
     std::vector<cv::Vec2f> lines;
     push("hough_lines", 20, [&] { cv::Canny(building, dst, 50.0, 150.0); cv::HoughLines(dst, lines, 1.0, CV_PI / 180.0, 150); });
+    set_count_digest("hough_lines", lines.size());
 
     push("laplace", 30, [&] {
         cv::Mat g, l;
@@ -178,10 +238,12 @@ int main(int argc, char** argv) {
     auto fast = cv::FastFeatureDetector::create(30, true);
     std::vector<cv::KeyPoint> kps;
     push("feature_detection_fast", 30, [&] { kps.clear(); fast->detect(building, kps); });
+    digests.push_back({"feature_detection_fast", static_cast<int>(kps.size()), 1, 0.0});
 
     auto orb = cv::ORB::create(250);
     cv::Mat desc;
     push("feature_detection_orb", 20, [&] { kps.clear(); orb->detectAndCompute(building, cv::noArray(), kps, desc); });
+    digests.push_back({"feature_detection_orb", static_cast<int>(kps.size()), 1, 0.0});
     push("feature_description", 10, [&] {
         std::vector<cv::KeyPoint> ka, kb;
         cv::Mat da, db;
@@ -205,7 +267,17 @@ int main(int argc, char** argv) {
     push("ssim", 20, [&] { sink = opencv_ssim(building, building_blur); });
     (void)sink;
 
-    std::cout << "{\n  \"opencv_version\": \"" << CV_VERSION << "\",\n  \"results\": {\n";
+    std::cout << "{\n  \"opencv_version\": \"" << CV_VERSION << "\",\n  \"build_info\": [";
+    std::vector<std::string> info = build_lines();
+    for (size_t i = 0; i < info.size(); ++i) {
+        std::cout << (i ? ", " : "") << "\"" << json_escape(info[i]) << "\"";
+    }
+    std::cout << "],\n  \"digests\": {\n";
+    for (size_t i = 0; i < digests.size(); ++i) {
+        std::cout << "    \"" << digests[i].id << "\": {\"w\": " << digests[i].w << ", \"h\": " << digests[i].h
+                  << ", \"mean\": " << digests[i].mean << "}" << (i + 1 < digests.size() ? "," : "") << "\n";
+    }
+    std::cout << "  },\n  \"results\": {\n";
     for (size_t i = 0; i < rows.size(); ++i) {
         std::cout << "    \"" << rows[i].id << "\": " << rows[i].ms
                   << (i + 1 < rows.size() ? "," : "") << "\n";

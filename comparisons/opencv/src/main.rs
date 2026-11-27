@@ -132,7 +132,7 @@ pub mod threshold;
 pub mod warp_affine;
 
 use serde::Deserialize;
-use spec::{Assets, BenchmarkCatalog, Environment, evaluate};
+use spec::{Assets, BenchmarkCatalog, Digest, Environment, OpenCvData, calibration, evaluate};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -140,7 +140,32 @@ use std::path::Path;
 #[derive(Deserialize)]
 struct OpenCvOutput {
     opencv_version: String,
+    #[serde(default)]
+    build_info: Vec<String>,
     results: BTreeMap<String, f64>,
+    #[serde(default)]
+    digests: BTreeMap<String, Digest>,
+}
+
+/// Timings of an optimised-build run, merged into the default run as `*_opt_ms`.
+#[derive(Deserialize)]
+struct OptRow {
+    id: String,
+    rust_ms: Option<f64>,
+    oximedia_ms: Option<f64>,
+}
+
+#[derive(Deserialize)]
+struct OptCatalog {
+    benchmarks: Vec<OptRow>,
+}
+
+fn load_opt(path: Option<&String>) -> BTreeMap<String, OptRow> {
+    let Some(text) = path.and_then(|p| fs::read_to_string(p).ok()) else {
+        return BTreeMap::new();
+    };
+    let parsed: OptCatalog = serde_json::from_str(&text).expect("parse optimised-build JSON");
+    parsed.benchmarks.into_iter().map(|r| (r.id.clone(), r)).collect()
 }
 
 #[derive(Deserialize)]
@@ -181,7 +206,12 @@ fn main() {
         args.get(2)
             .map_or("../../catalog/benchmarks.json", String::as_str),
     );
+    let opt = load_opt(args.get(3));
     let ocv = load_opencv(ocv_path);
+    let data = OpenCvData {
+        results: &ocv.results,
+        digests: &ocv.digests,
+    };
     let notes = load_notes(out_path);
     let assets = Assets::load();
     let mut benchmarks = Vec::new();
@@ -190,7 +220,11 @@ fn main() {
         .chain(cases_imgproc::collect(&assets))
     {
         eprintln!("Running {}", spec.id);
-        let mut row = evaluate(spec, &ocv.results);
+        let mut row = evaluate(spec, &data);
+        if let Some(o) = opt.get(&row.id) {
+            row.rust_opt_ms = o.rust_ms;
+            row.oximedia_opt_ms = o.oximedia_ms;
+        }
         row.warning_note = notes.get(&row.id).cloned();
         benchmarks.push(row);
     }
@@ -205,7 +239,14 @@ fn main() {
             oximedia_cv_version: "0.2.1".into(),
             oxipix_version: "0.1.0".into(),
             imageproc_version: "0.27.0".into(),
+            builds: if opt.is_empty() {
+                vec!["release".into()]
+            } else {
+                vec!["release".into(), "release+fat-lto+cgu1+native".into()]
+            },
+            opencv_build: ocv.build_info,
         },
+        calibration: calibration(),
         benchmarks,
     };
     let json = serde_json::to_string_pretty(&catalog).expect("serialize benchmarks");
@@ -219,7 +260,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::spec::{ratio, round3, time_ms};
+    use crate::spec::{Digest, calibration, parity, ratio, round3, time_ms, time_stats};
     use rstest::rstest;
 
     #[rstest]
@@ -232,6 +273,40 @@ mod tests {
         #[case] expected: Option<f64>,
     ) {
         assert_eq!(ratio(a, b), expected);
+    }
+
+    fn digest(w: u32, h: u32, mean: f64) -> Option<Digest> {
+        Some(Digest { w, h, mean })
+    }
+
+    #[rstest]
+    #[case(digest(10, 10, 100.0), digest(10, 10, 101.5), "ok")]
+    #[case(digest(10, 10, 100.0), digest(10, 10, 120.0), "mismatch")]
+    #[case(digest(10, 10, 100.0), digest(10, 11, 100.0), "mismatch")]
+    #[case(digest(250, 1, 0.0), digest(200, 1, 0.0), "ok")]
+    #[case(digest(250, 1, 0.0), digest(100, 1, 0.0), "mismatch")]
+    #[case(None, digest(10, 10, 1.0), "n/a")]
+    fn parity_compares_size_mean_and_counts(
+        #[case] a: Option<Digest>,
+        #[case] b: Option<Digest>,
+        #[case] expected: &str,
+    ) {
+        assert_eq!(parity(a, b), expected);
+    }
+
+    #[test]
+    fn stats_are_ordered_and_adaptive() {
+        let stats = time_stats(5, || {
+            std::hint::black_box(2u64.pow(3));
+        });
+        assert!(stats.p10 <= stats.median && stats.median <= stats.p90);
+        assert!(stats.iters >= 5 && stats.noise() >= 0.0);
+    }
+
+    #[test]
+    fn calibration_has_floor_rows() {
+        let floor = calibration();
+        assert!(floor.contains_key("empty_closure") && floor["alloc_640x480x3"] >= 0.0);
     }
 
     #[test]

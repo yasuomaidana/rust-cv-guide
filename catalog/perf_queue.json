@@ -556,7 +556,7 @@
       "rank": 17,
       "id": "feature_description",
       "tutorial": "tutorial_feature_description",
-      "operation": "FAST + BRIEF matching (t=20, 250 kp, <= 32 bits)",
+      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
       "opencv_ms": 2.398,
       "best_crate": "image/imageproc",
       "best_gap": 4.91,

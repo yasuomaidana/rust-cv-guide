@@ -285,7 +285,7 @@
       "id": "feature_description",
       "tutorial": "tutorial_feature_description",
       "section": "features",
-      "operation": "FAST + BRIEF matching (t=20, 250 kp, <= 32 bits)",
+      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
       "input": "868x600 vs 856x593 grey",
       "opencv_ms": 2.402,
       "rust_ms": 12.52,

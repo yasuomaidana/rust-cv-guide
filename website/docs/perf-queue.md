@@ -24,7 +24,7 @@ Operations where the best Rust backend is still slower than OpenCV 5.1.0, bigges
 | 14 | FAST-9 corners (t=30, 3x3 non-max suppression, uncapped) | 5.6x | image/imageproc 6.2x (5.6x opt)<br>oximedia-cv 13.4x (12.6x opt) | mismatch | known-difference | [#56](https://github.com/yasuomaidana/rust-cv-guide/issues/56) | unclaimed |
 | 15 | Sobel X derivative | 5.5x | image/imageproc 27.1x (27.2x opt)<br>oximedia-cv 5.5x (5.5x opt) | ok | unprobed | [#52](https://github.com/yasuomaidana/rust-cv-guide/issues/52) | unclaimed |
 | 16 | Contrast + brightness (a=1.3, b=40) | 5.4x | image/imageproc 6.8x (5.4x opt) | ok | unprobed | [#53](https://github.com/yasuomaidana/rust-cv-guide/issues/53) | unclaimed |
-| 17 | FAST + BRIEF matching (t=20, 250 kp, <= 32 bits) | 4.9x | image/imageproc 5.2x (4.9x opt)<br>oximedia-cv 6.9x (6.8x opt) | ok | unprobed | [#66](https://github.com/yasuomaidana/rust-cv-guide/issues/66) | unclaimed |
+| 17 | FAST + BRIEF matching (t=20, 250 kp, up to 32 bits) | 4.9x | image/imageproc 5.2x (4.9x opt)<br>oximedia-cv 6.9x (6.8x opt) | ok | unprobed | [#66](https://github.com/yasuomaidana/rust-cv-guide/issues/66) | unclaimed |
 | 18 | 2D convolution (5x5 box kernel) | 4.3x | image/imageproc 5.1x (4.3x opt)<br>oximedia-cv 12.6x (12.8x opt) | ok | unprobed | [#55](https://github.com/yasuomaidana/rust-cv-guide/issues/55) | unclaimed |
 | 19 | Distance transform (L2) | 3.3x | image/imageproc 3.3x (3.4x opt) | n/a | unprobed | [#57](https://github.com/yasuomaidana/rust-cv-guide/issues/57) | unclaimed |
 | 20 | Canny + standard Hough lines | 3.2x | image/imageproc 3.5x (3.2x opt)<br>oximedia-cv 6.5x (6.3x opt) | ok | unprobed | [#60](https://github.com/yasuomaidana/rust-cv-guide/issues/60) | unclaimed |

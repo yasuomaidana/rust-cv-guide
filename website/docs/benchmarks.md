@@ -17,7 +17,7 @@ Incremental performance reference comparing native **OpenCV**, pure Rust (`image
 | [Video Input with OpenCV and similarity measurement](opencv/app/tutorial_video_input_psnr_ssim.mdx) | SSIM (11x11 Gaussian) | 640x480 grey | 3.075 ms | 6.104 ms | 108.047 ms | 17.70x | oximedia-cv's SSIM (15.4x slower than pure Rust separable SSIM, 32.6x slower than OpenCV) runs a non-separable 2D 11x11 window loop with per-tap bounds checks per pixel instead of 5 separable 1D passes (cool-japan/oximedia#31). |
 | [Feature Detection](opencv/features/tutorial_feature_detection.mdx) | FAST-9 corners (t=30, 3x3 non-max suppression, uncapped) | 868x600 grey | 0.565 ms | 3.507 ms | 7.587 ms | 2.16x | oximedia-cv's FastDetector misses corners whose 9-pixel arc wraps around the ring (1424 corners against 2091 in OpenCV and 2204 in imageproc), so its time is for less work. Known difference, see PERF_QUEUE.md. |
 | [Feature Detection](opencv/features/tutorial_feature_detection.mdx) | Oriented keypoints (t=30, max=250) | 868x600 grey | 6.625 ms | 2.275 ms | 7.093 ms | 3.12x | oximedia-cv's FastDetector (about 7 ms) is about 3x slower than imageproc's oriented FAST (about 2 ms) on the same 868x600 photo. Tracked in the perf queue under feature_detection_fast and feature_description. |
-| [Feature Description](opencv/features/tutorial_feature_description.mdx) | FAST + BRIEF matching (t=20, 250 kp, <= 32 bits) | 868x600 vs 856x593 grey | 2.402 ms | 12.520 ms | 16.493 ms | 1.32x | — |
+| [Feature Description](opencv/features/tutorial_feature_description.mdx) | FAST + BRIEF matching (t=20, 250 kp, up to 32 bits) | 868x600 vs 856x593 grey | 2.402 ms | 12.520 ms | 16.493 ms | 1.32x | — |
 | [Basic concepts of the homography explained with code](opencv/features/tutorial_homography.mdx) | Perspective unwarp (4-point quad) | 640x480 RGB | 0.595 ms | 4.372 ms | 6.823 ms | 1.56x | — |
 | [Basic Thresholding Operations](opencv/imgproc/tutorial_threshold.mdx) | Otsu binary threshold | 384x303 grey | 0.030 ms | 0.046 ms | 0.162 ms | 3.52x | The oxipix threshold helper runs a per-pixel GrayImage::from_fn wrapper over otsu_threshold (~3.6x slower than imageproc's tight slice loop; native slice thresholding tracked in OXI-89). |
 | [Thresholding Operations using inRange](opencv/imgproc/tutorial_threshold_inRange.mdx) | HSV red range mask | 320x240 RGB | 0.124 ms | 0.197 ms | 0.452 ms | 2.29x | — |
@@ -62,7 +62,7 @@ Every operation with each crate's median time and gap to OpenCV (fresh output bu
 | FAST-9 corners (t=30, 3x3 non-max suppression, uncapped) | 0.565 ms | 3.5 ms, 6.2x (5.6x opt) | 7.6 ms, 13.4x (12.6x opt) | 5.6x |
 | Sobel X derivative | 0.142 ms | 3.8 ms, 27.1x (27.2x opt) | 0.8 ms, 5.5x (5.5x opt) | 5.5x |
 | Contrast + brightness (a=1.3, b=40) | 0.064 ms | 0.4 ms, 6.8x (5.4x opt) | — | 5.4x |
-| FAST + BRIEF matching (t=20, 250 kp, <= 32 bits) | 2.398 ms | 12.5 ms, 5.2x (4.9x opt) | 16.5 ms, 6.9x (6.8x opt) | 4.9x |
+| FAST + BRIEF matching (t=20, 250 kp, up to 32 bits) | 2.398 ms | 12.5 ms, 5.2x (4.9x opt) | 16.5 ms, 6.9x (6.8x opt) | 4.9x |
 | 2D convolution (5x5 box kernel) | 0.662 ms | 3.4 ms, 5.1x (4.3x opt) | 8.4 ms, 12.6x (12.8x opt) | 4.3x |
 | Distance transform (L2) | 0.250 ms | 0.8 ms, 3.3x (3.4x opt) | — | 3.3x |
 | Canny + standard Hough lines | 6.612 ms | 23.2 ms, 3.5x (3.2x opt) | 43.3 ms, 6.5x (6.3x opt) | 3.2x |

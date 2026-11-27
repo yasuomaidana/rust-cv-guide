@@ -96,7 +96,7 @@ pub fn collect(a: &Assets) -> Vec<BenchSpec<'_>> {
             "feature_description",
             "tutorial_feature_description",
             "features",
-            "FAST + BRIEF matching (t=20, 250 kp, <= 32 bits)",
+            "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
             "868x600 vs 856x593 grey",
             10,
             "oximedia-cv",

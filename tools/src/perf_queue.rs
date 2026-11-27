@@ -3,7 +3,7 @@
 //! The queue ranks every operation where the best Rust backend is still slower than OpenCV, links each
 //! item to its tracking GitHub issue, and is rendered to `PERF_QUEUE.md` and the website.
 
-use crate::benchmarks::{BenchRow, Benchmarks, Stats, valid_ticket};
+use crate::benchmarks::{BenchRow, Benchmarks, Stats, clean, valid_ticket};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -289,7 +289,7 @@ fn queue_row(item: &Item) -> String {
     format!(
         "| {} | {} | {:.1}x | {} | {} | {} | {} | {} |",
         item.rank,
-        item.operation.replace('|', "/"),
+        clean(&item.operation),
         item.best_gap,
         gaps(item),
         item.parity,
@@ -302,7 +302,7 @@ fn queue_row(item: &Item) -> String {
 fn parity_row(item: &Item) -> String {
     format!(
         "| {} | {:.2} ms | {} | {} |",
-        item.operation.replace('|', "/"),
+        clean(&item.operation),
         item.opencv_ms,
         item.best_crate,
         gaps(item)
@@ -337,7 +337,7 @@ pub fn summary(queue: &Queue) -> String {
         let oxi = crate_cell(it, "oxi");
         lines.push(format!(
             "| {} | {:.3} ms | {} | {} | {:.1}x |",
-            it.operation.replace('|', "/"),
+            clean(&it.operation),
             it.opencv_ms,
             crate_cell(it, "image"),
             oxi,
@@ -360,7 +360,7 @@ pub fn markdown(queue: &Queue) -> String {
         .filter_map(|i| {
             Some(format!(
                 "- **{}**: {}",
-                i.operation.replace('|', "/"),
+                clean(&i.operation),
                 i.known_difference.as_deref()?
             ))
         })

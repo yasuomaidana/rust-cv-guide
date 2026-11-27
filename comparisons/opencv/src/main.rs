@@ -2,6 +2,7 @@
 
 mod cases_basic;
 mod cases_imgproc;
+mod measure;
 mod spec;
 
 #[allow(dead_code)]
@@ -132,7 +133,8 @@ pub mod threshold;
 pub mod warp_affine;
 
 use serde::Deserialize;
-use spec::{Assets, BenchmarkCatalog, Digest, Environment, OpenCvData, calibration, evaluate};
+use measure::{Digest, calibration};
+use spec::{Assets, BenchRow, BenchmarkCatalog, Environment, OpenCvData, evaluate};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
@@ -199,68 +201,80 @@ fn load_opencv(path: &Path) -> OpenCvOutput {
     serde_json::from_str(&text).expect("parse OpenCV JSON output")
 }
 
+/// Measures every case, joining the OpenCV data, optimised-build timings and the notes kept from the old catalog.
+fn measure_rows(
+    data: &OpenCvData<'_>,
+    opt: &BTreeMap<String, OptRow>,
+    notes: &BTreeMap<String, String>,
+) -> Vec<BenchRow> {
+    let assets = Assets::load();
+    let specs = cases_basic::collect(&assets)
+        .into_iter()
+        .chain(cases_imgproc::collect(&assets));
+    specs
+        .map(|spec| {
+            eprintln!("Running {}", spec.id);
+            let mut row = evaluate(spec, data);
+            let optimised = opt.get(&row.id);
+            row.rust_opt_ms = optimised.and_then(|o| o.rust_ms);
+            row.oximedia_opt_ms = optimised.and_then(|o| o.oximedia_ms);
+            row.warning_note = notes.get(&row.id).cloned();
+            row
+        })
+        .collect()
+}
+
+/// Environment block: host, crate versions, builds measured and the OpenCV HAL/SIMD lines.
+fn environment(ocv: OpenCvOutput, optimised: bool) -> Environment {
+    let mut builds = vec!["release".to_string()];
+    if optimised {
+        builds.push("release+fat-lto+cgu1+native".into());
+    }
+    Environment {
+        os: std::env::consts::OS.into(),
+        arch: std::env::consts::ARCH.into(),
+        opencv_version: ocv.opencv_version,
+        rust_profile: "release".into(),
+        oximedia_cv_version: "0.2.1".into(),
+        oxipix_version: "0.1.0".into(),
+        imageproc_version: "0.27.0".into(),
+        builds,
+        opencv_build: ocv.build_info,
+    }
+}
+
+/// The n-th command-line argument, or `default`.
+fn arg_or(args: &[String], n: usize, default: &str) -> String {
+    args.get(n).map_or(default, String::as_str).to_string()
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let ocv_path = Path::new(args.get(1).map_or("/tmp/opencv_bench.json", String::as_str));
-    let out_path = Path::new(
-        args.get(2)
-            .map_or("../../catalog/benchmarks.json", String::as_str),
-    );
+    let out_path = arg_or(&args, 2, "../../catalog/benchmarks.json");
     let opt = load_opt(args.get(3));
-    let ocv = load_opencv(ocv_path);
+    let ocv = load_opencv(Path::new(&arg_or(&args, 1, "/tmp/opencv_bench.json")));
     let data = OpenCvData {
         results: &ocv.results,
         digests: &ocv.digests,
     };
-    let notes = load_notes(out_path);
-    let assets = Assets::load();
-    let mut benchmarks = Vec::new();
-    for spec in cases_basic::collect(&assets)
-        .into_iter()
-        .chain(cases_imgproc::collect(&assets))
-    {
-        eprintln!("Running {}", spec.id);
-        let mut row = evaluate(spec, &data);
-        if let Some(o) = opt.get(&row.id) {
-            row.rust_opt_ms = o.rust_ms;
-            row.oximedia_opt_ms = o.oximedia_ms;
-        }
-        row.warning_note = notes.get(&row.id).cloned();
-        benchmarks.push(row);
-    }
+    let benchmarks = measure_rows(&data, &opt, &load_notes(Path::new(&out_path)));
+    let rows = benchmarks.len();
     let catalog = BenchmarkCatalog {
         warn_ratio_threshold: 3.0,
         opencv_warn_ratio_threshold: 20.0,
-        environment: Environment {
-            os: std::env::consts::OS.into(),
-            arch: std::env::consts::ARCH.into(),
-            opencv_version: ocv.opencv_version,
-            rust_profile: "release".into(),
-            oximedia_cv_version: "0.2.1".into(),
-            oxipix_version: "0.1.0".into(),
-            imageproc_version: "0.27.0".into(),
-            builds: if opt.is_empty() {
-                vec!["release".into()]
-            } else {
-                vec!["release".into(), "release+fat-lto+cgu1+native".into()]
-            },
-            opencv_build: ocv.build_info,
-        },
+        environment: environment(ocv, !opt.is_empty()),
         calibration: calibration(),
         benchmarks,
     };
     let json = serde_json::to_string_pretty(&catalog).expect("serialize benchmarks");
-    fs::write(out_path, format!("{json}\n")).expect("write catalog/benchmarks.json");
-    eprintln!(
-        "Wrote {} benchmark rows to {}",
-        catalog.benchmarks.len(),
-        out_path.display()
-    );
+    fs::write(&out_path, format!("{json}\n")).expect("write catalog/benchmarks.json");
+    eprintln!("Wrote {rows} benchmark rows to {out_path}");
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::spec::{Digest, calibration, parity, ratio, round3, time_ms, time_stats};
+    use crate::measure::{Digest, calibration, combine_parity, parity, round3, time_ms, time_stats};
+    use crate::spec::ratio;
     use rstest::rstest;
 
     #[rstest]
@@ -292,6 +306,14 @@ mod tests {
         #[case] expected: &str,
     ) {
         assert_eq!(parity(a, b), expected);
+    }
+
+    #[rstest]
+    #[case(["ok", "mismatch"], "mismatch")]
+    #[case(["n/a", "ok"], "ok")]
+    #[case(["n/a", "n/a"], "n/a")]
+    fn parity_verdicts_fold_worst_first(#[case] checks: [&'static str; 2], #[case] expected: &str) {
+        assert_eq!(combine_parity(checks), expected);
     }
 
     #[test]

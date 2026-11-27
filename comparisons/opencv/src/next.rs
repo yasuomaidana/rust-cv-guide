@@ -8,6 +8,8 @@ use oxipix_next::imgproc::{
     arith, bilateral, blur, canny, distance, equalize, features, filter2d, gradient, hough, median,
     morph, pyramid, quality, template, threshold, warp,
 };
+use rayon::{ThreadPool, ThreadPoolBuilder};
+use std::sync::OnceLock;
 
 /// A row's backend: builds the timed closure and the digest closure from the shared inputs.
 type Entry = (&'static str, for<'a> fn(&'a Assets) -> Ops<'a>);
@@ -139,4 +141,48 @@ pub fn lookup<'a>(id: &str, assets: &'a Assets) -> Ops<'a> {
         .iter()
         .find(|(name, _)| *name == id)
         .map_or((None, None), |(_, build)| build(assets))
+}
+
+/// How many threads the `oxipix` call may use.
+#[derive(Clone, Copy)]
+pub enum Threads {
+    One,
+    All,
+}
+
+/// A rayon pool of one thread, or of one thread per core.
+fn pool(threads: Threads) -> &'static ThreadPool {
+    static ONE: OnceLock<ThreadPool> = OnceLock::new();
+    static ALL: OnceLock<ThreadPool> = OnceLock::new();
+    let (cell, count) = match threads {
+        Threads::One => (&ONE, 1),
+        Threads::All => (&ALL, 0),
+    };
+    cell.get_or_init(|| {
+        ThreadPoolBuilder::new()
+            .num_threads(count)
+            .build()
+            .expect("a rayon pool")
+    })
+}
+
+/// Moves a value into a pool job. The job runs synchronously while the caller waits, so the value is only used
+/// from one thread at a time.
+struct Handoff<T>(T);
+unsafe impl<T> Send for Handoff<T> {}
+
+/// The timed closure run inside a pool, so the `parallel` kernels use that pool's threads.
+pub fn on_threads<'a>(
+    threads: Threads,
+    op: Option<Box<dyn FnMut() + 'a>>,
+) -> Option<Box<dyn FnMut() + 'a>> {
+    op.map(|mut f| {
+        Box::new(move || {
+            let job = Handoff(&mut f);
+            pool(threads).install(move || {
+                let job = job;
+                (job.0)();
+            });
+        }) as Box<dyn FnMut() + 'a>
+    })
 }

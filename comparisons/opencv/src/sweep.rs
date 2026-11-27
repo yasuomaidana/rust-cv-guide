@@ -1,7 +1,7 @@
 //! Small, medium and big pictures: the photographs scaled to 640x480, 1920x1080 and 3840x2160, and the
 //! kernels where picture size and threads change which backend is fastest.
 
-use crate::next::rotation_map;
+use crate::next::{self, rotation_map};
 use crate::op_closures;
 use crate::spec::{Assets, BenchSpec, Ops};
 use image::{GrayImage, RgbImage, imageops};
@@ -92,7 +92,9 @@ pub fn collect(pictures: &[Picture]) -> Vec<BenchSpec<'_>> {
                     (k.imageproc)(p),
                     op_closures!()
                 );
-                spec.with_next((k.oxipix)(p))
+                let (op, digest) = (k.oxipix)(p);
+                spec.with_next((next::on_threads(next::Threads::One, op), digest))
+                    .with_next_mt(next::on_threads(next::Threads::All, (k.oxipix)(p).0))
             })
         })
         .collect()

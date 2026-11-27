@@ -225,8 +225,12 @@ fn measure_rows(
     specs
         .map(|spec| {
             eprintln!("Running {}", spec.id);
-            let next = next::lookup(spec.id, assets);
-            let mut row = evaluate(spec.with_next(next), data);
+            let (op, digest) = next::lookup(spec.id, assets);
+            let multi = next::on_threads(next::Threads::All, next::lookup(spec.id, assets).0);
+            let spec = spec
+                .with_next((next::on_threads(next::Threads::One, op), digest))
+                .with_next_mt(multi);
+            let mut row = evaluate(spec, data);
             let optimised = opt.get(&row.id);
             row.rust_opt_ms = optimised.and_then(|o| o.rust_ms);
             row.oximedia_opt_ms = optimised.and_then(|o| o.oximedia_ms);

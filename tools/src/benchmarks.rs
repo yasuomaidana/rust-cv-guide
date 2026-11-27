@@ -106,6 +106,9 @@ pub struct BenchRow {
     pub oxipix_next_ms: Option<f64>,
     #[serde(default)]
     pub oxipix_next_opt_ms: Option<f64>,
+    /// The same kernels on all threads (`parallel` feature).
+    #[serde(default)]
+    pub oxipix_next_mt_ms: Option<f64>,
     #[serde(default)]
     pub oxipix_next_stats: Option<Stats>,
     /// `ok`, `mismatch` (backends do different work) or `n/a`.

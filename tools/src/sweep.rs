@@ -45,11 +45,18 @@ fn best_rust(row: &BenchRow) -> Option<f64> {
         .reduce(f64::min)
 }
 
+/// The fastest Rust timing on any number of threads.
+fn best_rust_threaded(row: &BenchRow) -> Option<f64> {
+    [row.rust_ms, row.oxipix_next_ms, row.oxipix_next_mt_ms]
+        .into_iter()
+        .flatten()
+        .reduce(f64::min)
+}
+
 fn table_row(row: &BenchRow) -> String {
     let one = row.opencv_fresh_ms.or(row.opencv_ms);
-    let best = best_rust(row);
     format!(
-        "| {} | {} | {} | {} ({}) | {} | {} | {} | {} |",
+        "| {} | {} | {} | {} ({}) | {} | {} | {} | {} | {} |",
         clean(&row.operation),
         clean(&row.input),
         ms(one),
@@ -57,12 +64,13 @@ fn table_row(row: &BenchRow) -> String {
         gap(one, row.opencv_mt_ms).replace('x', "x faster"),
         ms(row.rust_ms),
         ms(row.oxipix_next_ms),
-        gap(best, one),
-        gap(best, row.opencv_mt_ms),
+        ms(row.oxipix_next_mt_ms),
+        gap(best_rust(row), one),
+        gap(best_rust_threaded(row), row.opencv_mt_ms),
     )
 }
 
-const INTRO: &str = "OpenCV runs on all the threads it finds by default, while the algorithm tables on the other benchmark pages pin it to one thread so that algorithms are compared, not core counts. This page puts the two side by side on small (640x480), medium (1920x1080) and big (3840x2160) pictures. The Rust columns are single-threaded; the last two columns say how far the best of them is from OpenCV on one thread and on all threads.\n";
+const INTRO: &str = "OpenCV runs on all the threads it finds by default, while the algorithm tables on the other benchmark pages pin it to one thread so that algorithms are compared, not core counts. This page puts the two side by side on small (640x480), medium (1920x1080) and big (3840x2160) pictures. `imageproc` is single-threaded; `oxipix` is shown on one thread and, with its `parallel` feature, on all threads. The last two columns say how far the best single-threaded Rust backend is from OpenCV on one thread, and how far the best Rust result on any number of threads is from OpenCV on all threads.\n";
 
 /// The page, or `None` when the catalog has no size sweep.
 #[must_use]
@@ -95,8 +103,8 @@ pub fn page(bench: &Benchmarks) -> Option<Page> {
             e.opencv_threads,
             if e.opencv_opencl { "yes" } else { "no" }
         ),
-        "| Operation | Picture | OpenCV, 1 thread | OpenCV, all threads | imageproc | oxipix | Best Rust vs OpenCV 1 thread | Best Rust vs OpenCV all threads |".into(),
-        "|---|---|---|---|---|---|---|---|".into(),
+        "| Operation | Picture | OpenCV, 1 thread | OpenCV, all threads | imageproc | oxipix, 1 thread | oxipix, all threads | Best 1-thread Rust vs OpenCV 1 thread | Best Rust vs OpenCV all threads |".into(),
+        "|---|---|---|---|---|---|---|---|---|".into(),
     ];
     lines.extend(rows.into_iter().map(table_row));
     Some(Page {
@@ -119,6 +127,7 @@ mod tests {
             opencv_mt_ms: Some(mt),
             rust_ms: rust,
             oxipix_next_ms: next,
+            oxipix_next_mt_ms: next.map(|v| v / 4.0),
             ..BenchRow::default()
         }
     }

@@ -302,5 +302,11 @@ orb_kept = 300
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| FAST-9 keypoints (t=30, max=250) | 640x480 grey | 0.571 ms | 2.343 ms | 7.002 ms | 2.99x |
-| ORB keypoints (t=30, max=250) | 640x480 grey | 6.603 ms | 2.464 ms | 3.935 ms | 1.60x |
+| FAST-9 keypoints (t=30, max=250) | 640x480 grey | 0.602 ms | 2.414 ms | 7.151 ms | 2.96x |
+| ORB keypoints (t=30, max=250) | 640x480 grey | 6.679 ms | 2.327 ms | 4.021 ms | 1.73x |
+
+:::warning Performance difference
+
+- **FAST-9 keypoints (t=30, max=250):** Not like-for-like: OpenCV returns every FAST corner after non-max suppression (2091 here) while the tutorial caps at 250 strongest. Tracked under RUSTCVGUID-156.
+
+:::

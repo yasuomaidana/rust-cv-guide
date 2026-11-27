@@ -132,8 +132,8 @@ pub mod threshold;
 #[path = "../../../snippets/examples/imgproc_geom/warp_affine.rs"]
 pub mod warp_affine;
 
-use serde::Deserialize;
 use measure::{Digest, calibration};
+use serde::Deserialize;
 use spec::{Assets, BenchRow, BenchmarkCatalog, Environment, OpenCvData, evaluate};
 use std::collections::BTreeMap;
 use std::fs;
@@ -167,7 +167,11 @@ fn load_opt(path: Option<&String>) -> BTreeMap<String, OptRow> {
         return BTreeMap::new();
     };
     let parsed: OptCatalog = serde_json::from_str(&text).expect("parse optimised-build JSON");
-    parsed.benchmarks.into_iter().map(|r| (r.id.clone(), r)).collect()
+    parsed
+        .benchmarks
+        .into_iter()
+        .map(|r| (r.id.clone(), r))
+        .collect()
 }
 
 #[derive(Deserialize)]
@@ -273,7 +277,9 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use crate::measure::{Digest, calibration, combine_parity, parity, round3, time_ms, time_stats};
+    use crate::measure::{
+        Digest, calibration, combine_parity, parity, round3, time_ms, time_stats,
+    };
     use crate::spec::ratio;
     use rstest::rstest;
 
@@ -299,6 +305,9 @@ mod tests {
     #[case(digest(10, 10, 100.0), digest(10, 11, 100.0), "mismatch")]
     #[case(digest(250, 1, 0.0), digest(200, 1, 0.0), "ok")]
     #[case(digest(250, 1, 0.0), digest(100, 1, 0.0), "mismatch")]
+    #[case(digest(164, 2, 0.0), digest(220, 2, 0.0), "ok")]
+    #[case(digest(100, 2, 0.0), digest(220, 2, 0.0), "mismatch")]
+    #[case(digest(100, 2, 0.0), digest(100, 1, 0.0), "mismatch")]
     #[case(None, digest(10, 10, 1.0), "n/a")]
     fn parity_compares_size_mean_and_counts(
         #[case] a: Option<Digest>,

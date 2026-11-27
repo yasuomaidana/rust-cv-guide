@@ -1,7 +1,7 @@
 //! Benchmark specification, assets fixture, timing loop, and JSON output schema.
 
-use cvg_snippets::common::{gray_sample, ink_mask, invoice_quad, sample};
 use crate::measure::{Digest, Stats, combine_parity, parity, round3, time_stats};
+use cvg_snippets::common::{gray_sample, ink_mask, invoice_quad, sample};
 use image::{GrayImage, RgbImage, imageops};
 use serde::Serialize;
 use std::collections::BTreeMap;
@@ -74,11 +74,11 @@ pub struct Assets {
     pub coins_mask: GrayImage,
     pub building: GrayImage,
     pub building_blur: GrayImage,
+    /// The building photo cropped by (12, 7): the second view of the feature-matching benchmark.
+    pub building_shift: GrayImage,
     pub astronaut: RgbImage,
     pub invoice_mask: GrayImage,
     pub invoice_photo: RgbImage,
-    pub box_img: GrayImage,
-    pub box_in_scene: GrayImage,
     pub quad: [(f32, f32); 4],
 }
 
@@ -115,13 +115,12 @@ impl Assets {
             tmpl,
             coins,
             coins_mask,
+            building_shift: cvg_snippets::vis::shifted_view(&building, 12, 7, 0),
             building,
             building_blur,
             astronaut: sample("astronaut.png"),
             invoice_mask: ink_mask(&gray_sample("invoice.png"), 128),
             invoice_photo,
-            box_img: gray_sample("box.png"),
-            box_in_scene: gray_sample("box_in_scene.png"),
             quad,
         }
     }
@@ -147,7 +146,18 @@ pub struct BenchSpec<'a> {
 #[macro_export]
 macro_rules! bench_pair {
     ($id:expr, $tut:expr, $sec:expr, $op:expr, $inp:expr, $n:expr, $cr:expr, $tk:expr, $r:expr, $o:expr) => {
-        $crate::bench_spec!($id, $tut, $sec, $op, $inp, $n, Some($cr), $tk, $crate::op_closures!($r), $crate::op_closures!($o))
+        $crate::bench_spec!(
+            $id,
+            $tut,
+            $sec,
+            $op,
+            $inp,
+            $n,
+            Some($cr),
+            $tk,
+            $crate::op_closures!($r),
+            $crate::op_closures!($o)
+        )
     };
 }
 
@@ -155,10 +165,32 @@ macro_rules! bench_pair {
 #[macro_export]
 macro_rules! bench_one {
     (rust: $id:expr, $tut:expr, $sec:expr, $op:expr, $inp:expr, $n:expr, $tk:expr, $r:expr) => {
-        $crate::bench_spec!($id, $tut, $sec, $op, $inp, $n, None, Some($tk), $crate::op_closures!($r), $crate::op_closures!())
+        $crate::bench_spec!(
+            $id,
+            $tut,
+            $sec,
+            $op,
+            $inp,
+            $n,
+            None,
+            Some($tk),
+            $crate::op_closures!($r),
+            $crate::op_closures!()
+        )
     };
     (oxi: $id:expr, $tut:expr, $sec:expr, $op:expr, $inp:expr, $n:expr, $cr:expr, $o:expr) => {
-        $crate::bench_spec!($id, $tut, $sec, $op, $inp, $n, Some($cr), None, $crate::op_closures!(), $crate::op_closures!($o))
+        $crate::bench_spec!(
+            $id,
+            $tut,
+            $sec,
+            $op,
+            $inp,
+            $n,
+            Some($cr),
+            None,
+            $crate::op_closures!(),
+            $crate::op_closures!($o)
+        )
     };
 }
 
@@ -202,7 +234,11 @@ pub struct OpenCvData<'a> {
 /// Runs a `BenchSpec` once for digests, times both backends, and joins the OpenCV timings and digest.
 pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
     let opencv_ms = ocv.results.get(spec.id).copied().map(round3);
-    let opencv_fresh_ms = ocv.results.get(&format!("{}__fresh", spec.id)).copied().map(round3);
+    let opencv_fresh_ms = ocv
+        .results
+        .get(&format!("{}__fresh", spec.id))
+        .copied()
+        .map(round3);
     let opencv_digest = ocv.digests.get(spec.id).copied();
     let rust_digest = spec.rust_digest.and_then(|mut d| d());
     let oximedia_digest = spec.oxi_digest.and_then(|mut d| d());

@@ -9,7 +9,7 @@ use image::{GrayImage, Luma};
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "building: shift=(12, 7) inliers=213/216\nastronaut: shift=(12, 7) inliers=250/250\nchelsea: shift=(12, 7) inliers=227/227\ncoins: shift=(12, 7) inliers=246/247"
+        "building: shift=(12, 7) inliers=220/221\nastronaut: shift=(12, 7) inliers=248/248\nchelsea: shift=(12, 7) inliers=233/233\ncoins: shift=(12, 7) inliers=242/246"
     );
 }
 

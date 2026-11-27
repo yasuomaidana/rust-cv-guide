@@ -23,6 +23,9 @@ pub struct Meta {
     pub issue: Option<String>,
     /// GitHub user who claimed the item.
     pub owner: Option<String>,
+    /// Why the backends legitimately do different work (for example an upstream defect). Without it, a
+    /// `mismatch` parity row is a project error that has to be fixed.
+    pub known_difference: Option<String>,
 }
 
 /// Deserialized `catalog/perf_queue.yaml`.
@@ -68,6 +71,7 @@ pub struct Item {
     pub plane: Option<String>,
     pub issue: Option<String>,
     pub owner: Option<String>,
+    pub known_difference: Option<String>,
 }
 
 /// The ranked queue and the operations already at parity with OpenCV.
@@ -123,11 +127,11 @@ fn backends(row: &BenchRow, fair: f64) -> Vec<Backend> {
     .collect()
 }
 
-fn default_status(row: &BenchRow) -> &'static str {
-    if row.parity == "mismatch" {
-        "probe-mismatch"
-    } else {
-        "unprobed"
+fn default_status(row: &BenchRow, meta: &Meta) -> &'static str {
+    match (row.parity == "mismatch", meta.known_difference.is_some()) {
+        (true, true) => "known-difference",
+        (true, false) => "probe-mismatch",
+        _ => "unprobed",
     }
 }
 
@@ -153,12 +157,13 @@ fn item(row: &BenchRow, meta: &Meta) -> Option<Item> {
         status: meta
             .status
             .clone()
-            .unwrap_or_else(|| default_status(row).into()),
+            .unwrap_or_else(|| default_status(row, meta).into()),
         root_cause: meta.root_cause.clone(),
         fix_target: meta.fix_target.clone(),
         plane: meta.plane.clone(),
         issue: meta.issue.clone(),
         owner: meta.owner.clone(),
+        known_difference: meta.known_difference.clone(),
     })
 }
 
@@ -191,13 +196,15 @@ pub fn build(bench: &Benchmarks, meta: &QueueMeta) -> Queue {
     Queue { queue, at_parity }
 }
 
+fn linked(issue: &Option<String>) -> bool {
+    issue
+        .as_deref()
+        .is_some_and(|u| u.starts_with(ISSUE_PREFIX) && u.contains("/issues/"))
+}
+
 fn item_problems(item: &Item) -> Vec<String> {
     let mut out = Vec::new();
-    let linked = item
-        .issue
-        .as_deref()
-        .is_some_and(|u| u.starts_with(ISSUE_PREFIX) && u.contains("/issues/"));
-    if !linked {
+    if !linked(&item.issue) {
         out.push(format!(
             "perf queue item {} ({:.2}x) has no GitHub issue link in catalog/perf_queue.yaml",
             item.id, item.best_gap
@@ -216,6 +223,27 @@ fn item_problems(item: &Item) -> Vec<String> {
     out
 }
 
+/// Rows whose backends do different work are project errors: fixed in the session that finds them, or
+/// explained by a `known_difference` that links a GitHub issue.
+fn parity_problems(bench: &Benchmarks, meta: &QueueMeta) -> Vec<String> {
+    let explained = |id: &str| {
+        meta.items
+            .get(id)
+            .is_some_and(|m| m.known_difference.is_some() && linked(&m.issue))
+    };
+    bench
+        .benchmarks
+        .iter()
+        .filter(|r| r.parity == "mismatch" && !explained(&r.id))
+        .map(|r| {
+            format!(
+                "benchmark {} compares different work (parity mismatch): fix it in the same session, or record a known_difference and a GitHub issue link in catalog/perf_queue.yaml",
+                r.id
+            )
+        })
+        .collect()
+}
+
 /// Every way the queue metadata disagrees with the benchmarks.
 pub fn problems(bench: &Benchmarks, meta: &QueueMeta) -> Vec<String> {
     if bench.benchmarks.is_empty() {
@@ -223,6 +251,7 @@ pub fn problems(bench: &Benchmarks, meta: &QueueMeta) -> Vec<String> {
     }
     let queue = build(bench, meta);
     let mut out: Vec<String> = queue.queue.iter().flat_map(item_problems).collect();
+    out.extend(parity_problems(bench, meta));
     let known: Vec<&str> = bench.benchmarks.iter().map(|r| r.id.as_str()).collect();
     out.extend(
         meta.items
@@ -324,6 +353,23 @@ pub fn markdown(queue: &Queue) -> String {
     lines.push("| Rank | Operation | Best gap | Per-crate gap vs OpenCV | Parity | Status | Issue | Owner |".into());
     lines.push("|---|---|---|---|---|---|---|---|".into());
     lines.extend(queue.queue.iter().map(queue_row));
+    let known: Vec<String> = queue
+        .queue
+        .iter()
+        .chain(&queue.at_parity)
+        .filter_map(|i| {
+            Some(format!(
+                "- **{}**: {}",
+                i.operation.replace('|', "/"),
+                i.known_difference.as_deref()?
+            ))
+        })
+        .collect();
+    if !known.is_empty() {
+        lines.push("\n## Known differences\n".into());
+        lines.push("Rows whose backends cannot run the same work, with the reason.\n".into());
+        lines.extend(known);
+    }
     lines.push("\n## At parity\n".into());
     lines.push("| Operation | OpenCV | Best crate | Per-crate gap |".into());
     lines.push("|---|---|---|---|".into());
@@ -514,6 +560,58 @@ mod tests {
             ]
         );
         assert!(files[2].1.starts_with("---\ntitle:"));
+    }
+
+    fn mismatching(id: &str) -> Benchmarks {
+        Benchmarks {
+            benchmarks: vec![row(id, 1.0, Some(1.0), None, "mismatch")],
+            ..Benchmarks::default()
+        }
+    }
+
+    #[rstest]
+    #[case(None, None, true)]
+    #[case(Some("upstream defect"), None, true)]
+    #[case(
+        Some("upstream defect"),
+        Some("https://github.com/o/r/issues/3"),
+        false
+    )]
+    fn a_parity_mismatch_needs_a_known_difference_and_an_issue(
+        #[case] reason: Option<&str>,
+        #[case] issue: Option<&str>,
+        #[case] flagged: bool,
+    ) {
+        let mut m = QueueMeta::default();
+        m.items.insert(
+            "m".into(),
+            Meta {
+                known_difference: reason.map(str::to_string),
+                issue: issue.map(str::to_string),
+                ..Meta::default()
+            },
+        );
+        let found = problems(&mismatching("m"), &m);
+        assert_eq!(found.iter().any(|p| p.contains("parity mismatch")), flagged);
+    }
+
+    #[rstest]
+    fn known_differences_are_listed_and_change_the_status() {
+        let mut b = mismatching("m");
+        b.benchmarks[0].rust_ms = Some(5.0);
+        let mut m = QueueMeta::default();
+        m.items.insert(
+            "m".into(),
+            Meta {
+                known_difference: Some("does less work".into()),
+                ..Meta::default()
+            },
+        );
+        let q = build(&b, &m);
+        assert_eq!(q.queue[0].status, "known-difference");
+        let md = markdown(&q);
+        assert!(md.contains("## Known differences") && md.contains("does less work"));
+        assert!(!markdown(&build(&b, &QueueMeta::default())).contains("## Known differences"));
     }
 
     #[rstest]

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/features.hpp>
+#include <opencv2/xfeatures2d.hpp>
 #include <string>
 #include <utility>
 #include <vector>
@@ -120,8 +121,8 @@ static double opencv_ssim(const cv::Mat& i1, const cv::Mat& i2) {
 
 struct Assets {
     cv::Mat linux_logo, win_logo, coffee, chelsea, chelsea_gray, coins, building, astronaut;
-    cv::Mat invoice_photo, box_img, box_scene;
-    cv::Mat coins_mask, invoice_mask, building_blur, chelsea_blur, tmpl;
+    cv::Mat invoice_photo;
+    cv::Mat coins_mask, invoice_mask, building_blur, chelsea_blur, tmpl, building_shift;
 };
 
 static Assets load_assets(const std::string& dir) {
@@ -135,14 +136,14 @@ static Assets load_assets(const std::string& dir) {
     a.building = asset(dir, "building.jpg", cv::IMREAD_GRAYSCALE);
     a.astronaut = asset(dir, "astronaut.png", cv::IMREAD_COLOR);
     a.invoice_photo = asset(dir, "invoice_photo.png", cv::IMREAD_COLOR);
-    a.box_img = asset(dir, "box.png", cv::IMREAD_GRAYSCALE);
-    a.box_scene = asset(dir, "box_in_scene.png", cv::IMREAD_GRAYSCALE);
 
     cv::threshold(a.coins, a.coins_mask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
     cv::Mat invoice = asset(dir, "invoice.png", cv::IMREAD_GRAYSCALE), invoice_smooth;
     cv::GaussianBlur(invoice, invoice_smooth, cv::Size(5, 5), 0.8);
     cv::threshold(invoice_smooth, a.invoice_mask, 128, 255, cv::THRESH_BINARY_INV);
     cv::GaussianBlur(a.building, a.building_blur, cv::Size(0, 0), 2.0);
+    // The second view of the feature-matching benchmark: the photo cropped by (12, 7), as in the tutorials.
+    a.building_shift = a.building(cv::Rect(12, 7, a.building.cols - 12, a.building.rows - 7)).clone();
     cv::GaussianBlur(a.chelsea_gray, a.chelsea_blur, cv::Size(0, 0), 1.5);
     a.chelsea_blur += 25;
     cv::Rect patch((a.chelsea_gray.cols - 40) / 2, a.chelsea_gray.rows * 2 / 5 - 20, 40, 40);
@@ -157,9 +158,10 @@ struct Bench {
     cv::Mat dst;
 
     // Replaces the image digest with an element count, for ops whose result is a list rather than `dst`.
-    void set_count_digest(const char* id, size_t count) {
+    // `kind` 1 is an element count; 2 is the number of matches that agree with the true shift.
+    void set_count_digest(const char* id, size_t count, int kind = 1) {
         digests.erase(std::remove_if(digests.begin(), digests.end(), [&](const Digest& d) { return d.id == id; }), digests.end());
-        digests.push_back({id, static_cast<int>(count), 1, 0.0});
+        digests.push_back({id, static_cast<int>(count), kind, 0.0});
     }
 
     void record_image_digest(const char* id) {
@@ -211,12 +213,16 @@ static void run_morphology_and_edges(Bench& b, const Assets& a) {
     b.push("erosion", 50, [&] { cv::erode(a.coins_mask, dst, k5); });
     b.push("opening_closing_hats", 30, [&] { cv::morphologyEx(a.coins, dst, cv::MORPH_TOPHAT, k7); });
     b.push("distance_transform", 30, [&] { cv::distanceTransform(a.coins_mask, dst, cv::DIST_L2, 3); });
-    b.push("canny", 30, [&] { cv::GaussianBlur(a.building, dst, cv::Size(0, 0), 1.4); cv::Canny(dst, dst, 50.0, 150.0); });
+    b.push("canny", 30, [&] { cv::GaussianBlur(a.building, dst, cv::Size(0, 0), 1.4); cv::Canny(dst, dst, 50.0, 150.0, 3, true); });
     b.push("laplace", 30, [&] {
         cv::Mat g, l;
         cv::GaussianBlur(a.building, g, cv::Size(0, 0), 1.0);
         cv::Laplacian(g, l, CV_16S, 3);
-        cv::convertScaleAbs(l, dst);
+        // The tutorial scales the response so the strongest edge is 255 (as the Rust versions do).
+        l = cv::abs(l);
+        double strongest = 1.0;
+        cv::minMaxLoc(l, nullptr, &strongest);
+        l.convertTo(dst, CV_8U, 255.0 / std::max(strongest, 1.0));
     });
     b.push("sobel", 30, [&] {
         cv::Mat gx;
@@ -232,7 +238,7 @@ static void run_morphology_and_edges(Bench& b, const Assets& a) {
     std::vector<cv::Vec3f> circles;
     b.push("hough_circle", 15, [&] { cv::HoughCircles(a.coins, circles, cv::HOUGH_GRADIENT, 1.0, 20.0, 150.0, 25.0, 15, 40); });
     std::vector<cv::Vec2f> lines;
-    b.push("hough_lines", 20, [&] { cv::Canny(a.building, dst, 50.0, 150.0); cv::HoughLines(dst, lines, 1.0, CV_PI / 180.0, 150); });
+    b.push("hough_lines", 20, [&] { cv::GaussianBlur(a.building, dst, cv::Size(0, 0), 1.4); cv::Canny(dst, dst, 50.0, 150.0, 3, true); cv::HoughLines(dst, lines, 1.0, CV_PI / 180.0, 150); });
     b.set_count_digest("hough_lines", lines.size());
 }
 
@@ -265,14 +271,28 @@ static void run_features(Bench& b, const Assets& a) {
     cv::Mat desc;
     b.push("feature_detection_orb", 20, [&] { kps.clear(); orb->detectAndCompute(a.building, cv::noArray(), kps, desc); });
     b.set_count_digest("feature_detection_orb", kps.size());
+    // FAST (non-max suppression on) + 256-bit BRIEF + Hamming matching: the pipeline every Rust backend runs.
+    auto fast20 = cv::FastFeatureDetector::create(20, true);
+    auto brief = cv::xfeatures2d::BriefDescriptorExtractor::create(32);
+    size_t good = 0;
     b.push("feature_description", 10, [&] {
         std::vector<cv::KeyPoint> ka, kb;
         cv::Mat da, db;
-        orb->detectAndCompute(a.box_img, cv::noArray(), ka, da);
-        orb->detectAndCompute(a.box_scene, cv::noArray(), kb, db);
+        fast20->detect(a.building, ka);
+        fast20->detect(a.building_shift, kb);
+        cv::KeyPointsFilter::retainBest(ka, 250);
+        cv::KeyPointsFilter::retainBest(kb, 250);
+        brief->compute(a.building, ka, da);
+        brief->compute(a.building_shift, kb, db);
         std::vector<cv::DMatch> matches;
         if (!da.empty() && !db.empty()) cv::BFMatcher(cv::NORM_HAMMING).match(da, db, matches);
+        // Inliers: matches within 32 bits whose displacement is the true (12, 7) shift, within 2 px.
+        good = static_cast<size_t>(std::count_if(matches.begin(), matches.end(), [&](const cv::DMatch& m) {
+            cv::Point2f d = ka[m.queryIdx].pt - kb[m.trainIdx].pt;
+            return m.distance <= 32 && std::abs(d.x - 12.0f) <= 2.0f && std::abs(d.y - 7.0f) <= 2.0f;
+        }));
     });
+    b.set_count_digest("feature_description", good, 2);
 }
 
 static void run_quality(Bench& b, const Assets& a) {

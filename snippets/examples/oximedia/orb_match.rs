@@ -1,11 +1,13 @@
-//! OpenCV tutorial `tutorial_feature_description` with `oximedia-cv` (`OrbExtractor` + `match_descriptors`).
+//! OpenCV tutorial `tutorial_feature_description` with `oximedia-cv`: `FastDetector` corners, the shared
+//! 256-bit BRIEF descriptor and `match_descriptors`, the same pipeline as the `imageproc` version.
 //! Run with `cargo run -p cvg-snippets --example oxi_orb_match`.
 
+use cvg_snippets::oxi_features::extract;
 use cvg_snippets::vis::{ConsensusResult, MatchPair, consensus_matches, match_report};
 use image::GrayImage;
-use oximedia_cv::feature_extract::{OrbExtractor, match_descriptors};
+use oximedia_cv::feature_extract::match_descriptors;
 
-/// Matches `OrbExtractor` binary descriptors between `query` and `train` within `max_dist` Hamming bits.
+/// Matches the binary descriptors of `query` and `train` within `max_dist` Hamming bits.
 pub fn match_two(
     query: &GrayImage,
     train: &GrayImage,
@@ -13,29 +15,11 @@ pub fn match_two(
     max: usize,
     max_dist: u32,
 ) -> ConsensusResult {
-    let to_unit = |img: &GrayImage| {
-        img.as_raw()
-            .iter()
-            .map(|p| f32::from(*p) / 255.0)
-            .collect::<Vec<_>>()
-    };
-    let extractor = OrbExtractor {
-        max_features: max,
-        fast_threshold: f32::from(threshold) / 255.0,
-    };
-    let (ka, da) = extractor.extract(
-        &to_unit(query),
-        query.width() as usize,
-        query.height() as usize,
-    );
-    let (kb, db) = extractor.extract(
-        &to_unit(train),
-        train.width() as usize,
-        train.height() as usize,
-    );
+    let (ka, da) = extract(query, threshold, max);
+    let (kb, db) = extract(train, threshold, max);
     let pairs: Vec<MatchPair> = match_descriptors(&da, &db, max_dist)
         .into_iter()
-        .map(|(i, j, _)| ((ka[i].x, ka[i].y), (kb[j].x, kb[j].y)))
+        .map(|(i, j, _)| (ka[i], kb[j]))
         .collect();
     consensus_matches(&pairs, 2.0)
 }
@@ -43,7 +27,7 @@ pub fn match_two(
 /// Default settings used on the guide page.
 pub const THRESHOLD: u8 = 20;
 pub const MAX: usize = 250;
-pub const MAX_DIST: u32 = 24;
+pub const MAX_DIST: u32 = 32;
 
 /// Evaluates translation shift recovery across four diverse photographs.
 pub fn report() -> String {

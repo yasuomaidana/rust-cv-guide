@@ -77,7 +77,7 @@ What this guide covers and what it could cover next. Only the tutorials marked `
 | AKAZE and ORB planar tracking ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/akaze_tracking/akaze_tracking.markdown)) | unreviewed |  |
 | Detection of planar objects ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/detection_of_planar_objects/detection_of_planar_objects.markdown)) | unreviewed |  |
 | [Feature Description](opencv/features/tutorial_feature_description.mdx) | partial | 256-bit BRIEF binary descriptors and brute-force Hamming matching without orientation or scale invariance |
-| [Feature Detection](opencv/features/tutorial_feature_detection.mdx) | partial | FAST corners and an ORB-style blob detector with binary descriptors; no SIFT/SURF descriptors, no rotation-invariant matching |
+| [Feature Detection](opencv/features/tutorial_feature_detection.mdx) | partial | FAST-9 corners with non-max suppression and oriented FAST keypoints; no SIFT/SURF descriptors, no rotation-invariant matching |
 | Feature Matching with FLANN ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_flann_matcher/feature_flann_matcher.markdown)) | unreviewed |  |
 | Features + Homography to find a known object ([OpenCV](https://github.com/opencv/opencv/blob/5.1.0/doc/tutorials/features/feature_homography/feature_homography.markdown)) | unreviewed |  |
 | [Basic concepts of the homography explained with code](opencv/features/tutorial_homography.mdx) | partial | Perspective correction only; no pose recovery or homography decomposition |

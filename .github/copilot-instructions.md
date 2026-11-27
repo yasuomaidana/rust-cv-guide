@@ -25,3 +25,9 @@ This project uses these toolchains; all tooling and dependency operations go thr
 ## 5. Model Precedence & Zero-Cost Delegation
 - Commit messages and repetitive test digestions must be delegated to local zero-cost models (`qwen3.8:27b` / Ollama Metal) to conserve API tokens.
 - Cloud models (Gemini Pro, Copilot Sonnet) are reserved for macro architecture, complex decomposition, and review gates.
+
+## 6. Benchmark and Performance Audit Rules
+- Every tutorial needs a benchmark row (`comparisons/opencv/run.sh`, `catalog/benchmarks.json`); gaps over 5% beyond noise need a queue entry with a GitHub issue (`PERF_QUEUE.md`).
+- A benchmark row with `parity: mismatch` compares different work. That is a project error: fix it in the same session. Only an explained `known_difference` with an issue link in `catalog/perf_queue.yaml` is accepted.
+- Check the probe (extra clones, normalisation, double smoothing, caps on one side) before concluding a crate is slow.
+- Run `cargo run -p cvg-tools -- generate` then `cargo run -p cvg-tools -- check` before committing.

@@ -3,11 +3,13 @@
 
 use cvg_snippets::common::{Figure, describe, edge_figures};
 use image::GrayImage;
-use imageproc::{edges::canny, filter::gaussian_blur_f32};
+use imageproc::edges::canny;
 
-/// Blur to calm the noise, then Canny with hysteresis thresholds `low` and `high`.
+/// Canny with hysteresis thresholds `low` and `high`. `imageproc::edges::canny` already smooths with a
+/// Gaussian of sigma 1.4 (the value the OpenCV tutorial uses), so the picture is passed in as it is.
+/// Edge strength is `sqrt(dx^2 + dy^2)`, which is `cv::Canny(.., L2gradient = true)`.
 pub fn detect_edges(input: &GrayImage, low: f32, high: f32) -> GrayImage {
-    canny(&gaussian_blur_f32(input, 1.4), low, high)
+    canny(input, low, high)
 }
 
 /// The building photo and its edges for thresholds 50 and 150.

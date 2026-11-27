@@ -21,7 +21,11 @@ impl Stats {
     /// Relative noise floor, `2 * MAD / median`; a gap smaller than this is not a real difference.
     #[cfg(test)]
     pub fn noise(&self) -> f64 {
-        if self.median > 0.0 { 2.0 * self.mad / self.median } else { 0.0 }
+        if self.median > 0.0 {
+            2.0 * self.mad / self.median
+        } else {
+            0.0
+        }
     }
 }
 
@@ -56,7 +60,24 @@ impl<P: Pixel<Subpixel = u8>> ImageDigest for Probe<'_, ImageBuffer<P, Vec<u8>>>
 /// Keypoint and match lists: only the count is comparable (`h == 1`).
 impl<T> ImageDigest for Probe<'_, Vec<T>> {
     fn digest(&self) -> Option<Digest> {
-        Some(Digest { w: self.0.len() as u32, h: 1, mean: 0.0 })
+        Some(Digest {
+            w: self.0.len() as u32,
+            h: 1,
+            mean: 0.0,
+        })
+    }
+}
+
+/// Feature-matching results: the inliers that agree with the consensus shift (`h == 2`), which does not
+/// depend on which BRIEF test pattern a backend uses.
+impl ImageDigest for Probe<'_, cvg_snippets::vis::ConsensusResult> {
+    fn digest(&self) -> Option<Digest> {
+        let inliers = self.0.0.map_or(0, |(_, count)| count);
+        Some(Digest {
+            w: inliers as u32,
+            h: 2,
+            mean: 0.0,
+        })
     }
 }
 
@@ -84,7 +105,8 @@ macro_rules! op_closures {
                 use $crate::measure::{ImageDigest, NoDigest};
                 let out = $e;
                 (&$crate::measure::Probe(&out)).digest()
-            }) as Box<dyn FnMut() -> Option<$crate::measure::Digest> + '_>),
+            })
+                as Box<dyn FnMut() -> Option<$crate::measure::Digest> + '_>),
         )
     };
     () => {
@@ -148,11 +170,22 @@ pub fn calibration() -> BTreeMap<String, f64> {
     map
 }
 
-/// True when two fingerprints describe the same work: counts (`h == 1`) within 25 %, images by size and
+/// Relative tolerance for count digests: `h == 1` is an element count (keypoints, lines), `h == 2` is the
+/// number of matches that agree with the consensus shift, which also depends on each backend's BRIEF pattern.
+fn count_tolerance(h: u32) -> Option<f64> {
+    match h {
+        1 => Some(0.25),
+        2 => Some(0.35),
+        _ => None,
+    }
+}
+
+/// True when two fingerprints describe the same work: counts within their tolerance, images by size and
 /// mean within 2 grey levels or 5 %.
 fn digests_agree(x: Digest, y: Digest) -> bool {
-    if x.h == 1 && y.h == 1 {
-        return (f64::from(x.w) - f64::from(y.w)).abs() <= 0.25 * f64::from(x.w.max(y.w)).max(1.0);
+    if let (Some(tolerance), true) = (count_tolerance(x.h), x.h == y.h) {
+        return (f64::from(x.w) - f64::from(y.w)).abs()
+            <= tolerance * f64::from(x.w.max(y.w)).max(1.0);
     }
     x.w == y.w && x.h == y.h && (x.mean - y.mean).abs() <= 2.0f64.max(0.05 * x.mean.abs())
 }
@@ -165,7 +198,6 @@ pub fn parity(a: Option<Digest>, b: Option<Digest>) -> &'static str {
         _ => "n/a",
     }
 }
-
 
 /// Folds per-backend parity verdicts: any `mismatch` wins, then any `ok`, else `n/a`.
 pub fn combine_parity(checks: [&'static str; 2]) -> &'static str {

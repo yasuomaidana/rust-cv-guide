@@ -5,19 +5,19 @@
       "id": "template_matching",
       "tutorial": "tutorial_template_matching",
       "operation": "Template match (TM_SQDIFF)",
-      "opencv_ms": 1.628,
+      "opencv_ms": 1.618,
       "best_crate": "image/imageproc",
-      "best_gap": 74.03,
-      "ms_lost": 118.888,
+      "best_gap": 75.34,
+      "ms_lost": 120.282,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 120.516,
-          "ms_opt": 123.808,
-          "gap": 74.03,
-          "gap_opt": 76.05,
-          "noise": 0.004182017325500349
+          "ms": 121.9,
+          "ms_opt": 122.14,
+          "gap": 75.34,
+          "gap_opt": 75.49,
+          "noise": 0.0010992616899097622
         }
       ],
       "status": "unprobed",
@@ -25,7 +25,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-158",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 2,
@@ -34,25 +35,25 @@
       "operation": "Median filter (5x5, r=2)",
       "opencv_ms": 0.435,
       "best_crate": "image/imageproc",
-      "best_gap": 42.37,
-      "ms_lost": 17.994,
+      "best_gap": 41.32,
+      "ms_lost": 17.54,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 18.727,
-          "ms_opt": 18.429,
-          "gap": 43.05,
-          "gap_opt": 42.37,
-          "noise": 0.03908794788273615
+          "ms": 17.975,
+          "ms_opt": 18.637,
+          "gap": 41.32,
+          "gap_opt": 42.84,
+          "noise": 0.007343532684283727
         },
         {
           "name": "oximedia-cv",
-          "ms": 39.114,
-          "ms_opt": 50.68,
-          "gap": 89.92,
-          "gap_opt": 116.51,
-          "noise": 0.008027816127217877
+          "ms": 38.611,
+          "ms_opt": 38.591,
+          "gap": 88.76,
+          "gap_opt": 88.71,
+          "noise": 0.004765481339514647
         }
       ],
       "status": "unprobed",
@@ -60,7 +61,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-159",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/40",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 3,
@@ -69,25 +71,25 @@
       "operation": "Erode (5x5 square, r=2)",
       "opencv_ms": 0.01,
       "best_crate": "image/imageproc",
-      "best_gap": 27.6,
-      "ms_lost": 0.266,
+      "best_gap": 28.1,
+      "ms_lost": 0.271,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.276,
-          "ms_opt": 0.293,
-          "gap": 27.6,
-          "gap_opt": 29.3,
-          "noise": 0.05797101449275362
+          "ms": 0.281,
+          "ms_opt": 0.3,
+          "gap": 28.1,
+          "gap_opt": 30.0,
+          "noise": 0.021352313167259784
         },
         {
           "name": "oximedia-cv",
-          "ms": 3.337,
-          "ms_opt": 2.781,
-          "gap": 333.7,
-          "gap_opt": 278.1,
-          "noise": 0.02637099190890021
+          "ms": 3.318,
+          "ms_opt": 2.811,
+          "gap": 331.8,
+          "gap_opt": 281.1,
+          "noise": 0.0024110910186859553
         }
       ],
       "status": "unprobed",
@@ -95,7 +97,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-160",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 4,
@@ -104,25 +107,25 @@
       "operation": "3-level pyrDown",
       "opencv_ms": 0.045,
       "best_crate": "oximedia-cv",
-      "best_gap": 18.84,
-      "ms_lost": 0.803,
+      "best_gap": 19.4,
+      "ms_lost": 0.828,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.823,
-          "ms_opt": 1.839,
-          "gap": 40.51,
-          "gap_opt": 40.87,
-          "noise": 0.00877674163466813
+          "ms": 1.867,
+          "ms_opt": 1.981,
+          "gap": 41.49,
+          "gap_opt": 44.02,
+          "noise": 0.02785216925549009
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.881,
-          "ms_opt": 0.848,
-          "gap": 19.58,
-          "gap_opt": 18.84,
-          "noise": 0.02043132803632236
+          "ms": 0.882,
+          "ms_opt": 0.873,
+          "gap": 19.6,
+          "gap_opt": 19.4,
+          "noise": 0.0022675736961451248
         }
       ],
       "status": "unprobed",
@@ -130,26 +133,27 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-161",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/42",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 5,
       "id": "hough_circle",
       "tutorial": "tutorial_hough_circle",
       "operation": "Canny + circle Hough (r=15..40)",
-      "opencv_ms": 4.017,
+      "opencv_ms": 3.94,
       "best_crate": "oximedia-cv",
-      "best_gap": 15.82,
-      "ms_lost": 59.551,
+      "best_gap": 16.22,
+      "ms_lost": 59.949,
       "parity": "n/a",
       "backends": [
         {
           "name": "oximedia-cv",
-          "ms": 64.286,
-          "ms_opt": 63.568,
-          "gap": 16.0,
-          "gap_opt": 15.82,
-          "noise": 0.00827551877547211
+          "ms": 64.547,
+          "ms_opt": 63.889,
+          "gap": 16.38,
+          "gap_opt": 16.22,
+          "noise": 0.001456303158938448
         }
       ],
       "status": "unprobed",
@@ -157,34 +161,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-162",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/43",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 6,
       "id": "opening_closing_hats",
       "tutorial": "tutorial_opening_closing_hats",
       "operation": "Top-hat morphology (7x7, r=3)",
-      "opencv_ms": 0.028,
+      "opencv_ms": 0.029,
       "best_crate": "image/imageproc",
-      "best_gap": 14.86,
-      "ms_lost": 0.388,
+      "best_gap": 14.66,
+      "ms_lost": 0.396,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.416,
-          "ms_opt": 1.133,
-          "gap": 14.86,
-          "gap_opt": 40.46,
-          "noise": 0.014423076923076924
+          "ms": 0.425,
+          "ms_opt": 1.135,
+          "gap": 14.66,
+          "gap_opt": 39.14,
+          "noise": 0.004705882352941177
         },
         {
           "name": "oximedia-cv",
-          "ms": 14.27,
-          "ms_opt": 10.807,
-          "gap": 509.64,
-          "gap_opt": 385.96,
-          "noise": 0.01583742116327961
+          "ms": 13.971,
+          "ms_opt": 10.869,
+          "gap": 481.76,
+          "gap_opt": 374.79,
+          "noise": 0.006012454369765944
         }
       ],
       "status": "unprobed",
@@ -192,69 +197,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-163",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/44",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 7,
-      "id": "smoothing_bilateral",
-      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
-      "operation": "Bilateral filter (d=5, r=2, sc=30)",
-      "opencv_ms": 0.807,
-      "best_crate": "image/imageproc",
-      "best_gap": 10.15,
-      "ms_lost": 7.386,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 9.169,
-          "ms_opt": 8.193,
-          "gap": 11.36,
-          "gap_opt": 10.15,
-          "noise": 0.003926273312247791
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 33.044,
-          "ms_opt": 35.422,
-          "gap": 40.95,
-          "gap_opt": 43.89,
-          "noise": 0.006960416414477667
-        }
-      ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
-      "plane": "RUSTCVGUID-164",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
-      "owner": null
-    },
-    {
-      "rank": 8,
       "id": "smoothing_gaussian",
       "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
       "operation": "Gaussian blur (sigma=1.1)",
       "opencv_ms": 0.198,
       "best_crate": "image/imageproc",
-      "best_gap": 8.77,
-      "ms_lost": 1.539,
+      "best_gap": 9.08,
+      "ms_lost": 1.6,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.737,
-          "ms_opt": 1.797,
-          "gap": 8.77,
-          "gap_opt": 9.08,
-          "noise": 0.011514104778353483
+          "ms": 1.798,
+          "ms_opt": 1.854,
+          "gap": 9.08,
+          "gap_opt": 9.36,
+          "noise": 0.058954393770856504
         },
         {
           "name": "oximedia-cv",
-          "ms": 4.757,
-          "ms_opt": 4.771,
-          "gap": 24.03,
-          "gap_opt": 24.1,
-          "noise": 0.02102165230187093
+          "ms": 4.691,
+          "ms_opt": 4.87,
+          "gap": 23.69,
+          "gap_opt": 24.6,
+          "noise": 0.002558089959496909
         }
       ],
       "status": "unprobed",
@@ -262,69 +233,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-165",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/46",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 9,
-      "id": "canny",
-      "tutorial": "tutorial_canny_detector",
-      "operation": "Gaussian blur + Canny (50/150)",
-      "opencv_ms": 2.586,
+      "rank": 8,
+      "id": "smoothing_bilateral",
+      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
+      "operation": "Bilateral filter (d=5, r=2, sc=30)",
+      "opencv_ms": 0.807,
       "best_crate": "image/imageproc",
-      "best_gap": 7.43,
-      "ms_lost": 16.636,
-      "parity": "mismatch",
+      "best_gap": 7.35,
+      "ms_lost": 5.121,
+      "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 20.524,
-          "ms_opt": 19.222,
-          "gap": 7.94,
-          "gap_opt": 7.43,
-          "noise": 0.04424088871564997
+          "ms": 9.155,
+          "ms_opt": 5.928,
+          "gap": 11.34,
+          "gap_opt": 7.35,
+          "noise": 0.002403058438012015
         },
         {
           "name": "oximedia-cv",
-          "ms": 22.303,
-          "ms_opt": 21.423,
-          "gap": 8.62,
-          "gap_opt": 8.28,
-          "noise": 0.005649464197641573
+          "ms": 33.096,
+          "ms_opt": 34.621,
+          "gap": 41.01,
+          "gap_opt": 42.9,
+          "noise": 0.00489485134155185
         }
       ],
-      "status": "probe-mismatch",
+      "status": "unprobed",
       "root_cause": null,
       "fix_target": null,
-      "plane": "RUSTCVGUID-166",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/47",
-      "owner": null
+      "plane": "RUSTCVGUID-164",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 10,
+      "rank": 9,
       "id": "homography",
       "tutorial": "tutorial_homography",
       "operation": "Perspective unwarp (4-point quad)",
       "opencv_ms": 0.587,
       "best_crate": "image/imageproc",
-      "best_gap": 7.03,
-      "ms_lost": 3.537,
+      "best_gap": 7.14,
+      "ms_lost": 3.607,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 4.233,
-          "ms_opt": 4.124,
-          "gap": 7.21,
-          "gap_opt": 7.03,
-          "noise": 0.03401842664776754
+          "ms": 4.372,
+          "ms_opt": 4.194,
+          "gap": 7.45,
+          "gap_opt": 7.14,
+          "noise": 0.05169258920402562
         },
         {
           "name": "oxipix",
-          "ms": 7.138,
-          "ms_opt": 6.303,
-          "gap": 12.16,
-          "gap_opt": 10.74,
-          "noise": 0.03866629307929392
+          "ms": 6.823,
+          "ms_opt": 6.369,
+          "gap": 11.62,
+          "gap_opt": 10.85,
+          "noise": 0.022277590502711414
         }
       ],
       "status": "unprobed",
@@ -332,34 +305,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-167",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/48",
-      "owner": null
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 10,
+      "id": "canny",
+      "tutorial": "tutorial_canny_detector",
+      "operation": "Gaussian blur + Canny (50/150)",
+      "opencv_ms": 2.322,
+      "best_crate": "image/imageproc",
+      "best_gap": 6.93,
+      "ms_lost": 13.78,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 17.712,
+          "ms_opt": 16.102,
+          "gap": 7.63,
+          "gap_opt": 6.93,
+          "noise": 0.006662149954832881
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 22.609,
+          "ms_opt": 20.046,
+          "gap": 9.74,
+          "gap_opt": 8.63,
+          "noise": 0.003715334601264983
+        }
+      ],
+      "status": "unprobed",
+      "root_cause": null,
+      "fix_target": null,
+      "plane": "RUSTCVGUID-166",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/47",
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 11,
       "id": "warp_affine",
       "tutorial": "tutorial_warp_affine",
       "operation": "Rotate 30 deg + scale 0.6",
-      "opencv_ms": 0.275,
+      "opencv_ms": 0.264,
       "best_crate": "oximedia-cv",
-      "best_gap": 6.0,
-      "ms_lost": 1.375,
+      "best_gap": 6.31,
+      "ms_lost": 1.402,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.767,
-          "ms_opt": 2.571,
-          "gap": 10.06,
-          "gap_opt": 9.35,
-          "noise": 0.006505240332490061
+          "ms": 2.8,
+          "ms_opt": 2.61,
+          "gap": 10.61,
+          "gap_opt": 9.89,
+          "noise": 0.002142857142857143
         },
         {
           "name": "oximedia-cv",
-          "ms": 1.857,
-          "ms_opt": 1.65,
-          "gap": 6.75,
-          "gap_opt": 6.0,
-          "noise": 0.009693053311793215
+          "ms": 1.855,
+          "ms_opt": 1.666,
+          "gap": 7.03,
+          "gap_opt": 6.31,
+          "noise": 0.00862533692722372
         }
       ],
       "status": "unprobed",
@@ -367,7 +377,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-168",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 12,
@@ -376,25 +387,25 @@
       "operation": "addWeighted (0.5 / 0.5)",
       "opencv_ms": 0.038,
       "best_crate": "image/imageproc",
-      "best_gap": 5.66,
-      "ms_lost": 0.177,
+      "best_gap": 5.76,
+      "ms_lost": 0.181,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.256,
-          "ms_opt": 0.215,
-          "gap": 6.74,
-          "gap_opt": 5.66,
-          "noise": 0.0625
+          "ms": 0.264,
+          "ms_opt": 0.219,
+          "gap": 6.95,
+          "gap_opt": 5.76,
+          "noise": 0.09090909090909091
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.511,
-          "ms_opt": 0.462,
-          "gap": 13.45,
-          "gap_opt": 12.16,
-          "noise": 0.03522504892367906
+          "ms": 0.513,
+          "ms_opt": 0.466,
+          "gap": 13.5,
+          "gap_opt": 12.26,
+          "noise": 0.007797270955165692
         }
       ],
       "status": "unprobed",
@@ -402,7 +413,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-169",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/50",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 13,
@@ -411,25 +423,25 @@
       "operation": "Box blur (5x5, r=2)",
       "opencv_ms": 0.239,
       "best_crate": "image/imageproc",
-      "best_gap": 5.65,
-      "ms_lost": 1.111,
+      "best_gap": 5.71,
+      "ms_lost": 1.126,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.35,
-          "ms_opt": 1.366,
-          "gap": 5.65,
-          "gap_opt": 5.72,
-          "noise": 0.008888888888888889
+          "ms": 1.365,
+          "ms_opt": 1.475,
+          "gap": 5.71,
+          "gap_opt": 6.17,
+          "noise": 0.03223443223443223
         },
         {
           "name": "oximedia-cv",
-          "ms": 1.537,
-          "ms_opt": 1.544,
-          "gap": 6.43,
-          "gap_opt": 6.46,
-          "noise": 0.014313597918022121
+          "ms": 1.535,
+          "ms_opt": 1.561,
+          "gap": 6.42,
+          "gap_opt": 6.53,
+          "noise": 0.011726384364820847
         }
       ],
       "status": "unprobed",
@@ -437,34 +449,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-170",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/51",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 14,
+      "id": "feature_detection_fast",
+      "tutorial": "tutorial_feature_detection",
+      "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
+      "opencv_ms": 0.565,
+      "best_crate": "image/imageproc",
+      "best_gap": 5.64,
+      "ms_lost": 2.619,
+      "parity": "mismatch",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.507,
+          "ms_opt": 3.184,
+          "gap": 6.21,
+          "gap_opt": 5.64,
+          "noise": 0.03934987168520103
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 7.587,
+          "ms_opt": 7.088,
+          "gap": 13.43,
+          "gap_opt": 12.55,
+          "noise": 0.034005535784895215
+        }
+      ],
+      "status": "known-difference",
+      "root_cause": null,
+      "fix_target": null,
+      "plane": "RUSTCVGUID-175",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
+      "owner": null,
+      "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; upstream issue pending."
+    },
+    {
+      "rank": 15,
       "id": "sobel",
       "tutorial": "tutorial_sobel_derivatives",
       "operation": "Sobel X derivative",
       "opencv_ms": 0.142,
       "best_crate": "oximedia-cv",
-      "best_gap": 5.38,
-      "ms_lost": 0.622,
+      "best_gap": 5.53,
+      "ms_lost": 0.643,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.847,
-          "ms_opt": 3.895,
-          "gap": 27.09,
-          "gap_opt": 27.43,
-          "noise": 0.005718741876787107
+          "ms": 3.842,
+          "ms_opt": 3.865,
+          "gap": 27.06,
+          "gap_opt": 27.22,
+          "noise": 0.003643935450286309
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.799,
-          "ms_opt": 0.764,
-          "gap": 5.63,
-          "gap_opt": 5.38,
-          "noise": 0.030037546933667083
+          "ms": 0.785,
+          "ms_opt": 0.785,
+          "gap": 5.53,
+          "gap_opt": 5.53,
+          "noise": 0.01019108280254777
         }
       ],
       "status": "unprobed",
@@ -472,26 +521,27 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-171",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/52",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 15,
+      "rank": 16,
       "id": "basic_linear_transform",
       "tutorial": "tutorial_basic_linear_transform",
       "operation": "Contrast + brightness (a=1.3, b=40)",
       "opencv_ms": 0.064,
       "best_crate": "image/imageproc",
-      "best_gap": 5.34,
-      "ms_lost": 0.278,
+      "best_gap": 5.37,
+      "ms_lost": 0.28,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.453,
-          "ms_opt": 0.342,
-          "gap": 7.08,
-          "gap_opt": 5.34,
-          "noise": 0.022075055187637967
+          "ms": 0.435,
+          "ms_opt": 0.344,
+          "gap": 6.8,
+          "gap_opt": 5.37,
+          "noise": 0.01839080459770115
         }
       ],
       "status": "unprobed",
@@ -499,69 +549,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-172",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/53",
-      "owner": null
-    },
-    {
-      "rank": 16,
-      "id": "laplace",
-      "tutorial": "tutorial_laplace_operator",
-      "operation": "Gaussian blur + Laplacian edge",
-      "opencv_ms": 0.682,
-      "best_crate": "image/imageproc",
-      "best_gap": 5.07,
-      "ms_lost": 2.778,
-      "parity": "mismatch",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 3.46,
-          "ms_opt": 3.691,
-          "gap": 5.07,
-          "gap_opt": 5.41,
-          "noise": 0.006936416184971098
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 5.729,
-          "ms_opt": 6.519,
-          "gap": 8.4,
-          "gap_opt": 9.56,
-          "noise": 0.0076802234246814444
-        }
-      ],
-      "status": "probe-mismatch",
-      "root_cause": null,
-      "fix_target": null,
-      "plane": "RUSTCVGUID-173",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/54",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 17,
+      "id": "feature_description",
+      "tutorial": "tutorial_feature_description",
+      "operation": "FAST + BRIEF matching (t=20, 250 kp, <= 32 bits)",
+      "opencv_ms": 2.398,
+      "best_crate": "image/imageproc",
+      "best_gap": 4.91,
+      "ms_lost": 9.371,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 12.52,
+          "ms_opt": 11.769,
+          "gap": 5.22,
+          "gap_opt": 4.91,
+          "noise": 0.04121405750798722
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 16.493,
+          "ms_opt": 16.196,
+          "gap": 6.88,
+          "gap_opt": 6.75,
+          "noise": 0.02025101558236828
+        }
+      ],
+      "status": "unprobed",
+      "root_cause": null,
+      "fix_target": null,
+      "plane": "RUSTCVGUID-185",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 18,
       "id": "filter_2d",
       "tutorial": "tutorial_filter_2d",
       "operation": "2D convolution (5x5 box kernel)",
       "opencv_ms": 0.662,
       "best_crate": "image/imageproc",
-      "best_gap": 4.06,
-      "ms_lost": 2.023,
+      "best_gap": 4.28,
+      "ms_lost": 2.17,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.374,
-          "ms_opt": 2.685,
-          "gap": 5.1,
-          "gap_opt": 4.06,
-          "noise": 0.07172495554238292
+          "ms": 3.384,
+          "ms_opt": 2.832,
+          "gap": 5.11,
+          "gap_opt": 4.28,
+          "noise": 0.08215130023640663
         },
         {
           "name": "oximedia-cv",
-          "ms": 8.363,
-          "ms_opt": 9.6,
+          "ms": 8.362,
+          "ms_opt": 8.494,
           "gap": 12.63,
-          "gap_opt": 14.5,
-          "noise": 0.008131053449719
+          "gap_opt": 12.83,
+          "noise": 0.004066012915570438
         }
       ],
       "status": "unprobed",
@@ -569,61 +621,27 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-174",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
-      "owner": null
-    },
-    {
-      "rank": 18,
-      "id": "feature_detection_fast",
-      "tutorial": "tutorial_feature_detection",
-      "operation": "FAST-9 keypoints (t=30, max=250)",
-      "opencv_ms": 0.574,
-      "best_crate": "image/imageproc",
-      "best_gap": 3.88,
-      "ms_lost": 1.655,
-      "parity": "mismatch",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 2.414,
-          "ms_opt": 2.229,
-          "gap": 4.21,
-          "gap_opt": 3.88,
-          "noise": 0.06628003314001657
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 7.151,
-          "ms_opt": 7.001,
-          "gap": 12.46,
-          "gap_opt": 12.2,
-          "noise": 0.04307089917494057
-        }
-      ],
-      "status": "probe-mismatch",
-      "root_cause": null,
-      "fix_target": null,
-      "plane": "RUSTCVGUID-175",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 19,
       "id": "distance_transform",
       "tutorial": "tutorial_distance_transform",
       "operation": "Distance transform (L2)",
-      "opencv_ms": 0.248,
+      "opencv_ms": 0.25,
       "best_crate": "image/imageproc",
-      "best_gap": 3.33,
-      "ms_lost": 0.579,
+      "best_gap": 3.26,
+      "ms_lost": 0.565,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.827,
-          "ms_opt": 0.942,
-          "gap": 3.33,
-          "gap_opt": 3.8,
-          "noise": 0.04353083434099154
+          "ms": 0.815,
+          "ms_opt": 0.852,
+          "gap": 3.26,
+          "gap_opt": 3.41,
+          "noise": 0.0098159509202454
         }
       ],
       "status": "unprobed",
@@ -631,34 +649,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-176",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/57",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
       "rank": 20,
+      "id": "hough_lines",
+      "tutorial": "tutorial_hough_lines",
+      "operation": "Canny + standard Hough lines",
+      "opencv_ms": 6.612,
+      "best_crate": "image/imageproc",
+      "best_gap": 3.22,
+      "ms_lost": 14.688,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 23.222,
+          "ms_opt": 21.3,
+          "gap": 3.51,
+          "gap_opt": 3.22,
+          "noise": 0.004134010851778486
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 43.283,
+          "ms_opt": 41.513,
+          "gap": 6.55,
+          "gap_opt": 6.28,
+          "noise": 0.007115957766328581
+        }
+      ],
+      "status": "unprobed",
+      "root_cause": null,
+      "fix_target": null,
+      "plane": "RUSTCVGUID-179",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/60",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 21,
       "id": "psnr",
       "tutorial": "tutorial_video_input_psnr_ssim",
       "operation": "PSNR",
-      "opencv_ms": 0.147,
+      "opencv_ms": 0.146,
       "best_crate": "image/imageproc",
-      "best_gap": 2.65,
-      "ms_lost": 0.243,
+      "best_gap": 2.71,
+      "ms_lost": 0.25,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.393,
-          "ms_opt": 0.39,
-          "gap": 2.67,
-          "gap_opt": 2.65,
-          "noise": 0.02035623409669211
+          "ms": 0.396,
+          "ms_opt": 0.396,
+          "gap": 2.71,
+          "gap_opt": 2.71,
+          "noise": 0.0
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.406,
-          "ms_opt": 0.4,
-          "gap": 2.76,
-          "gap_opt": 2.72,
-          "noise": 0.029556650246305417
+          "ms": 0.407,
+          "ms_opt": 0.407,
+          "gap": 2.79,
+          "gap_opt": 2.79,
+          "noise": 0.0
         }
       ],
       "status": "unprobed",
@@ -666,34 +721,71 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-177",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/58",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 21,
+      "rank": 22,
+      "id": "laplace",
+      "tutorial": "tutorial_laplace_operator",
+      "operation": "Gaussian blur + Laplacian edge",
+      "opencv_ms": 0.735,
+      "best_crate": "image/imageproc",
+      "best_gap": 2.65,
+      "ms_lost": 1.212,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.464,
+          "ms_opt": 1.947,
+          "gap": 4.71,
+          "gap_opt": 2.65,
+          "noise": 0.005196304849884526
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 5.701,
+          "ms_opt": 5.774,
+          "gap": 7.76,
+          "gap_opt": 7.86,
+          "noise": 0.00456060340291177
+        }
+      ],
+      "status": "unprobed",
+      "root_cause": null,
+      "fix_target": null,
+      "plane": "RUSTCVGUID-173",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/54",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 23,
       "id": "ssim",
       "tutorial": "tutorial_video_input_psnr_ssim",
       "operation": "SSIM (11x11 Gaussian)",
-      "opencv_ms": 3.121,
+      "opencv_ms": 3.066,
       "best_crate": "image/imageproc",
-      "best_gap": 2.03,
-      "ms_lost": 3.226,
+      "best_gap": 1.99,
+      "ms_lost": 3.038,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 6.605,
-          "ms_opt": 6.347,
-          "gap": 2.12,
+          "ms": 6.104,
+          "ms_opt": 6.222,
+          "gap": 1.99,
           "gap_opt": 2.03,
-          "noise": 0.1574564723694171
+          "noise": 0.1435124508519004
         },
         {
           "name": "oximedia-cv",
-          "ms": 102.559,
-          "ms_opt": 88.602,
-          "gap": 32.86,
-          "gap_opt": 28.39,
-          "noise": 0.027457366003958695
+          "ms": 108.047,
+          "ms_opt": 93.216,
+          "gap": 35.24,
+          "gap_opt": 30.4,
+          "noise": 0.03877942006719298
         }
       ],
       "status": "unprobed",
@@ -701,69 +793,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-178",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/59",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 22,
-      "id": "hough_lines",
-      "tutorial": "tutorial_hough_lines",
-      "operation": "Canny + standard Hough lines",
-      "opencv_ms": 12.016,
-      "best_crate": "image/imageproc",
-      "best_gap": 1.74,
-      "ms_lost": 8.844,
-      "parity": "mismatch",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 22.174,
-          "ms_opt": 20.86,
-          "gap": 1.85,
-          "gap_opt": 1.74,
-          "noise": 0.02390186705150176
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 42.807,
-          "ms_opt": 39.333,
-          "gap": 3.56,
-          "gap_opt": 3.27,
-          "noise": 0.01116639801901558
-        }
-      ],
-      "status": "probe-mismatch",
-      "root_cause": null,
-      "fix_target": null,
-      "plane": "RUSTCVGUID-179",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/60",
-      "owner": null
-    },
-    {
-      "rank": 23,
+      "rank": 24,
       "id": "find_contours",
       "tutorial": "tutorial_find_contours",
       "operation": "Find contours + approxPolyDP",
-      "opencv_ms": 0.157,
+      "opencv_ms": 0.158,
       "best_crate": "oxipix",
       "best_gap": 1.61,
-      "ms_lost": 0.095,
+      "ms_lost": 0.096,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.513,
-          "ms_opt": 0.477,
-          "gap": 3.27,
-          "gap_opt": 3.04,
-          "noise": 0.02729044834307992
+          "ms": 0.519,
+          "ms_opt": 0.478,
+          "gap": 3.28,
+          "gap_opt": 3.03,
+          "noise": 0.019267822736030827
         },
         {
           "name": "oxipix",
-          "ms": 0.265,
-          "ms_opt": 0.252,
-          "gap": 1.69,
+          "ms": 0.262,
+          "ms_opt": 0.254,
+          "gap": 1.66,
           "gap_opt": 1.61,
-          "noise": 0.01509433962264151
+          "noise": 0.007633587786259542
         }
       ],
       "status": "unprobed",
@@ -771,34 +829,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-180",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/61",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 24,
+      "rank": 25,
       "id": "threshold",
       "tutorial": "tutorial_threshold",
       "operation": "Otsu binary threshold",
-      "opencv_ms": 0.03,
+      "opencv_ms": 0.031,
       "best_crate": "image/imageproc",
-      "best_gap": 1.5,
+      "best_gap": 1.48,
       "ms_lost": 0.015,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.045,
-          "ms_opt": 0.045,
-          "gap": 1.5,
-          "gap_opt": 1.5,
-          "noise": 0.044444444444444446
+          "ms": 0.046,
+          "ms_opt": 0.046,
+          "gap": 1.48,
+          "gap_opt": 1.48,
+          "noise": 0.0
         },
         {
           "name": "oxipix",
-          "ms": 0.16,
+          "ms": 0.162,
           "ms_opt": 0.139,
-          "gap": 5.33,
-          "gap_opt": 4.63,
-          "noise": 0.025
+          "gap": 5.23,
+          "gap_opt": 4.48,
+          "noise": 0.024691358024691357
         }
       ],
       "status": "unprobed",
@@ -806,34 +865,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-181",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 25,
+      "rank": 26,
       "id": "threshold_inRange",
       "tutorial": "tutorial_threshold_inRange",
       "operation": "HSV red range mask",
       "opencv_ms": 0.125,
       "best_crate": "image/imageproc",
-      "best_gap": 1.43,
-      "ms_lost": 0.054,
+      "best_gap": 1.46,
+      "ms_lost": 0.057,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.193,
-          "ms_opt": 0.179,
-          "gap": 1.54,
-          "gap_opt": 1.43,
+          "ms": 0.197,
+          "ms_opt": 0.182,
+          "gap": 1.58,
+          "gap_opt": 1.46,
           "noise": 0.0
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.446,
-          "ms_opt": 0.368,
-          "gap": 3.57,
-          "gap_opt": 2.94,
-          "noise": 0.004484304932735426
+          "ms": 0.452,
+          "ms_opt": 0.374,
+          "gap": 3.62,
+          "gap_opt": 2.99,
+          "noise": 0.004424778761061947
         }
       ],
       "status": "unprobed",
@@ -841,34 +901,35 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-182",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/63",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     },
     {
-      "rank": 26,
+      "rank": 27,
       "id": "equalize",
       "tutorial": "tutorial_histogram_equalization",
       "operation": "Histogram equalisation",
-      "opencv_ms": 0.254,
+      "opencv_ms": 0.255,
       "best_crate": "oximedia-cv",
-      "best_gap": 1.2,
-      "ms_lost": 0.05,
+      "best_gap": 1.21,
+      "ms_lost": 0.054,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.364,
-          "ms_opt": 0.355,
-          "gap": 1.43,
+          "ms": 0.357,
+          "ms_opt": 0.356,
+          "gap": 1.4,
           "gap_opt": 1.4,
-          "noise": 0.07142857142857142
+          "noise": 0.011204481792717087
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.316,
-          "ms_opt": 0.304,
-          "gap": 1.24,
-          "gap_opt": 1.2,
-          "noise": 0.05063291139240506
+          "ms": 0.31,
+          "ms_opt": 0.309,
+          "gap": 1.22,
+          "gap_opt": 1.21,
+          "noise": 0.0064516129032258064
         }
       ],
       "status": "unprobed",
@@ -876,7 +937,8 @@
       "fix_target": null,
       "plane": "RUSTCVGUID-183",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/64",
-      "owner": null
+      "owner": null,
+      "known_difference": null
     }
   ],
   "at_parity": [
@@ -884,28 +946,28 @@
       "rank": 0,
       "id": "feature_detection_orb",
       "tutorial": "tutorial_feature_detection",
-      "operation": "ORB keypoints (t=30, max=250)",
-      "opencv_ms": 6.695,
+      "operation": "Oriented keypoints (t=30, max=250)",
+      "opencv_ms": 6.544,
       "best_crate": "image/imageproc",
-      "best_gap": 0.32,
-      "ms_lost": -4.553,
+      "best_gap": 0.34,
+      "ms_lost": -4.339,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.327,
-          "ms_opt": 2.142,
+          "ms": 2.275,
+          "ms_opt": 2.205,
           "gap": 0.35,
-          "gap_opt": 0.32,
-          "noise": 0.07477438762354963
+          "gap_opt": 0.34,
+          "noise": 0.007032967032967033
         },
         {
           "name": "oximedia-cv",
-          "ms": 4.021,
-          "ms_opt": 3.573,
-          "gap": 0.6,
-          "gap_opt": 0.53,
-          "noise": 0.03780154190499876
+          "ms": 7.093,
+          "ms_opt": 7.113,
+          "gap": 1.08,
+          "gap_opt": 1.09,
+          "noise": 0.005639362752009023
         }
       ],
       "status": "unprobed",
@@ -913,42 +975,8 @@
       "fix_target": null,
       "plane": null,
       "issue": null,
-      "owner": null
-    },
-    {
-      "rank": 0,
-      "id": "feature_description",
-      "tutorial": "tutorial_feature_description",
-      "operation": "Binary feature matching (250 kp)",
-      "opencv_ms": 4.333,
-      "best_crate": "oximedia-cv",
-      "best_gap": 0.54,
-      "ms_lost": -1.99,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 4.08,
-          "ms_opt": 3.784,
-          "gap": 0.94,
-          "gap_opt": 0.87,
-          "noise": 0.042156862745098035
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 2.787,
-          "ms_opt": 2.343,
-          "gap": 0.64,
-          "gap_opt": 0.54,
-          "noise": 0.07534983853606028
-        }
-      ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
-      "plane": null,
-      "issue": null,
-      "owner": null
+      "owner": null,
+      "known_difference": null
     }
   ]
 }

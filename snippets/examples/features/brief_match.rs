@@ -1,6 +1,7 @@
 //! OpenCV tutorial `tutorial_feature_description` in pure Rust: FAST-9 keypoints + 256-bit BRIEF descriptors.
 //! Run with `cargo run -p cvg-snippets --example brief_match`.
 
+use cvg_snippets::brief::{self, suppress_non_max};
 use cvg_snippets::vis::{ConsensusResult, MatchPair, consensus_matches, match_report};
 use image::GrayImage;
 use imageproc::{
@@ -12,34 +13,33 @@ use imageproc::{
     point::Point,
 };
 
-/// A deterministic set of 256 BRIEF test pairs inside the 31x31 patch (`0..31`), so results are repeatable in tests and WASM.
+/// The shared deterministic set of 256 BRIEF test pairs inside the 31x31 patch, as `imageproc` test pairs.
 pub fn fixed_pairs() -> Vec<TestPair> {
-    let mut state = 0x5EED_CAFE_1234_5678_u64;
-    let mut next_coord = || {
-        state = state
-            .wrapping_mul(6_364_136_223_846_793_005)
-            .wrapping_add(1_442_695_040_888_963_407);
-        ((state >> 32) % 31) as u32
-    };
-    (0..256)
-        .map(|_| TestPair {
-            p0: Point::new(next_coord(), next_coord()),
-            p1: Point::new(next_coord(), next_coord()),
+    brief::pairs()
+        .iter()
+        .map(|&(x0, y0, x1, y1)| TestPair {
+            p0: Point::new(x0, y0),
+            p1: Point::new(x1, y1),
         })
         .collect()
 }
 
-/// Extracts at most `max` FAST-9 corners (keeping 17 px clear of edges for the 31x31 BRIEF patch) and computes 256-bit BRIEF descriptors.
+/// Extracts at most `max` FAST-9 corners (thinned by 3x3 non-max suppression, kept 17 px clear of the edges
+/// for the 31x31 BRIEF patch) and computes 256-bit BRIEF descriptors.
 pub fn extract_brief(input: &GrayImage, threshold: u8, max: usize) -> Vec<BriefDescriptor> {
     let (w, h) = input.dimensions();
     if w <= 34 || h <= 34 {
         return Vec::new();
     }
-    let mut corners = corners_fast9(input, threshold);
-    corners.retain(|c| c.x > 16 && c.x + 16 < w && c.y > 16 && c.y + 16 < h);
-    corners.sort_by(|a, b| b.score.total_cmp(&a.score));
+    let all: Vec<(u32, u32, f32)> = corners_fast9(input, threshold)
+        .iter()
+        .map(|c| (c.x, c.y, c.score))
+        .collect();
+    let mut corners = suppress_non_max(&all);
+    corners.retain(|&(x, y, _)| brief::fits(x, y, w, h));
+    corners.sort_by(|a, b| b.2.total_cmp(&a.2));
     corners.truncate(max);
-    let points: Vec<Point<u32>> = corners.iter().map(|c| Point::new(c.x, c.y)).collect();
+    let points: Vec<Point<u32>> = corners.iter().map(|&(x, y, _)| Point::new(x, y)).collect();
     if points.is_empty() {
         return Vec::new();
     }

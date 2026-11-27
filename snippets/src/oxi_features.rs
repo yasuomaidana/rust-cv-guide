@@ -2,8 +2,10 @@
 //! suppression on) for corners, the shared BRIEF test pattern for descriptors, and oximedia's own
 //! `BriefDescriptor` for storage and Hamming matching.
 //!
-//! `oximedia_cv::feature_extract::OrbExtractor` is deliberately not used: it runs a scale-space (SIFT)
-//! detector and a fixed-grid BRIEF, so its output cannot be compared with FAST + BRIEF.
+//! `oximedia_cv::feature_extract::OrbExtractor` is deliberately not used: it takes 3x3 local maxima of
+//! the raw pixel value and describes them with a fixed, unsteered grid, so its output cannot be compared
+//! with FAST + BRIEF (https://github.com/cool-japan/oximedia/issues/33). Its `FastDetector` misses corners
+//! whose arc wraps around the ring (https://github.com/cool-japan/oximedia/issues/32).
 
 use crate::brief::{self, Integral};
 use image::GrayImage;

@@ -20,9 +20,9 @@
           "noise": 0.0010992616899097622
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV computes the cross-correlation with a block-wise DFT (templmatch.cpp `convolve_dft`, `getOptimalDFTSize`) and gets the window energies from integral images, so the cost does not grow with the template area. `imageproc::template_matching::match_template` evaluates the sum of squared errors directly for every position: 411 x 261 positions x 1600 template pixels is about 170M multiply-adds, single threaded (its `rayon` feature is off).",
+      "fix_target": "oxipix wave 1: SSE as `sum(I^2 window) - 2 * corr + sum(T^2)`, with the correlation by FFT (`realfft`) and the window energy from an integral image.",
       "plane": "RUSTCVGUID-158",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/39",
       "owner": null,
@@ -56,9 +56,9 @@
           "noise": 0.004765481339514647
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "median_blur.simd.hpp runs sorting networks for 3x3 and 5x5 windows vectorised across 16 pixels and an O(1) column-histogram method only for large kernels. `imageproc::filter::median_filter` already uses a sliding histogram, but it is scalar, one 256-bin histogram per channel, with a median search per pixel; for a 5x5 window that is far more work than a SIMD network.",
+      "fix_target": "oxipix wave 1: selection network (min/max passes) over lanes of pixels for radius 1 and 2, histogram fallback for larger radii.",
       "plane": "RUSTCVGUID-159",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/40",
       "owner": null,
@@ -92,9 +92,9 @@
           "noise": 0.0024110910186859553
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV erodes with separable running minima on 16 pixels at a time (morph.simd.hpp `MorphRowVec` / `MorphColumnVec`, `ErodeVec8u`). `imageproc::morphology::erode` computes a full distance transform of the mask and thresholds it, which is O(pixels) but with a heavy constant and unrelated to the window size.",
+      "fix_target": "oxipix wave 1: separable min/max over shifted row slices (vectorises to 16 byte lanes), van Herk / Gil-Werman for large radii.",
       "plane": "RUSTCVGUID-160",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/41",
       "owner": null,
@@ -128,9 +128,9 @@
           "noise": 0.0022675736961451248
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's `pyrDown` does the 1-4-6-4-1 blur in fixed point, horizontal pass into an int row buffer and vertical pass producing only the even rows, SIMD for 1 to 4 channels (pyramids.cpp `PyrDownVecH` / `PyrDownVecV`). The guide's `imageproc::filter::separable_filter_equal` blurs every pixel in f32 with a generic clamped lookup and then throws away three quarters of the result; the oximedia version also builds an intermediate float image.",
+      "fix_target": "oxipix wave 2: integer separable pass that only computes the kept even rows and columns, per-channel loops over slices.",
       "plane": "RUSTCVGUID-161",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/42",
       "owner": null,
@@ -156,9 +156,9 @@
           "noise": 0.001456303158938448
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's gradient method (hough.cpp, `HoughCircles`) lets each edge pixel vote only along its gradient direction in a 2-D accumulator, then finds the radius from the distances to the centre candidates. `oximedia_cv`'s transform votes for every radius around every edge pixel (a 3-D accumulator, 26 radii here) and builds it from a Canny that is itself 7x slower than OpenCV's.",
+      "fix_target": "oxipix wave 3: gradient-direction circle Hough on top of the oxipix Sobel/Canny of wave 2.",
       "plane": "RUSTCVGUID-162",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/43",
       "owner": null,
@@ -192,9 +192,9 @@
           "noise": 0.006012454369765944
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "Same mechanism as erosion, twice (opening = erode then dilate): `imageproc::morphology::grayscale_erode/grayscale_dilate` with a `Mask::square(3)` visit every mask offset for every pixel, O(k^2) with bounds handling, against OpenCV's separable vector min/max. The top-hat then subtracts with a per-pixel `get_pixel` closure.",
+      "fix_target": "oxipix wave 1: separable grey-scale erode/dilate, opening/closing and a slice-level top-hat.",
       "plane": "RUSTCVGUID-163",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/44",
       "owner": null,
@@ -228,9 +228,9 @@
           "noise": 0.002558089959496909
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's `GaussianBlur` for 8-bit images is a separable fixed-point convolution (smooth.simd.hpp `hlineSmooth` / `vlineSmooth`) with integer kernel weights. `imageproc::filter::gaussian_blur_f32` converts to f32, runs two generic clamped passes and converts back; the work per sample is several times larger.",
+      "fix_target": "oxipix wave 2: separable integer Gaussian (kernel scaled to 2^k) on u8 slices, one row buffer, no per-pixel bounds checks in the interior.",
       "plane": "RUSTCVGUID-165",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/46",
       "owner": null,
@@ -264,9 +264,9 @@
           "noise": 0.00489485134155185
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV precomputes the spatial weights once and a 256-entry table for the colour weights (bilateral_filter.dispatch.cpp `space_weight`, `color_weight`), so each tap is two table reads. `imageproc::filter::bilateral_filter` evaluates the Gaussian of the colour distance per tap (a fast `exp` approximation, no table) through the `Pixel` API.",
+      "fix_target": "oxipix wave 2: bilateral with a spatial table and a 256-entry colour LUT on interleaved u8 rows.",
       "plane": "RUSTCVGUID-164",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
       "owner": null,
@@ -300,9 +300,9 @@
           "noise": 0.022277590502711414
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV warps with `remapBilinear` on fixed-point coordinates (imgwarp.cpp, `INTER_BITS`), computing the source position incrementally along each row and vectorising the interpolation. `imageproc::geometric_transformations::warp_into` / the oxipix unwarp compute a full projective division and an f32 bilinear sample per output pixel through the `Pixel` API.",
+      "fix_target": "oxipix wave 3: row-incremental projective coordinates with fixed-point bilinear sampling on u8 rows.",
       "plane": "RUSTCVGUID-167",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/48",
       "owner": null,
@@ -336,9 +336,9 @@
           "noise": 0.003715334601264983
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's Canny (canny.cpp) takes 16-bit Sobel gradients, classifies the direction by comparing `|gy|` with tan(22.5 deg) x `|gx|` (no trigonometry), keeps the candidates in a stack and runs hysteresis over a padded map. `imageproc::edges::canny` computes `atan2` for every pixel in its non-maximum suppression, works on f32 images and runs a generic clamped Sobel, in addition to its own Gaussian blur.",
+      "fix_target": "oxipix wave 2: i16 separable Sobel, integer direction test, stack-based hysteresis (needs the wave 2 Sobel and Gaussian).",
       "plane": "RUSTCVGUID-166",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/47",
       "owner": null,
@@ -372,9 +372,9 @@
           "noise": 0.00862533692722372
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "Same mechanism as homography, for affine: imgwarp.cpp precomputes the 2x3 matrix in fixed point and steps the source coordinates by constants along each row; the interpolation is SIMD. The Rust crates evaluate the transform and an f32 bilinear sample per pixel through generic accessors.",
+      "fix_target": "oxipix wave 3: fixed-point incremental bilinear warp (shared with homography).",
       "plane": "RUSTCVGUID-168",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
       "owner": null,
@@ -408,9 +408,9 @@
           "noise": 0.007797270955165692
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "`cv::addWeighted` is one SIMD loop over the raw buffers with the weights as constants (arithm.cpp). The Rust versions walk `Pixel` iterators with bounds checks and per-channel f32 arithmetic, and allocate the output image.",
+      "fix_target": "oxipix wave 3: slice-level fixed-point `a * w1 + b * w2` over `as_raw()` buffers that the compiler vectorises.",
       "plane": "RUSTCVGUID-169",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/50",
       "owner": null,
@@ -444,9 +444,9 @@
           "noise": 0.011726384364820847
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's `blur` keeps running sums along rows and columns (box_filter.simd.hpp `RowSum` / `ColumnSum`), O(1) per pixel for any window size. The guide builds a box from `separable_filter_equal` with f32 taps, which costs O(window) per pixel.",
+      "fix_target": "oxipix wave 2: running-sum box blur on u8 slices.",
       "plane": "RUSTCVGUID-170",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/51",
       "owner": null,
@@ -480,13 +480,13 @@
           "noise": 0.034005535784895215
         }
       ],
-      "status": "known-difference",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's FAST rejects most pixels with a high-speed test on the four compass pixels (`pixel[0]`, `pixel[8]`, then 4/12, 2/10, ...) and evaluates 16 pixels per step with SIMD (fast.cpp L205-L260). `imageproc::corners::corners_fast9` evaluates the full ring for every pixel and then computes a score, and the non-max suppression and sorting are added on top; `oximedia_cv::FastDetector` has no early-out either (and misses wrapped arcs, see its issue).",
+      "fix_target": "oxipix wave 3: FAST-9 with compass early-out, 3x3 non-max suppression and top-N selection with `select_nth_unstable`.",
       "plane": "RUSTCVGUID-175",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
       "owner": null,
-      "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; upstream issue pending."
+      "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; reported upstream as https://github.com/cool-japan/oximedia/issues/32."
     },
     {
       "rank": 15,
@@ -516,9 +516,9 @@
           "noise": 0.01019108280254777
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV computes Sobel as separable [1 2 1] and [-1 0 1] passes on 16-bit data with SIMD (deriv.cpp, filter.simd.hpp). `imageproc::gradients::horizontal_sobel` uses a generic 3x3 `filter_clamped` with per-pixel bounds checks and i16 conversion; the snippet then normalises to u8 per pixel.",
+      "fix_target": "oxipix wave 2: separable i16 Sobel on slices, optional `convertScaleAbs` style output.",
       "plane": "RUSTCVGUID-171",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/52",
       "owner": null,
@@ -544,9 +544,9 @@
           "noise": 0.01839080459770115
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "`Mat::convertTo(dst, -1, alpha, beta)` is one SIMD saturating loop over the buffer. The Rust snippet maps every `Pixel` with an f32 multiply, add and clamp, and allocates the output.",
+      "fix_target": "oxipix wave 3: slice-level fixed-point scale and shift with saturation.",
       "plane": "RUSTCVGUID-172",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/53",
       "owner": null,
@@ -580,9 +580,9 @@
           "noise": 0.02025101558236828
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "The row is dominated by detection (two FAST runs, see `feature_detection_fast`), followed by the descriptor and Hamming matching of 250 x 250 pairs. OpenCV's BRIEF samples with integral images and compares byte-packed bits with SIMD popcount; the Rust matcher is a scalar double loop over `u128` pairs and `Vec<bool>`-style intermediate results in the shared sampler.",
+      "fix_target": "oxipix wave 3: FAST (above), integral-image BRIEF writing straight into `[u128; 2]`, matcher over packed words with `count_ones`.",
       "plane": "RUSTCVGUID-185",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
       "owner": null,
@@ -616,9 +616,9 @@
           "noise": 0.004066012915570438
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "`cv::filter2D` with a 5x5 kernel runs a SIMD correlation (filter.simd.hpp) on rows that are padded once, so the inner loop has no bounds checks. `imageproc::filter::filter3x3`/the guide's generic kernel path clamps coordinates for every tap and converts through f32 per channel.",
+      "fix_target": "oxipix wave 2: padded-row f32 correlation with a const-generic kernel size, plus a separable fast path when the kernel is rank 1.",
       "plane": "RUSTCVGUID-174",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
       "owner": null,
@@ -644,9 +644,9 @@
           "noise": 0.0098159509202454
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's `distanceTransform(DIST_L2, 3)` is a two-pass 3x3 chamfer approximation (distransform.cpp, forward and backward mask), i.e. it does less work than an exact Euclidean transform. `imageproc::distance_transform` is exact (Felzenszwalb and Huttenlocher style) and uses wider intermediate types, so part of the gap is different work, not slowness.",
+      "fix_target": "oxipix wave 3: 3x3 chamfer variant with an exact-Euclidean option, and mark the row's semantic difference.",
       "plane": "RUSTCVGUID-176",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/57",
       "owner": null,
@@ -680,9 +680,9 @@
           "noise": 0.007115957766328581
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "Almost all of the time is the Canny before the transform (about 18 of 20 ms); OpenCV's `HoughLinesStandard` (hough.cpp) uses precomputed sine and cosine tables and integer rho. The transform itself is 1.0 to 1.5x of OpenCV's.",
+      "fix_target": "Follows the wave 2 Canny; no separate kernel needed.",
       "plane": "RUSTCVGUID-179",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/60",
       "owner": null,
@@ -716,9 +716,9 @@
           "noise": 0.0
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV computes PSNR with `absdiff`, a float conversion, a multiply and `sum`, each a SIMD pass. The Rust version converts through `Pixel` iterators and accumulates in f64 with bounds checks.",
+      "fix_target": "oxipix wave 3: single fused pass over two slices accumulating integer squared differences.",
       "plane": "RUSTCVGUID-177",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/58",
       "owner": null,
@@ -752,9 +752,9 @@
           "noise": 0.00456060340291177
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's 3x3 Laplacian on 8-bit input is a specialised SIMD kernel producing 16-bit output. `imageproc::filter::laplacian_filter` runs the generic clamped 3x3 path, and the snippet adds a Gaussian blur and a per-pixel normalisation pass.",
+      "fix_target": "oxipix wave 2: i16 3x3 Laplacian on padded rows (shares the Sobel code) with slice-level normalisation.",
       "plane": "RUSTCVGUID-173",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/54",
       "owner": null,
@@ -788,9 +788,9 @@
           "noise": 0.03877942006719298
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's SSIM sample is five Gaussian blurs of f32 images plus element-wise operations, all vectorised. The Rust version uses generic f32 blurs and per-pixel loops; it is already within 2x.",
+      "fix_target": "oxipix wave 3: reuse the wave 2 separable Gaussian in f32 and fuse the element-wise maths.",
       "plane": "RUSTCVGUID-178",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/59",
       "owner": null,
@@ -824,9 +824,9 @@
           "noise": 0.007633587786259542
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's `findContours` (contours_new.cpp) is a tight border-following loop on a padded byte image; the oxipix tracer is within 1.6x already, the gap is the per-step bounds checks and a `Vec<Point>` per contour.",
+      "fix_target": "oxipix wave 3: padded-image tracing without bounds checks.",
       "plane": "RUSTCVGUID-180",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/61",
       "owner": null,
@@ -860,9 +860,9 @@
           "noise": 0.024691358024691357
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV's Otsu threshold builds the histogram and applies a SIMD compare (thresh.cpp). The Rust versions build the histogram through `Pixel` iterators and write the output with `put_pixel`.",
+      "fix_target": "oxipix wave 3: histogram and threshold on raw slices.",
       "plane": "RUSTCVGUID-181",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
       "owner": null,
@@ -896,9 +896,9 @@
           "noise": 0.004424778761061947
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "OpenCV converts to HSV with a SIMD `cvtColor` (color_hsv.simd.hpp) and `inRange` with SIMD compares. The Rust versions convert per pixel with f32 maths and compare through `Pixel` iterators.",
+      "fix_target": "oxipix wave 3: integer HSV conversion and range test fused in one slice pass.",
       "plane": "RUSTCVGUID-182",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/63",
       "owner": null,
@@ -932,9 +932,9 @@
           "noise": 0.0064516129032258064
         }
       ],
-      "status": "unprobed",
-      "root_cause": null,
-      "fix_target": null,
+      "status": "researched",
+      "root_cause": "Both stages are cheap in OpenCV (histogram, 256-entry LUT, `LUT` SIMD apply); the Rust versions are close (1.2x). The remaining gap is the per-pixel `get_pixel` / `put_pixel` access.",
+      "fix_target": "oxipix wave 3: slice-level histogram and LUT application.",
       "plane": "RUSTCVGUID-183",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/64",
       "owner": null,

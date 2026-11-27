@@ -107,6 +107,7 @@ fn keypoints_need_room_for_the_patch(#[case] x: u32, #[case] y: u32, #[case] fit
     assert_eq!(brief::fits(x, y, 100, 100), fits);
 }
 
+/// Reported upstream: https://github.com/image-rs/imageproc/issues/825
 #[test]
 fn imageproc_ignores_the_first_test_of_each_128_bit_chunk() {
     // On a left-to-right ramp every test "left mean < right mean" is true, so a correct descriptor is all ones.

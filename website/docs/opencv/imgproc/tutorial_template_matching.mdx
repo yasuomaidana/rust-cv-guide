@@ -55,16 +55,23 @@ pub const METHODS: [MatchTemplateMethod; 4] = [
     MatchTemplateMethod::CrossCorrelationNormalized,
 ];
 
+/// Crops a rectangular `(w x h)` patch at `(x, y)`, clamped cleanly inside `grey`.
+pub fn crop_template(grey: &GrayImage, x: u32, y: u32, w: u32, h: u32) -> (GrayImage, (u32, u32)) {
+    let tw = w.clamp(4, grey.width().max(4)).min(grey.width());
+    let th = h.clamp(4, grey.height().max(4)).min(grey.height());
+    let tx = x.min(grey.width().saturating_sub(tw));
+    let ty = y.min(grey.height().saturating_sub(th));
+    (
+        imageops::crop_imm(grey, tx, ty, tw, th).to_image(),
+        (tx, ty),
+    )
+}
+
 /// A `size` x `size` patch cut from the middle of the picture, a little above the centre, and where its top left corner is.
 pub fn cut_template(grey: &GrayImage, size: u32) -> (GrayImage, (u32, u32)) {
-    let corner = (
-        grey.width().saturating_sub(size) / 2,
-        (grey.height() * 2 / 5).saturating_sub(size / 2),
-    );
-    (
-        imageops::crop_imm(grey, corner.0, corner.1, size, size).to_image(),
-        corner,
-    )
+    let x = grey.width().saturating_sub(size) / 2;
+    let y = (grey.height() * 2 / 5).saturating_sub(size / 2);
+    crop_template(grey, x, y, size, size)
 }
 
 /// The same scene seen under a different light: slightly blurred and brightened by `brighten` levels.
@@ -72,17 +79,25 @@ pub fn relit(grey: &GrayImage, brighten: i32) -> GrayImage {
     imageops::brighten(&imageops::blur(grey, 1.5), brighten)
 }
 
-/// Circular mask of `size` x `size`: 255 inside the inscribed circle and 0 in the corners.
-pub fn circular_mask(size: u32) -> GrayImage {
-    let centre = (size as f32 - 1.0) / 2.0;
-    let radius_sq = (size as f32 / 2.0).powi(2);
-    GrayImage::from_fn(size, size, |x, y| {
-        let inside = (x as f32 - centre).powi(2) + (y as f32 - centre).powi(2) <= radius_sq;
-        Luma([if inside { 255 } else { 0 }])
+/// Elliptical mask of `width` x `height`: 255 inside the inscribed ellipse and 0 in the corners.
+pub fn elliptical_mask(width: u32, height: u32) -> GrayImage {
+    let cx = (width as f32 - 1.0) / 2.0;
+    let cy = (height as f32 - 1.0) / 2.0;
+    let rx_sq = (width as f32 / 2.0).powi(2).max(1.0);
+    let ry_sq = (height as f32 / 2.0).powi(2).max(1.0);
+    GrayImage::from_fn(width, height, |x, y| {
+        let dx = (x as f32 - cx).powi(2) * ry_sq;
+        let dy = (y as f32 - cy).powi(2) * rx_sq;
+        Luma([if dx + dy <= rx_sq * ry_sq { 255 } else { 0 }])
     })
 }
 
-/// `cv::matchTemplate`: slides `template` over `search` (with an optional circular mask) and returns the score grid.
+/// Circular mask of `size` x `size`: 255 inside the inscribed circle and 0 in the corners.
+pub fn circular_mask(size: u32) -> GrayImage {
+    elliptical_mask(size, size)
+}
+
+/// `cv::matchTemplate`: slides `template` over `search` (with an optional inscribed elliptical mask) and returns the score grid.
 pub fn match_scores(
     search: &GrayImage,
     template: &GrayImage,
@@ -90,7 +105,7 @@ pub fn match_scores(
     masked: bool,
 ) -> Image<Luma<f32>> {
     if masked {
-        let mask = circular_mask(template.width());
+        let mask = elliptical_mask(template.width(), template.height());
         match_template_with_mask(search, template, method, &mask)
     } else {
         match_template(search, template, method)
@@ -159,18 +174,18 @@ pub fn main() {
 
 ## Explanation
 
-1. `cut_template` crops a `size × size` patch from the middle of the photo and remembers its top-left corner (drawn in green in the live view).
+1. `crop_template` (and `cut_template` for the default 40×40 patch) crops a patch from the photo and remembers its top-left corner (drawn in green in the live view).
 2. `relit` blurs the photo slightly and adds `brighten` levels, so the match is not a trivial copy.
-3. `circular_mask` keeps pixels inside the inscribed circle (`255`) and zeros out the corners (`0`), letting `match_template_with_mask` ignore background corners.
+3. `elliptical_mask` (and `circular_mask` for square patches) keeps pixels inside the inscribed ellipse (`255`) and zeros out the corners (`0`), letting `match_template_with_mask` ignore background corners even on non-square mouse selections.
 4. `match_scores` runs either `match_template` or `match_template_with_mask`, and `best_match_in` (`minMaxLoc`) picks the minimum for error measures or the maximum for correlations.
 5. For the page's default settings (`size = 40`, `brighten = 50`), the patch is cut at `(205, 100)`. Raw `SSE` drifts to `(308, 109)`, raw `CCORR` jumps to the bright corner `(411, 235)`, and `CCORR_NORMED` (both full and circularly masked) finds `(204, 100)`, within one pixel of the cut.
 6. Tests check that every method except raw correlation finds the exact corner in an untouched copy, that raw SSE breaks between `+25` and `+50` brightness shift while `CCORR_NORMED` stays within 2 pixels (with and without a mask), and that `report()` matches the numbers below. `imageproc` has four of OpenCV's six methods (no zero-mean `CCOEFF`) and uses a sliding window, so a large template on a large picture is slow.
 
 ## Result
 
-<LiveExample fn="find_patch" label="Relit copy (green = cut, red = match, inset = template)" alt={{fn: "find_patch_scores", label: "Match score map (bright = best)"}} readout={{fn: "find_patch_readout", label: "Match"}} sample="chelsea.png" samples={[{file: "chelsea.png", label: "Cat (chelsea)"}, {file: "coins.png", label: "Coins"}, {file: "astronaut.png", label: "Astronaut"}, {file: "invoice.png", label: "Invoice"}, {file: "building.jpg", label: "Building"}]} params={[{name: "method", label: "Method", options: ["Squared error", "Squared error (normalised)", "Cross-correlation", "Cross-correlation (normalised)"], value: 3}, {name: "size", label: "Patch size", min: 16, max: 80, step: 4, value: 40}, {name: "brighten", label: "Brightness shift", min: 0, max: 100, step: 5, value: 50}, {name: "masked", label: "Mask", options: ["Full rectangle", "Circular mask"], value: 0}]} />
+<LiveExample fn="find_patch" label="Relit copy (green = cut, red = match, inset = template)" alt={{fn: "find_patch_scores", label: "Match score map (bright = best)"}} readout={{fn: "find_patch_readout", label: "Match"}} sample="chelsea.png" samples={[{file: "chelsea.png", label: "Cat (chelsea)"}, {file: "coins.png", label: "Coins"}, {file: "astronaut.png", label: "Astronaut"}, {file: "invoice.png", label: "Invoice"}, {file: "building.jpg", label: "Building"}]} selectableRegion={{width: 40, height: 40}} params={[{name: "method", label: "Method", options: ["Squared error", "Squared error (normalised)", "Cross-correlation", "Cross-correlation (normalised)"], value: 3}, {name: "brighten", label: "Brightness shift", min: 0, max: 100, step: 5, value: 50}, {name: "masked", label: "Mask", options: ["Full rectangle", "Circular mask"], value: 0}]} />
 
-Switch between **Squared error** and **Cross-correlation (normalised)** or drag **Brightness shift** to see raw error and raw correlation drift while normalised cross-correlation keeps the red box aligned on the green cut and shows a sharp bright peak in the score map. For `chelsea.png` and the default settings (`size = 40`, `brighten = 50`), the code prints the numbers below, and a test asserts this exact text:
+Drag a rectangle (or click to recenter) directly on the **Input** photo to select any template patch, click **Reset region** to return to the centre patch, or switch between **Squared error** and **Cross-correlation (normalised)** and drag **Brightness shift** to see raw error and raw correlation drift while normalised cross-correlation keeps the red box aligned on the green cut and shows a sharp bright peak in the score map. For `chelsea.png` and the default settings (`size = 40`, `brighten = 50`), the code prints the numbers below, and a test asserts this exact text:
 
 ```text
 template = (205, 100)

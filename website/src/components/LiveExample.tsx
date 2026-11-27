@@ -1,7 +1,8 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import {InputFigure, RegionSpec, useRegion, withRegion} from './RegionOverlay';
 import styles from './LiveExample.module.css';
 
 /** A control above the pictures. With `options` it is a drop-down whose value is the option's index. */
@@ -32,6 +33,8 @@ type Props = {
   params?: Param[];
   /** Optional independent controls for `alt.fn`; when omitted, `params` drives both. */
   altParams?: Param[];
+  /** Optional interactive rectangular region selector overlaid on the Input image, appended as (x, y, width, height). */
+  selectableRegion?: RegionSpec;
   /** Caption of the output of `fn`; defaults to "Output". */
   label?: string;
   /** A second implementation of the same job (another crate), run on the same pixels and controls and drawn beside the first. */
@@ -432,6 +435,7 @@ function Live({
   second,
   params = [],
   altParams,
+  selectableRegion,
   label = 'Output',
   alt,
   readout: readoutSpec,
@@ -444,15 +448,18 @@ function Live({
   const [altValues, setAltValues] = useState((altParams ?? params).map((p) => p.value));
   const [synced, setSynced] = useState(Boolean(altParams && params.length === altParams.length));
   const {pictures, setPictures, error, reload} = useSamples(base, activeSample, second);
+  const {region, setRegion, reset: resetRegion} = useRegion(pictures?.first, selectableRegion);
   const effectiveAltValues = altParams ? (synced ? values : altValues) : values;
+  const runMainValues = useMemo(() => withRegion(values, region), [values, region]);
+  const runAltValues = useMemo(() => withRegion(effectiveAltValues, region), [effectiveAltValues, region]);
   const {input, output, altOutput, status, outcomes, readouts} = useRun(
     base,
     version,
     fn,
     {altFn: alt?.fn, readoutFn: readoutSpec?.fn, altReadoutFn: altReadout?.fn},
     pictures,
-    values,
-    effectiveAltValues,
+    runMainValues,
+    runAltValues,
   );
 
   const upload = async (file?: File) => {
@@ -491,10 +498,7 @@ function Live({
         onChangeAlt={changeAlt}
       />
       <div className={styles.pictures}>
-        <figure>
-          <canvas ref={input} />
-          <figcaption>Input</figcaption>
-        </figure>
+        <InputFigure canvasRef={input} size={pictures?.first} region={region} onChange={setRegion} onReset={resetRegion} />
         <figure>
           <canvas ref={output} />
           <Caption label={label} outcome={outcomes.main} />

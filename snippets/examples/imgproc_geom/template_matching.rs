@@ -18,16 +18,23 @@ pub const METHODS: [MatchTemplateMethod; 4] = [
     MatchTemplateMethod::CrossCorrelationNormalized,
 ];
 
+/// Crops a rectangular `(w x h)` patch at `(x, y)`, clamped cleanly inside `grey`.
+pub fn crop_template(grey: &GrayImage, x: u32, y: u32, w: u32, h: u32) -> (GrayImage, (u32, u32)) {
+    let tw = w.clamp(4, grey.width().max(4)).min(grey.width());
+    let th = h.clamp(4, grey.height().max(4)).min(grey.height());
+    let tx = x.min(grey.width().saturating_sub(tw));
+    let ty = y.min(grey.height().saturating_sub(th));
+    (
+        imageops::crop_imm(grey, tx, ty, tw, th).to_image(),
+        (tx, ty),
+    )
+}
+
 /// A `size` x `size` patch cut from the middle of the picture, a little above the centre, and where its top left corner is.
 pub fn cut_template(grey: &GrayImage, size: u32) -> (GrayImage, (u32, u32)) {
-    let corner = (
-        grey.width().saturating_sub(size) / 2,
-        (grey.height() * 2 / 5).saturating_sub(size / 2),
-    );
-    (
-        imageops::crop_imm(grey, corner.0, corner.1, size, size).to_image(),
-        corner,
-    )
+    let x = grey.width().saturating_sub(size) / 2;
+    let y = (grey.height() * 2 / 5).saturating_sub(size / 2);
+    crop_template(grey, x, y, size, size)
 }
 
 /// The same scene seen under a different light: slightly blurred and brightened by `brighten` levels.
@@ -35,17 +42,25 @@ pub fn relit(grey: &GrayImage, brighten: i32) -> GrayImage {
     imageops::brighten(&imageops::blur(grey, 1.5), brighten)
 }
 
-/// Circular mask of `size` x `size`: 255 inside the inscribed circle and 0 in the corners.
-pub fn circular_mask(size: u32) -> GrayImage {
-    let centre = (size as f32 - 1.0) / 2.0;
-    let radius_sq = (size as f32 / 2.0).powi(2);
-    GrayImage::from_fn(size, size, |x, y| {
-        let inside = (x as f32 - centre).powi(2) + (y as f32 - centre).powi(2) <= radius_sq;
-        Luma([if inside { 255 } else { 0 }])
+/// Elliptical mask of `width` x `height`: 255 inside the inscribed ellipse and 0 in the corners.
+pub fn elliptical_mask(width: u32, height: u32) -> GrayImage {
+    let cx = (width as f32 - 1.0) / 2.0;
+    let cy = (height as f32 - 1.0) / 2.0;
+    let rx_sq = (width as f32 / 2.0).powi(2).max(1.0);
+    let ry_sq = (height as f32 / 2.0).powi(2).max(1.0);
+    GrayImage::from_fn(width, height, |x, y| {
+        let dx = (x as f32 - cx).powi(2) * ry_sq;
+        let dy = (y as f32 - cy).powi(2) * rx_sq;
+        Luma([if dx + dy <= rx_sq * ry_sq { 255 } else { 0 }])
     })
 }
 
-/// `cv::matchTemplate`: slides `template` over `search` (with an optional circular mask) and returns the score grid.
+/// Circular mask of `size` x `size`: 255 inside the inscribed circle and 0 in the corners.
+pub fn circular_mask(size: u32) -> GrayImage {
+    elliptical_mask(size, size)
+}
+
+/// `cv::matchTemplate`: slides `template` over `search` (with an optional inscribed elliptical mask) and returns the score grid.
 pub fn match_scores(
     search: &GrayImage,
     template: &GrayImage,
@@ -53,7 +68,7 @@ pub fn match_scores(
     masked: bool,
 ) -> Image<Luma<f32>> {
     if masked {
-        let mask = circular_mask(template.width());
+        let mask = elliptical_mask(template.width(), template.height());
         match_template_with_mask(search, template, method, &mask)
     } else {
         match_template(search, template, method)

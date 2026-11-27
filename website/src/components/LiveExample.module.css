@@ -134,3 +134,47 @@
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.9rem;
 }
+
+.regionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.regionSurface {
+  position: relative;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.regionSurface canvas {
+  display: block;
+}
+
+.regionBox,
+.regionDraft {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.regionBox {
+  border: 2px solid #22c55e;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+.regionDraft {
+  border: 2px dashed #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.regionHint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--ifm-color-emphasis-700);
+}

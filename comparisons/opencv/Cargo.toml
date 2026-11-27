@@ -13,9 +13,10 @@ oximedia-codec = { version = "0.2", default-features = false }
 oximedia-core = { version = "0.2", default-features = false }
 oximedia-cv = { version = "0.2", default-features = false }
 oxipix = "0.1"
-# The imgproc kernels (OXI-94, OXI-95, OXI-96) are not released yet: benchmark them from their branch.
+# The imgproc kernels (OXI-94 to OXI-97) are not all released yet: benchmark them from their branch.
 # Switch to a crates.io version once oxipix publishes them.
-oxipix_next = { package = "oxipix", git = "https://github.com/yasuomaidana/oxipix", branch = "OXI-95-imgproc-wave-2-separable-blur-box-pyrdow/main", default-features = false, features = ["imgproc"] }
+oxipix_next = { package = "oxipix", git = "https://github.com/yasuomaidana/oxipix", branch = "OXI-97-imgproc-parallel-feature-rayon-row-bands/main", default-features = false, features = ["imgproc", "parallel"] }
+rayon = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

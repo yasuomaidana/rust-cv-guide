@@ -8,6 +8,8 @@ use oxipix_next::imgproc::{
     arith, bilateral, blur, canny, distance, equalize, features, filter2d, gradient, hough, median,
     morph, pyramid, quality, template, threshold, warp,
 };
+use rayon::{ThreadPool, ThreadPoolBuilder};
+use std::sync::OnceLock;
 
 /// A row's backend: builds the timed closure and the digest closure from the shared inputs.
 type Entry = (&'static str, for<'a> fn(&'a Assets) -> Ops<'a>);
@@ -29,12 +31,9 @@ fn page(a: &Assets) -> [(f32, f32); 4] {
     [(0.0, 0.0), (w, 0.0), (w, h), (0.0, h)]
 }
 
-/// Destination-to-source map of "turn clockwise by `degrees` about the centre and scale".
-fn rotation_map(a: &Assets, degrees: f32, scale: f32) -> [f32; 6] {
-    let (cx, cy) = (
-        a.astronaut.width() as f32 / 2.0,
-        a.astronaut.height() as f32 / 2.0,
-    );
+/// Destination-to-source map of "turn clockwise by `degrees` about the centre of a `size` picture and scale".
+pub(crate) fn rotation_map(size: (u32, u32), degrees: f32, scale: f32) -> [f32; 6] {
+    let (cx, cy) = (size.0 as f32 / 2.0, size.1 as f32 / 2.0);
     let (s, c) = (-degrees.to_radians()).sin_cos();
     let k = 1.0 / scale;
     [
@@ -124,7 +123,7 @@ backends! {
     equalize_hist, "equalize", |a| equalize::equalize_hist(&a.building);
     psnr, "psnr", |a| quality::psnr(&a.building, &a.building_blur);
     ssim, "ssim", |a| quality::ssim(&a.building, &a.building_blur);
-    warp_affine, "warp_affine", |a| warp::warp_affine(&a.astronaut, &rotation_map(a, 30.0, 0.6), a.astronaut.dimensions());
+    warp_affine, "warp_affine", |a| warp::warp_affine(&a.astronaut, &rotation_map(a.astronaut.dimensions(), 30.0, 0.6), a.astronaut.dimensions());
     unwarp, "homography", |a| warp::warp_perspective(
         &a.invoice_photo,
         &warp::homography(&page(a), &a.quad).expect("four corners in general position"),
@@ -142,4 +141,48 @@ pub fn lookup<'a>(id: &str, assets: &'a Assets) -> Ops<'a> {
         .iter()
         .find(|(name, _)| *name == id)
         .map_or((None, None), |(_, build)| build(assets))
+}
+
+/// How many threads the `oxipix` call may use.
+#[derive(Clone, Copy)]
+pub enum Threads {
+    One,
+    All,
+}
+
+/// A rayon pool of one thread, or of one thread per core.
+fn pool(threads: Threads) -> &'static ThreadPool {
+    static ONE: OnceLock<ThreadPool> = OnceLock::new();
+    static ALL: OnceLock<ThreadPool> = OnceLock::new();
+    let (cell, count) = match threads {
+        Threads::One => (&ONE, 1),
+        Threads::All => (&ALL, 0),
+    };
+    cell.get_or_init(|| {
+        ThreadPoolBuilder::new()
+            .num_threads(count)
+            .build()
+            .expect("a rayon pool")
+    })
+}
+
+/// Moves a value into a pool job. The job runs synchronously while the caller waits, so the value is only used
+/// from one thread at a time.
+struct Handoff<T>(T);
+unsafe impl<T> Send for Handoff<T> {}
+
+/// The timed closure run inside a pool, so the `parallel` kernels use that pool's threads.
+pub fn on_threads<'a>(
+    threads: Threads,
+    op: Option<Box<dyn FnMut() + 'a>>,
+) -> Option<Box<dyn FnMut() + 'a>> {
+    op.map(|mut f| {
+        Box::new(move || {
+            let job = Handoff(&mut f);
+            pool(threads).install(move || {
+                let job = job;
+                (job.0)();
+            });
+        }) as Box<dyn FnMut() + 'a>
+    })
 }

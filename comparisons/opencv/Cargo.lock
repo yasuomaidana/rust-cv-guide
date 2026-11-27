@@ -177,7 +177,8 @@ dependencies = [
  "oximedia-core",
  "oximedia-cv",
  "oxipix 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "oxipix 0.1.0 (git+https://github.com/yasuomaidana/oxipix?branch=OXI-95-imgproc-wave-2-separable-blur-box-pyrdow%2Fmain)",
+ "oxipix 0.1.0 (git+https://github.com/yasuomaidana/oxipix?branch=OXI-97-imgproc-parallel-feature-rayon-row-bands%2Fmain)",
+ "rayon",
  "rstest",
  "serde",
  "serde_json",
@@ -746,9 +747,10 @@ dependencies = [
 [[package]]
 name = "oxipix"
 version = "0.1.0"
-source = "git+https://github.com/yasuomaidana/oxipix?branch=OXI-95-imgproc-wave-2-separable-blur-box-pyrdow%2Fmain#a0b725f534614dea37bbd35b224050fa15f254d5"
+source = "git+https://github.com/yasuomaidana/oxipix?branch=OXI-97-imgproc-parallel-feature-rayon-row-bands%2Fmain#ced2ceb802d1b44e1457550eed71635efcf11628"
 dependencies = [
  "image",
+ "rayon",
  "realfft",
  "rustfft",
 ]

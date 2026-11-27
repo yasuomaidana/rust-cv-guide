@@ -5,6 +5,7 @@ mod cases_imgproc;
 mod measure;
 mod next;
 mod spec;
+mod sweep;
 
 #[allow(dead_code)]
 #[path = "../../../snippets/examples/core/adding_images.rs"]
@@ -145,6 +146,10 @@ struct OpenCvOutput {
     opencv_version: String,
     #[serde(default)]
     build_info: Vec<String>,
+    #[serde(default)]
+    threads: usize,
+    #[serde(default)]
+    opencl: bool,
     results: BTreeMap<String, f64>,
     #[serde(default)]
     digests: BTreeMap<String, Digest>,
@@ -209,25 +214,40 @@ fn load_opencv(path: &Path) -> OpenCvOutput {
 
 /// Measures every case, joining the OpenCV data, optimised-build timings and the notes kept from the old catalog.
 fn measure_rows(
+    assets: &Assets,
     data: &OpenCvData<'_>,
     opt: &BTreeMap<String, OptRow>,
     notes: &BTreeMap<String, String>,
 ) -> Vec<BenchRow> {
-    let assets = Assets::load();
-    let specs = cases_basic::collect(&assets)
+    let specs = cases_basic::collect(assets)
         .into_iter()
-        .chain(cases_imgproc::collect(&assets));
+        .chain(cases_imgproc::collect(assets));
     specs
         .map(|spec| {
             eprintln!("Running {}", spec.id);
-            let next = next::lookup(spec.id, &assets);
-            let mut row = evaluate(spec.with_next(next), data);
+            let (op, digest) = next::lookup(spec.id, assets);
+            let multi = next::on_threads(next::Threads::All, next::lookup(spec.id, assets).0);
+            let spec = spec
+                .with_next((next::on_threads(next::Threads::One, op), digest))
+                .with_next_mt(multi);
+            let mut row = evaluate(spec, data);
             let optimised = opt.get(&row.id);
             row.rust_opt_ms = optimised.and_then(|o| o.rust_ms);
             row.oximedia_opt_ms = optimised.and_then(|o| o.oximedia_ms);
             row.oxipix_next_opt_ms = optimised.and_then(|o| o.oxipix_next_ms);
             row.warning_note = notes.get(&row.id).cloned();
             row
+        })
+        .collect()
+}
+
+/// Measures the small, medium and big pictures.
+fn measure_sweep(data: &OpenCvData<'_>, pictures: &[sweep::Picture]) -> Vec<BenchRow> {
+    sweep::collect(pictures)
+        .into_iter()
+        .map(|spec| {
+            eprintln!("Running {}", spec.id);
+            evaluate(spec, data)
         })
         .collect()
 }
@@ -250,6 +270,8 @@ fn environment(ocv: OpenCvOutput, optimised: bool) -> Environment {
             "oxipix imgproc, git branch OXI-96-imgproc-wave-3 (stacked on OXI-94 and OXI-95)".into(),
         builds,
         opencv_build: ocv.build_info,
+        opencv_threads: ocv.threads,
+        opencv_opencl: ocv.opencl,
     }
 }
 
@@ -267,7 +289,10 @@ fn main() {
         results: &ocv.results,
         digests: &ocv.digests,
     };
-    let benchmarks = measure_rows(&data, &opt, &load_notes(Path::new(&out_path)));
+    let assets = Assets::load();
+    let benchmarks = measure_rows(&assets, &data, &opt, &load_notes(Path::new(&out_path)));
+    let pictures = sweep::pictures(&assets);
+    let size_sweep = measure_sweep(&data, &pictures);
     let rows = benchmarks.len();
     let catalog = BenchmarkCatalog {
         warn_ratio_threshold: 3.0,
@@ -275,6 +300,7 @@ fn main() {
         environment: environment(ocv, !opt.is_empty()),
         calibration: calibration(),
         benchmarks,
+        size_sweep,
     };
     let json = serde_json::to_string_pretty(&catalog).expect("serialize benchmarks");
     fs::write(&out_path, format!("{json}\n")).expect("write catalog/benchmarks.json");

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/ocl.hpp>
 #include <opencv2/features.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include <string>
@@ -156,6 +157,7 @@ struct Bench {
     std::vector<Row> rows;
     std::vector<Digest> digests;
     cv::Mat dst;
+    int default_threads = 1;
 
     // Replaces the image digest with an element count, for ops whose result is a list rather than `dst`.
     // `kind` 1 is an element count; 2 is the number of matches that agree with the true shift.
@@ -179,6 +181,10 @@ struct Bench {
         rows.push_back({id, bench_ms(3, iters, fn)});
         auto fresh = [&] { dst.release(); fn(); };
         rows.push_back({std::string(id) + "__fresh", bench_ms(3, iters, fresh)});
+        // The same op with OpenCV's default number of threads, which is what a user gets without configuring it.
+        cv::setNumThreads(default_threads);
+        rows.push_back({std::string(id) + "__mt", bench_ms(3, iters, fn)});
+        cv::setNumThreads(1);
         dst.release();
         fn();
         record_image_digest(id);
@@ -302,13 +308,42 @@ static void run_quality(Bench& b, const Assets& a) {
     (void)sink;
 }
 
+struct SizeClass {
+    const char* name;
+    int width, height, iters;
+};
+
+// Small, medium and big pictures (0.3, 2 and 8 megapixels): the photos scaled to each size.
+static const SizeClass kSizes[] = {{"small", 640, 480, 15}, {"medium", 1920, 1080, 5}, {"big", 3840, 2160, 3}};
+
+static void run_sweep(Bench& b, const Assets& a) {
+    cv::Mat& dst = b.dst;
+    cv::Mat k5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
+    for (const SizeClass& s : kSizes) {
+        cv::Mat g, c;
+        cv::resize(a.building, g, cv::Size(s.width, s.height), 0, 0, cv::INTER_LINEAR);
+        cv::resize(a.chelsea, c, cv::Size(s.width, s.height), 0, 0, cv::INTER_LINEAR);
+        cv::Mat rot = cv::getRotationMatrix2D(cv::Point2f(s.width / 2.0f, s.height / 2.0f), -30.0, 0.6);
+        auto id = [&](const char* kernel) { return std::string("sweep_") + kernel + "_" + s.name; };
+        b.push(id("gaussian").c_str(), s.iters, [&] { cv::GaussianBlur(c, dst, cv::Size(5, 5), 1.1); });
+        b.push(id("sobel").c_str(), s.iters, [&] { cv::Mat gx; cv::Sobel(g, gx, CV_16S, 1, 0, 3); cv::convertScaleAbs(gx, dst); });
+        b.push(id("canny").c_str(), s.iters, [&] { cv::GaussianBlur(g, dst, cv::Size(0, 0), 1.4); cv::Canny(dst, dst, 50.0, 150.0, 3, true); });
+        b.push(id("median").c_str(), s.iters, [&] { cv::medianBlur(c, dst, 5); });
+        b.push(id("erode").c_str(), s.iters, [&] { cv::erode(g, dst, k5); });
+        b.push(id("bilateral").c_str(), s.iters, [&] { cv::bilateralFilter(c, dst, 5, 30.0, 30.0); });
+        b.push(id("warp_affine").c_str(), s.iters, [&] { cv::warpAffine(c, dst, rot, c.size(), cv::INTER_LINEAR); });
+        b.push(id("pyr_down").c_str(), s.iters, [&] { cv::pyrDown(c, dst); });
+    }
+}
+
 static void print_json(const Bench& b) {
     std::cout << "{\n  \"opencv_version\": \"" << CV_VERSION << "\",\n  \"build_info\": [";
     std::vector<std::string> info = build_lines();
     for (size_t i = 0; i < info.size(); ++i) {
         std::cout << (i ? ", " : "") << "\"" << json_escape(info[i]) << "\"";
     }
-    std::cout << "],\n  \"digests\": {\n";
+    std::cout << "],\n  \"threads\": " << b.default_threads << ",\n  \"opencl\": " << (cv::ocl::haveOpenCL() ? "true" : "false")
+              << ",\n  \"digests\": {\n";
     for (size_t i = 0; i < b.digests.size(); ++i) {
         const Digest& d = b.digests[i];
         std::cout << "    \"" << d.id << "\": {\"w\": " << d.w << ", \"h\": " << d.h << ", \"mean\": " << d.mean << "}"
@@ -323,14 +358,16 @@ static void print_json(const Bench& b) {
 
 int main(int argc, char** argv) {
     std::string dir = argc > 1 ? argv[1] : "../../snippets/assets";
+    Bench b;
+    b.default_threads = cv::getNumThreads();
     cv::setNumThreads(1);
     Assets a = load_assets(dir);
-    Bench b;
     run_core_and_smoothing(b, a);
     run_morphology_and_edges(b, a);
     run_geometry(b, a);
     run_features(b, a);
     run_quality(b, a);
+    run_sweep(b, a);
     print_json(b);
     return 0;
 }

@@ -5,35 +5,35 @@
       "id": "smoothing_median",
       "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
       "operation": "Median filter (5x5, r=2)",
-      "opencv_ms": 0.435,
+      "opencv_ms": 0.436,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 7.03,
-      "ms_lost": 2.624,
+      "best_gap": 7.06,
+      "ms_lost": 2.644,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 17.613,
-          "ms_opt": 18.34,
-          "gap": 40.49,
-          "gap_opt": 42.16,
-          "noise": 0.002498154772043377
+          "ms": 17.677,
+          "ms_opt": 18.118,
+          "gap": 40.54,
+          "gap_opt": 41.56,
+          "noise": 0.011087854273915258
         },
         {
           "name": "oximedia-cv",
-          "ms": 38.584,
-          "ms_opt": 37.869,
-          "gap": 88.7,
-          "gap_opt": 87.06,
-          "noise": 0.005701845324486834
+          "ms": 38.514,
+          "ms_opt": 37.655,
+          "gap": 88.33,
+          "gap_opt": 86.36,
+          "noise": 0.0019733084073323983
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 3.189,
-          "ms_opt": 3.059,
-          "gap": 7.33,
-          "gap_opt": 7.03,
-          "noise": 0.005644402634054562
+          "ms": 3.149,
+          "ms_opt": 3.08,
+          "gap": 7.22,
+          "gap_opt": 7.06,
+          "noise": 0.0050809780882819944
         }
       ],
       "status": "fix-proposed",
@@ -46,118 +46,38 @@
     },
     {
       "rank": 2,
-      "id": "feature_detection_fast",
-      "tutorial": "tutorial_feature_detection",
-      "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
-      "opencv_ms": 0.576,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 4.22,
-      "ms_lost": 1.855,
-      "parity": "mismatch",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 3.21,
-          "ms_opt": 3.161,
-          "gap": 5.57,
-          "gap_opt": 5.49,
-          "noise": 0.018068535825545174
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 6.966,
-          "ms_opt": 6.991,
-          "gap": 12.09,
-          "gap_opt": 12.14,
-          "noise": 0.007464829170255526
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 2.478,
-          "ms_opt": 2.431,
-          "gap": 4.3,
-          "gap_opt": 4.22,
-          "noise": 0.005649717514124294
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "OpenCV's FAST rejects most pixels with a high-speed test on the four compass pixels (`pixel[0]`, `pixel[8]`, then 4/12, 2/10, ...) and evaluates 16 pixels per step with SIMD (fast.cpp L205-L260). `imageproc::corners::corners_fast9` evaluates the full ring for every pixel and then computes a score, and the non-max suppression and sorting are added on top; `oximedia_cv::FastDetector` has no early-out either (and misses wrapped arcs, see its issue).",
-      "fix_target": "oxipix wave 3: FAST-9 with compass early-out, 3x3 non-max suppression and top-N selection with `select_nth_unstable`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-175",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
-      "owner": null,
-      "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; reported upstream as https://github.com/cool-japan/oximedia/issues/32."
-    },
-    {
-      "rank": 3,
-      "id": "distance_transform",
-      "tutorial": "tutorial_distance_transform",
-      "operation": "Distance transform (L2)",
-      "opencv_ms": 0.248,
-      "best_crate": "image/imageproc",
-      "best_gap": 3.45,
-      "ms_lost": 0.607,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.855,
-          "ms_opt": 0.894,
-          "gap": 3.45,
-          "gap_opt": 3.6,
-          "noise": 0.011695906432748539
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 0.996,
-          "ms_opt": 1.02,
-          "gap": 4.02,
-          "gap_opt": 4.11,
-          "noise": 0.006024096385542169
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "OpenCV's `distanceTransform(DIST_L2, 3)` is a two-pass 3x3 chamfer approximation (distransform.cpp, forward and backward mask), i.e. it does less work than an exact Euclidean transform. `imageproc::distance_transform` is exact (Felzenszwalb and Huttenlocher style) and uses wider intermediate types, so part of the gap is different work, not slowness.",
-      "fix_target": "oxipix wave 3: 3x3 chamfer variant with an exact-Euclidean option, and mark the row's semantic difference. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-176",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/57",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 4,
       "id": "homography",
       "tutorial": "tutorial_homography",
       "operation": "Perspective unwarp (4-point quad)",
       "opencv_ms": 0.587,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.4,
-      "ms_lost": 1.408,
+      "best_gap": 4.19,
+      "ms_lost": 1.87,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.863,
-          "ms_opt": 4.167,
-          "gap": 6.58,
-          "gap_opt": 7.1,
-          "noise": 0.0015531969971524723
+          "ms": 4.137,
+          "ms_opt": 4.129,
+          "gap": 7.05,
+          "gap_opt": 7.03,
+          "noise": 0.007735073724921442
         },
         {
           "name": "oxipix",
-          "ms": 6.72,
-          "ms_opt": 6.264,
-          "gap": 11.45,
-          "gap_opt": 10.67,
-          "noise": 0.0017857142857142859
+          "ms": 6.716,
+          "ms_opt": 6.26,
+          "gap": 11.44,
+          "gap_opt": 10.66,
+          "noise": 0.001786777843954735
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 1.995,
-          "ms_opt": 1.998,
-          "gap": 3.4,
-          "gap_opt": 3.4,
-          "noise": 0.0020050125313283208
+          "ms": 2.457,
+          "ms_opt": 2.468,
+          "gap": 4.19,
+          "gap_opt": 4.2,
+          "noise": 0.0016280016280016281
         }
       ],
       "status": "fix-proposed",
@@ -169,126 +89,82 @@
       "known_difference": null
     },
     {
-      "rank": 5,
-      "id": "smoothing_bilateral",
-      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
-      "operation": "Bilateral filter (d=5, r=2, sc=30)",
-      "opencv_ms": 0.806,
+      "rank": 3,
+      "id": "feature_detection_fast",
+      "tutorial": "tutorial_feature_detection",
+      "operation": "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
+      "opencv_ms": 0.588,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.13,
-      "ms_lost": 1.714,
-      "parity": "ok",
+      "best_gap": 4.16,
+      "ms_lost": 1.861,
+      "parity": "mismatch",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 9.154,
-          "ms_opt": 5.838,
-          "gap": 11.36,
-          "gap_opt": 7.24,
-          "noise": 0.001529386060738475
+          "ms": 3.233,
+          "ms_opt": 3.129,
+          "gap": 5.5,
+          "gap_opt": 5.32,
+          "noise": 0.018558614290133002
         },
         {
           "name": "oximedia-cv",
-          "ms": 32.873,
-          "ms_opt": 33.331,
-          "gap": 40.79,
-          "gap_opt": 41.35,
-          "noise": 0.0018252060961883613
+          "ms": 6.948,
+          "ms_opt": 6.971,
+          "gap": 11.82,
+          "gap_opt": 11.86,
+          "noise": 0.00489349453080023
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.705,
-          "ms_opt": 2.52,
-          "gap": 3.36,
-          "gap_opt": 3.13,
-          "noise": 0.005914972273567467
+          "ms": 2.541,
+          "ms_opt": 2.449,
+          "gap": 4.32,
+          "gap_opt": 4.16,
+          "noise": 0.03227075954348682
         }
       ],
       "status": "fix-proposed",
-      "root_cause": "OpenCV precomputes the spatial weights once and a 256-entry table for the colour weights (bilateral_filter.dispatch.cpp `space_weight`, `color_weight`), so each tap is two table reads. `imageproc::filter::bilateral_filter` evaluates the Gaussian of the colour distance per tap (a fast `exp` approximation, no table) through the `Pixel` API.",
-      "fix_target": "oxipix wave 2: bilateral with a spatial table and a 256-entry colour LUT on interleaved u8 rows. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-164",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
+      "root_cause": "OpenCV's FAST rejects most pixels with a high-speed test on the four compass pixels (`pixel[0]`, `pixel[8]`, then 4/12, 2/10, ...) and evaluates 16 pixels per step with SIMD (fast.cpp L205-L260). `imageproc::corners::corners_fast9` evaluates the full ring for every pixel and then computes a score, and the non-max suppression and sorting are added on top; `oximedia_cv::FastDetector` has no early-out either (and misses wrapped arcs, see its issue).",
+      "fix_target": "oxipix wave 3: FAST-9 with compass early-out, 3x3 non-max suppression and top-N selection with `select_nth_unstable`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-175",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/56",
       "owner": null,
-      "known_difference": null
+      "known_difference": "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; reported upstream as https://github.com/cool-japan/oximedia/issues/32."
     },
     {
-      "rank": 6,
-      "id": "feature_description",
-      "tutorial": "tutorial_feature_description",
-      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
-      "opencv_ms": 2.389,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.04,
-      "ms_lost": 4.863,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 12.142,
-          "ms_opt": 11.671,
-          "gap": 5.08,
-          "gap_opt": 4.89,
-          "noise": 0.018283643551309504
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 15.544,
-          "ms_opt": 15.407,
-          "gap": 6.51,
-          "gap_opt": 6.45,
-          "noise": 0.004246011322696861
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 7.574,
-          "ms_opt": 7.252,
-          "gap": 3.17,
-          "gap_opt": 3.04,
-          "noise": 0.0036968576709796672
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "The row is dominated by detection (two FAST runs, see `feature_detection_fast`), followed by the descriptor and Hamming matching of 250 x 250 pairs. OpenCV's BRIEF samples with integral images and compares byte-packed bits with SIMD popcount; the Rust matcher is a scalar double loop over `u128` pairs and `Vec<bool>`-style intermediate results in the shared sampler.",
-      "fix_target": "oxipix wave 3: FAST (above), integral-image BRIEF writing straight into `[u128; 2]`, matcher over packed words with `count_ones`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-185",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 7,
+      "rank": 4,
       "id": "erosion",
       "tutorial": "tutorial_erosion_dilatation",
       "operation": "Erode (5x5 square, r=2)",
       "opencv_ms": 0.01,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 3.0,
-      "ms_lost": 0.02,
+      "best_gap": 3.6,
+      "ms_lost": 0.026,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.273,
-          "ms_opt": 0.285,
-          "gap": 27.3,
-          "gap_opt": 28.5,
-          "noise": 0.0
+          "ms": 0.271,
+          "ms_opt": 0.289,
+          "gap": 27.1,
+          "gap_opt": 28.9,
+          "noise": 0.02214022140221402
         },
         {
           "name": "oximedia-cv",
-          "ms": 3.266,
-          "ms_opt": 2.768,
-          "gap": 326.6,
-          "gap_opt": 276.8,
-          "noise": 0.0030618493570116353
+          "ms": 3.269,
+          "ms_opt": 2.77,
+          "gap": 326.9,
+          "gap_opt": 277.0,
+          "noise": 0.0018354236769654328
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.03,
-          "ms_opt": 0.03,
-          "gap": 3.0,
-          "gap_opt": 3.0,
+          "ms": 0.036,
+          "ms_opt": 0.037,
+          "gap": 3.6,
+          "gap_opt": 3.7,
           "noise": 0.0
         }
       ],
@@ -301,38 +177,162 @@
       "known_difference": null
     },
     {
+      "rank": 5,
+      "id": "smoothing_bilateral",
+      "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
+      "operation": "Bilateral filter (d=5, r=2, sc=30)",
+      "opencv_ms": 0.806,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.53,
+      "ms_lost": 2.042,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 8.21,
+          "ms_opt": 5.838,
+          "gap": 10.19,
+          "gap_opt": 7.24,
+          "noise": 0.0060901339829476245
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 32.893,
+          "ms_opt": 33.478,
+          "gap": 40.81,
+          "gap_opt": 41.54,
+          "noise": 0.0019457027331043078
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 3.019,
+          "ms_opt": 2.848,
+          "gap": 3.75,
+          "gap_opt": 3.53,
+          "noise": 0.006624710168930109
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV precomputes the spatial weights once and a 256-entry table for the colour weights (bilateral_filter.dispatch.cpp `space_weight`, `color_weight`), so each tap is two table reads. `imageproc::filter::bilateral_filter` evaluates the Gaussian of the colour distance per tap (a fast `exp` approximation, no table) through the `Pixel` API.",
+      "fix_target": "oxipix wave 2: bilateral with a spatial table and a 256-entry colour LUT on interleaved u8 rows. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-164",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/45",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 6,
+      "id": "distance_transform",
+      "tutorial": "tutorial_distance_transform",
+      "operation": "Distance transform (L2)",
+      "opencv_ms": 0.248,
+      "best_crate": "image/imageproc",
+      "best_gap": 3.26,
+      "ms_lost": 0.56,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.808,
+          "ms_opt": 0.911,
+          "gap": 3.26,
+          "gap_opt": 3.67,
+          "noise": 0.007425742574257425
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.986,
+          "ms_opt": 1.036,
+          "gap": 3.98,
+          "gap_opt": 4.18,
+          "noise": 0.012170385395537525
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's `distanceTransform(DIST_L2, 3)` is a two-pass 3x3 chamfer approximation (distransform.cpp, forward and backward mask), i.e. it does less work than an exact Euclidean transform. `imageproc::distance_transform` is exact (Felzenszwalb and Huttenlocher style) and uses wider intermediate types, so part of the gap is different work, not slowness.",
+      "fix_target": "oxipix wave 3: 3x3 chamfer variant with an exact-Euclidean option, and mark the row's semantic difference. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-176",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/57",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 7,
+      "id": "warp_affine",
+      "tutorial": "tutorial_warp_affine",
+      "operation": "Rotate 30 deg + scale 0.6",
+      "opencv_ms": 0.266,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 3.14,
+      "ms_lost": 0.569,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 2.748,
+          "ms_opt": 2.572,
+          "gap": 10.33,
+          "gap_opt": 9.67,
+          "noise": 0.0029112081513828236
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 1.844,
+          "ms_opt": 1.639,
+          "gap": 6.93,
+          "gap_opt": 6.16,
+          "noise": 0.0021691973969631237
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.835,
+          "ms_opt": 0.836,
+          "gap": 3.14,
+          "gap_opt": 3.14,
+          "noise": 0.004790419161676647
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "Same mechanism as homography, for affine: imgwarp.cpp precomputes the 2x3 matrix in fixed point and steps the source coordinates by constants along each row; the interpolation is SIMD. The Rust crates evaluate the transform and an f32 bilinear sample per pixel through generic accessors.",
+      "fix_target": "oxipix wave 3: fixed-point incremental bilinear warp (shared with homography). Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-168",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
+      "owner": null,
+      "known_difference": null
+    },
+    {
       "rank": 8,
       "id": "pyramids",
       "tutorial": "tutorial_pyramids",
       "operation": "3-level pyrDown",
       "opencv_ms": 0.045,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.71,
-      "ms_lost": 0.077,
+      "best_gap": 3.02,
+      "ms_lost": 0.091,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.821,
+          "ms": 1.818,
           "ms_opt": 1.807,
-          "gap": 40.47,
+          "gap": 40.4,
           "gap_opt": 40.16,
-          "noise": 0.004393190554640308
+          "noise": 0.0033003300330033004
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.868,
-          "ms_opt": 0.849,
-          "gap": 19.29,
-          "gap_opt": 18.87,
-          "noise": 0.002304147465437788
+          "ms": 0.869,
+          "ms_opt": 0.847,
+          "gap": 19.31,
+          "gap_opt": 18.82,
+          "noise": 0.004602991944764097
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.125,
-          "ms_opt": 0.122,
-          "gap": 2.78,
-          "gap_opt": 2.71,
+          "ms": 0.137,
+          "ms_opt": 0.136,
+          "gap": 3.04,
+          "gap_opt": 3.02,
           "noise": 0.0
         }
       ],
@@ -346,45 +346,45 @@
     },
     {
       "rank": 9,
-      "id": "warp_affine",
-      "tutorial": "tutorial_warp_affine",
-      "operation": "Rotate 30 deg + scale 0.6",
-      "opencv_ms": 0.264,
+      "id": "feature_description",
+      "tutorial": "tutorial_feature_description",
+      "operation": "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
+      "opencv_ms": 2.364,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.58,
-      "ms_lost": 0.416,
+      "best_gap": 2.97,
+      "ms_lost": 4.664,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.525,
-          "ms_opt": 2.565,
-          "gap": 9.56,
-          "gap_opt": 9.72,
-          "noise": 0.0039603960396039604
+          "ms": 12.125,
+          "ms_opt": 11.643,
+          "gap": 5.13,
+          "gap_opt": 4.93,
+          "noise": 0.013525773195876289
         },
         {
           "name": "oximedia-cv",
-          "ms": 1.943,
-          "ms_opt": 1.651,
-          "gap": 7.36,
-          "gap_opt": 6.25,
-          "noise": 0.003088008234688626
+          "ms": 15.49,
+          "ms_opt": 15.399,
+          "gap": 6.55,
+          "gap_opt": 6.51,
+          "noise": 0.002065848934796643
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.68,
-          "ms_opt": 0.695,
-          "gap": 2.58,
-          "gap_opt": 2.63,
-          "noise": 0.0058823529411764705
+          "ms": 7.37,
+          "ms_opt": 7.028,
+          "gap": 3.12,
+          "gap_opt": 2.97,
+          "noise": 0.023337856173677066
         }
       ],
       "status": "fix-proposed",
-      "root_cause": "Same mechanism as homography, for affine: imgwarp.cpp precomputes the 2x3 matrix in fixed point and steps the source coordinates by constants along each row; the interpolation is SIMD. The Rust crates evaluate the transform and an f32 bilinear sample per pixel through generic accessors.",
-      "fix_target": "oxipix wave 3: fixed-point incremental bilinear warp (shared with homography). Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-168",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/49",
+      "root_cause": "The row is dominated by detection (two FAST runs, see `feature_detection_fast`), followed by the descriptor and Hamming matching of 250 x 250 pairs. OpenCV's BRIEF samples with integral images and compares byte-packed bits with SIMD popcount; the Rust matcher is a scalar double loop over `u128` pairs and `Vec<bool>`-style intermediate results in the shared sampler.",
+      "fix_target": "oxipix wave 3: FAST (above), integral-image BRIEF writing straight into `[u128; 2]`, matcher over packed words with `count_ones`. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-185",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/66",
       "owner": null,
       "known_difference": null
     },
@@ -395,33 +395,33 @@
       "operation": "Top-hat morphology (7x7, r=3)",
       "opencv_ms": 0.029,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 2.17,
-      "ms_lost": 0.034,
+      "best_gap": 2.34,
+      "ms_lost": 0.039,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.415,
-          "ms_opt": 1.231,
-          "gap": 14.31,
-          "gap_opt": 42.45,
+          "ms": 0.414,
+          "ms_opt": 1.156,
+          "gap": 14.28,
+          "gap_opt": 39.86,
           "noise": 0.0
         },
         {
           "name": "oximedia-cv",
-          "ms": 14.026,
-          "ms_opt": 10.711,
-          "gap": 483.66,
-          "gap_opt": 369.34,
-          "noise": 0.004277769855981748
+          "ms": 14.035,
+          "ms_opt": 10.777,
+          "gap": 483.97,
+          "gap_opt": 371.62,
+          "noise": 0.002280014250089063
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.063,
-          "ms_opt": 0.065,
-          "gap": 2.17,
-          "gap_opt": 2.24,
-          "noise": 0.031746031746031744
+          "ms": 0.068,
+          "ms_opt": 0.07,
+          "gap": 2.34,
+          "gap_opt": 2.41,
+          "noise": 0.0
         }
       ],
       "status": "fix-proposed",
@@ -437,35 +437,35 @@
       "id": "ssim",
       "tutorial": "tutorial_video_input_psnr_ssim",
       "operation": "SSIM (11x11 Gaussian)",
-      "opencv_ms": 3.083,
+      "opencv_ms": 3.077,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 1.79,
-      "ms_lost": 2.421,
+      "ms_lost": 2.428,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 5.975,
-          "ms_opt": 5.833,
-          "gap": 1.94,
-          "gap_opt": 1.89,
-          "noise": 0.1295397489539749
+          "ms": 5.784,
+          "ms_opt": 5.853,
+          "gap": 1.88,
+          "gap_opt": 1.9,
+          "noise": 0.1459197786998617
         },
         {
           "name": "oximedia-cv",
-          "ms": 100.466,
-          "ms_opt": 86.584,
-          "gap": 32.59,
-          "gap_opt": 28.08,
-          "noise": 0.0009754543825771904
+          "ms": 100.428,
+          "ms_opt": 86.643,
+          "gap": 32.64,
+          "gap_opt": 28.16,
+          "noise": 0.0013542040068506792
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 5.523,
-          "ms_opt": 5.504,
-          "gap": 1.79,
+          "ms": 5.526,
+          "ms_opt": 5.505,
+          "gap": 1.8,
           "gap_opt": 1.79,
-          "noise": 0.008328806807894261
+          "noise": 0.004705030763662686
         }
       ],
       "status": "fix-proposed",
@@ -483,24 +483,24 @@
       "operation": "Contrast + brightness (a=1.3, b=40)",
       "opencv_ms": 0.064,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.64,
-      "ms_lost": 0.041,
+      "best_gap": 1.75,
+      "ms_lost": 0.048,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
           "ms": 0.449,
-          "ms_opt": 0.341,
+          "ms_opt": 0.34,
           "gap": 7.02,
-          "gap_opt": 5.33,
+          "gap_opt": 5.31,
           "noise": 0.004454342984409799
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.129,
-          "ms_opt": 0.105,
-          "gap": 2.02,
-          "gap_opt": 1.64,
+          "ms": 0.136,
+          "ms_opt": 0.112,
+          "gap": 2.13,
+          "gap_opt": 1.75,
           "noise": 0.0
         }
       ],
@@ -514,49 +514,13 @@
     },
     {
       "rank": 13,
-      "id": "find_contours",
-      "tutorial": "tutorial_find_contours",
-      "operation": "Find contours + approxPolyDP",
-      "opencv_ms": 0.157,
-      "best_crate": "oxipix",
-      "best_gap": 1.6,
-      "ms_lost": 0.094,
-      "parity": "n/a",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.513,
-          "ms_opt": 0.476,
-          "gap": 3.27,
-          "gap_opt": 3.03,
-          "noise": 0.015594541910331383
-        },
-        {
-          "name": "oxipix",
-          "ms": 0.265,
-          "ms_opt": 0.251,
-          "gap": 1.69,
-          "gap_opt": 1.6,
-          "noise": 0.01509433962264151
-        }
-      ],
-      "status": "researched",
-      "root_cause": "OpenCV's `findContours` (contours_new.cpp) is a tight border-following loop on a padded byte image; the oxipix tracer is within 1.6x already, the gap is the per-step bounds checks and a `Vec<Point>` per contour.",
-      "fix_target": "oxipix wave 3: padded-image tracing without bounds checks.",
-      "plane": "RUSTCVGUID-180",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/61",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 14,
       "id": "adding_images",
       "tutorial": "tutorial_adding_images",
       "operation": "addWeighted (0.5 / 0.5)",
       "opencv_ms": 0.038,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.47,
-      "ms_lost": 0.018,
+      "best_gap": 1.68,
+      "ms_lost": 0.026,
       "parity": "n/a",
       "backends": [
         {
@@ -565,22 +529,22 @@
           "ms_opt": 0.215,
           "gap": 6.55,
           "gap_opt": 5.66,
-          "noise": 0.008032128514056226
+          "noise": 0.016064257028112452
         },
         {
           "name": "oximedia-cv",
           "ms": 0.506,
-          "ms_opt": 0.461,
+          "ms_opt": 0.563,
           "gap": 13.32,
-          "gap_opt": 12.13,
-          "noise": 0.007905138339920948
+          "gap_opt": 14.82,
+          "noise": 0.003952569169960474
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.056,
-          "ms_opt": 0.056,
-          "gap": 1.47,
-          "gap_opt": 1.47,
+          "ms": 0.064,
+          "ms_opt": 0.064,
+          "gap": 1.68,
+          "gap_opt": 1.68,
           "noise": 0.0
         }
       ],
@@ -593,39 +557,75 @@
       "known_difference": null
     },
     {
+      "rank": 14,
+      "id": "find_contours",
+      "tutorial": "tutorial_find_contours",
+      "operation": "Find contours + approxPolyDP",
+      "opencv_ms": 0.159,
+      "best_crate": "oxipix",
+      "best_gap": 1.57,
+      "ms_lost": 0.091,
+      "parity": "n/a",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.509,
+          "ms_opt": 0.471,
+          "gap": 3.2,
+          "gap_opt": 2.96,
+          "noise": 0.015717092337917484
+        },
+        {
+          "name": "oxipix",
+          "ms": 0.262,
+          "ms_opt": 0.25,
+          "gap": 1.65,
+          "gap_opt": 1.57,
+          "noise": 0.015267175572519083
+        }
+      ],
+      "status": "researched",
+      "root_cause": "OpenCV's `findContours` (contours_new.cpp) is a tight border-following loop on a padded byte image; the oxipix tracer is within 1.6x already, the gap is the per-step bounds checks and a `Vec<Point>` per contour.",
+      "fix_target": "oxipix wave 3: padded-image tracing without bounds checks.",
+      "plane": "RUSTCVGUID-180",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/61",
+      "owner": null,
+      "known_difference": null
+    },
+    {
       "rank": 15,
       "id": "smoothing_gaussian",
       "tutorial": "tutorial_gausian_median_blur_bilateral_filter",
       "operation": "Gaussian blur (sigma=1.1)",
       "opencv_ms": 0.198,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.31,
-      "ms_lost": 0.062,
+      "best_gap": 1.37,
+      "ms_lost": 0.074,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
           "ms": 1.728,
-          "ms_opt": 1.723,
+          "ms_opt": 1.724,
           "gap": 8.73,
-          "gap_opt": 8.7,
+          "gap_opt": 8.71,
           "noise": 0.0034722222222222225
         },
         {
           "name": "oximedia-cv",
-          "ms": 4.695,
-          "ms_opt": 4.788,
-          "gap": 23.71,
-          "gap_opt": 24.18,
-          "noise": 0.0034078807241746537
+          "ms": 4.69,
+          "ms_opt": 4.789,
+          "gap": 23.69,
+          "gap_opt": 24.19,
+          "noise": 0.0025586353944562898
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.262,
-          "ms_opt": 0.26,
-          "gap": 1.32,
-          "gap_opt": 1.31,
-          "noise": 0.0
+          "ms": 0.272,
+          "ms_opt": 0.272,
+          "gap": 1.37,
+          "gap_opt": 1.37,
+          "noise": 0.007352941176470588
         }
       ],
       "status": "fix-proposed",
@@ -641,27 +641,27 @@
       "id": "template_matching",
       "tutorial": "tutorial_template_matching",
       "operation": "Template match (TM_SQDIFF)",
-      "opencv_ms": 1.631,
+      "opencv_ms": 1.601,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.25,
-      "ms_lost": 0.401,
+      "best_gap": 1.31,
+      "ms_lost": 0.498,
       "parity": "n/a",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 114.968,
-          "ms_opt": 118.326,
-          "gap": 70.49,
-          "gap_opt": 72.55,
-          "noise": 0.011133532809129498
+          "ms": 120.012,
+          "ms_opt": 120.036,
+          "gap": 74.96,
+          "gap_opt": 74.98,
+          "noise": 0.0012332100123321
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.08,
-          "ms_opt": 2.032,
-          "gap": 1.28,
-          "gap_opt": 1.25,
-          "noise": 0.004807692307692308
+          "ms": 2.099,
+          "ms_opt": 2.109,
+          "gap": 1.31,
+          "gap_opt": 1.32,
+          "noise": 0.007622677465459742
         }
       ],
       "status": "fix-proposed",
@@ -674,66 +674,22 @@
     },
     {
       "rank": 17,
-      "id": "filter_2d",
-      "tutorial": "tutorial_filter_2d",
-      "operation": "2D convolution (5x5 box kernel)",
-      "opencv_ms": 0.663,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.17,
-      "ms_lost": 0.11,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 3.308,
-          "ms_opt": 2.639,
-          "gap": 4.99,
-          "gap_opt": 3.98,
-          "noise": 0.005441354292623942
-        },
-        {
-          "name": "oximedia-cv",
-          "ms": 8.361,
-          "ms_opt": 8.342,
-          "gap": 12.61,
-          "gap_opt": 12.58,
-          "noise": 0.00669776342542758
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 0.773,
-          "ms_opt": 0.774,
-          "gap": 1.17,
-          "gap_opt": 1.17,
-          "noise": 0.0025873221216041395
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "`cv::filter2D` with a 5x5 kernel runs a SIMD correlation (filter.simd.hpp) on rows that are padded once, so the inner loop has no bounds checks. `imageproc::filter::filter3x3`/the guide's generic kernel path clamps coordinates for every tap and converts through f32 per channel.",
-      "fix_target": "oxipix wave 2: padded-row f32 correlation with a const-generic kernel size, plus a separable fast path when the kernel is rank 1. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-174",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 18,
       "id": "threshold_inRange",
       "tutorial": "tutorial_threshold_inRange",
       "operation": "HSV red range mask",
       "opencv_ms": 0.125,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 1.15,
-      "ms_lost": 0.019,
+      "best_gap": 1.22,
+      "ms_lost": 0.027,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 0.194,
+          "ms": 0.193,
           "ms_opt": 0.179,
-          "gap": 1.55,
+          "gap": 1.54,
           "gap_opt": 1.43,
-          "noise": 0.010309278350515464
+          "noise": 0.0
         },
         {
           "name": "oximedia-cv",
@@ -745,11 +701,11 @@
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.248,
-          "ms_opt": 0.144,
-          "gap": 1.98,
-          "gap_opt": 1.15,
-          "noise": 0.0
+          "ms": 0.258,
+          "ms_opt": 0.152,
+          "gap": 2.06,
+          "gap_opt": 1.22,
+          "noise": 0.031007751937984496
         }
       ],
       "status": "fix-proposed",
@@ -757,6 +713,94 @@
       "fix_target": "oxipix wave 3: integer HSV conversion and range test fused in one slice pass. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
       "plane": "RUSTCVGUID-182",
       "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/63",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 18,
+      "id": "filter_2d",
+      "tutorial": "tutorial_filter_2d",
+      "operation": "2D convolution (5x5 box kernel)",
+      "opencv_ms": 0.662,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.19,
+      "ms_lost": 0.127,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 3.303,
+          "ms_opt": 2.637,
+          "gap": 4.99,
+          "gap_opt": 3.98,
+          "noise": 0.0024220405691795337
+        },
+        {
+          "name": "oximedia-cv",
+          "ms": 8.356,
+          "ms_opt": 8.34,
+          "gap": 12.62,
+          "gap_opt": 12.6,
+          "noise": 0.008377213977979896
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.789,
+          "ms_opt": 0.805,
+          "gap": 1.19,
+          "gap_opt": 1.22,
+          "noise": 0.0076045627376425855
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "`cv::filter2D` with a 5x5 kernel runs a SIMD correlation (filter.simd.hpp) on rows that are padded once, so the inner loop has no bounds checks. `imageproc::filter::filter3x3`/the guide's generic kernel path clamps coordinates for every tap and converts through f32 per channel.",
+      "fix_target": "oxipix wave 2: padded-row f32 correlation with a const-generic kernel size, plus a separable fast path when the kernel is rank 1. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/6 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-174",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/55",
+      "owner": null,
+      "known_difference": null
+    },
+    {
+      "rank": 19,
+      "id": "threshold",
+      "tutorial": "tutorial_threshold",
+      "operation": "Otsu binary threshold",
+      "opencv_ms": 0.031,
+      "best_crate": "oxipix (imgproc)",
+      "best_gap": 1.16,
+      "ms_lost": 0.005,
+      "parity": "ok",
+      "backends": [
+        {
+          "name": "image/imageproc",
+          "ms": 0.045,
+          "ms_opt": 0.045,
+          "gap": 1.45,
+          "gap_opt": 1.45,
+          "noise": 0.0
+        },
+        {
+          "name": "oxipix",
+          "ms": 0.159,
+          "ms_opt": 0.136,
+          "gap": 5.13,
+          "gap_opt": 4.39,
+          "noise": 0.025157232704402517
+        },
+        {
+          "name": "oxipix (imgproc)",
+          "ms": 0.036,
+          "ms_opt": 0.036,
+          "gap": 1.16,
+          "gap_opt": 1.16,
+          "noise": 0.0
+        }
+      ],
+      "status": "fix-proposed",
+      "root_cause": "OpenCV's Otsu threshold builds the histogram and applies a SIMD compare (thresh.cpp). The Rust versions build the histogram through `Pixel` iterators and write the output with `put_pixel`.",
+      "fix_target": "oxipix wave 3: histogram and threshold on raw slices. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
+      "plane": "RUSTCVGUID-181",
+      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
       "owner": null,
       "known_difference": null
     }
@@ -769,8 +813,8 @@
       "operation": "PSNR",
       "opencv_ms": 0.147,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.1,
-      "ms_lost": -0.133,
+      "best_gap": 0.12,
+      "ms_lost": -0.129,
       "parity": "n/a",
       "backends": [
         {
@@ -779,22 +823,22 @@
           "ms_opt": 0.389,
           "gap": 2.65,
           "gap_opt": 2.65,
-          "noise": 0.005141388174807198
+          "noise": 0.0
         },
         {
           "name": "oximedia-cv",
           "ms": 0.4,
-          "ms_opt": 0.4,
+          "ms_opt": 0.401,
           "gap": 2.72,
-          "gap_opt": 2.72,
+          "gap_opt": 2.73,
           "noise": 0.0
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.014,
-          "ms_opt": 0.14,
-          "gap": 0.1,
-          "gap_opt": 0.95,
+          "ms": 0.018,
+          "ms_opt": 0.159,
+          "gap": 0.12,
+          "gap_opt": 1.08,
           "noise": 0.0
         }
       ],
@@ -811,35 +855,35 @@
       "id": "feature_detection_orb",
       "tutorial": "tutorial_feature_detection",
       "operation": "Oriented keypoints (t=30, max=250)",
-      "opencv_ms": 6.609,
+      "opencv_ms": 6.561,
       "best_crate": "image/imageproc",
-      "best_gap": 0.33,
-      "ms_lost": -4.425,
+      "best_gap": 0.34,
+      "ms_lost": -4.342,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 2.312,
-          "ms_opt": 2.184,
-          "gap": 0.35,
-          "gap_opt": 0.33,
-          "noise": 0.005190311418685122
+          "ms": 2.219,
+          "ms_opt": 2.275,
+          "gap": 0.34,
+          "gap_opt": 0.35,
+          "noise": 0.00811176205497972
         },
         {
           "name": "oximedia-cv",
-          "ms": 6.967,
-          "ms_opt": 6.979,
-          "gap": 1.05,
+          "ms": 6.951,
+          "ms_opt": 6.974,
+          "gap": 1.06,
           "gap_opt": 1.06,
-          "noise": 0.00775082531936271
+          "noise": 0.002877283844051216
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 2.523,
-          "ms_opt": 2.434,
-          "gap": 0.38,
+          "ms": 2.547,
+          "ms_opt": 2.413,
+          "gap": 0.39,
           "gap_opt": 0.37,
-          "noise": 0.01426872770511296
+          "noise": 0.014134275618374556
         }
       ],
       "status": "unprobed",
@@ -852,82 +896,38 @@
     },
     {
       "rank": 0,
-      "id": "threshold",
-      "tutorial": "tutorial_threshold",
-      "operation": "Otsu binary threshold",
-      "opencv_ms": 0.03,
-      "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.93,
-      "ms_lost": -0.002,
-      "parity": "ok",
-      "backends": [
-        {
-          "name": "image/imageproc",
-          "ms": 0.045,
-          "ms_opt": 0.045,
-          "gap": 1.5,
-          "gap_opt": 1.5,
-          "noise": 0.0
-        },
-        {
-          "name": "oxipix",
-          "ms": 0.159,
-          "ms_opt": 0.136,
-          "gap": 5.3,
-          "gap_opt": 4.53,
-          "noise": 0.025157232704402517
-        },
-        {
-          "name": "oxipix (imgproc)",
-          "ms": 0.028,
-          "ms_opt": 0.028,
-          "gap": 0.93,
-          "gap_opt": 0.93,
-          "noise": 0.0
-        }
-      ],
-      "status": "fix-proposed",
-      "root_cause": "OpenCV's Otsu threshold builds the histogram and applies a SIMD compare (thresh.cpp). The Rust versions build the histogram through `Pixel` iterators and write the output with `put_pixel`.",
-      "fix_target": "oxipix wave 3: histogram and threshold on raw slices. Implemented and benchmarked in https://github.com/yasuomaidana/oxipix/pull/7 (oxipix imgproc, not yet released).",
-      "plane": "RUSTCVGUID-181",
-      "issue": "https://github.com/yasuomaidana/rust-cv-guide/issues/62",
-      "owner": null,
-      "known_difference": null
-    },
-    {
-      "rank": 0,
       "id": "equalize",
       "tutorial": "tutorial_histogram_equalization",
       "operation": "Histogram equalisation",
       "opencv_ms": 0.253,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.92,
-      "ms_lost": -0.021,
+      "best_gap": 0.96,
+      "ms_lost": -0.011,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
           "ms": 0.351,
-          "ms_opt": 0.351,
+          "ms_opt": 0.35,
           "gap": 1.39,
-          "gap_opt": 1.39,
+          "gap_opt": 1.38,
           "noise": 0.011396011396011397
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.305,
+          "ms": 0.304,
           "ms_opt": 0.304,
-          "gap": 1.21,
+          "gap": 1.2,
           "gap_opt": 1.2,
           "noise": 0.0
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.311,
-          "ms_opt": 0.232,
-          "gap": 1.23,
-          "gap_opt": 0.92,
-          "noise": 0.0
+          "ms": 0.32,
+          "ms_opt": 0.242,
+          "gap": 1.26,
+          "gap_opt": 0.96,
+          "noise": 0.0125
         }
       ],
       "status": "fix-proposed",
@@ -945,33 +945,33 @@
       "operation": "Box blur (5x5, r=2)",
       "opencv_ms": 0.239,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.92,
-      "ms_lost": -0.02,
+      "best_gap": 0.96,
+      "ms_lost": -0.01,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 1.344,
-          "ms_opt": 1.336,
-          "gap": 5.62,
-          "gap_opt": 5.59,
-          "noise": 0.002976190476190476
+          "ms": 1.346,
+          "ms_opt": 1.338,
+          "gap": 5.63,
+          "gap_opt": 5.6,
+          "noise": 0.0029717682020802376
         },
         {
           "name": "oximedia-cv",
-          "ms": 2.044,
-          "ms_opt": 1.528,
-          "gap": 8.55,
+          "ms": 1.528,
+          "ms_opt": 1.527,
+          "gap": 6.39,
           "gap_opt": 6.39,
-          "noise": 0.005870841487279843
+          "noise": 0.006544502617801047
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.22,
-          "ms_opt": 0.219,
-          "gap": 0.92,
-          "gap_opt": 0.92,
-          "noise": 0.0
+          "ms": 0.23,
+          "ms_opt": 0.229,
+          "gap": 0.96,
+          "gap_opt": 0.96,
+          "noise": 0.008695652173913044
         }
       ],
       "status": "fix-proposed",
@@ -989,33 +989,33 @@
       "operation": "Gaussian blur + Laplacian edge",
       "opencv_ms": 0.733,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.99,
-      "ms_lost": -0.008,
+      "best_gap": 1.01,
+      "ms_lost": 0.004,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.465,
+          "ms": 3.469,
           "ms_opt": 1.907,
           "gap": 4.73,
           "gap_opt": 2.6,
-          "noise": 0.00404040404040404
+          "noise": 0.013836840588065726
         },
         {
           "name": "oximedia-cv",
-          "ms": 5.723,
-          "ms_opt": 5.714,
+          "ms": 5.725,
+          "ms_opt": 5.734,
           "gap": 7.81,
-          "gap_opt": 7.8,
-          "noise": 0.008037742442774769
+          "gap_opt": 7.82,
+          "noise": 0.007336244541484717
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.73,
-          "ms_opt": 0.725,
-          "gap": 1.0,
-          "gap_opt": 0.99,
-          "noise": 0.0027397260273972603
+          "ms": 0.745,
+          "ms_opt": 0.737,
+          "gap": 1.02,
+          "gap_opt": 1.01,
+          "noise": 0.008053691275167786
         }
       ],
       "status": "fix-proposed",
@@ -1033,32 +1033,32 @@
       "operation": "Sobel X derivative",
       "opencv_ms": 0.141,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.62,
-      "ms_lost": -0.053,
+      "best_gap": 0.67,
+      "ms_lost": -0.046,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 3.847,
-          "ms_opt": 3.806,
-          "gap": 27.28,
-          "gap_opt": 26.99,
-          "noise": 0.006758513127112035
+          "ms": 3.845,
+          "ms_opt": 3.801,
+          "gap": 27.27,
+          "gap_opt": 26.96,
+          "noise": 0.005721716514954486
         },
         {
           "name": "oximedia-cv",
-          "ms": 0.784,
-          "ms_opt": 0.738,
-          "gap": 5.56,
-          "gap_opt": 5.23,
-          "noise": 0.01020408163265306
+          "ms": 0.786,
+          "ms_opt": 0.739,
+          "gap": 5.57,
+          "gap_opt": 5.24,
+          "noise": 0.01272264631043257
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.089,
-          "ms_opt": 0.088,
-          "gap": 0.63,
-          "gap_opt": 0.62,
+          "ms": 0.096,
+          "ms_opt": 0.095,
+          "gap": 0.68,
+          "gap_opt": 0.67,
           "noise": 0.0
         }
       ],
@@ -1075,35 +1075,35 @@
       "id": "canny",
       "tutorial": "tutorial_canny_detector",
       "operation": "Gaussian blur + Canny (50/150)",
-      "opencv_ms": 2.271,
+      "opencv_ms": 2.27,
       "best_crate": "oxipix (imgproc)",
-      "best_gap": 0.74,
-      "ms_lost": -0.599,
+      "best_gap": 0.75,
+      "ms_lost": -0.567,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 17.661,
-          "ms_opt": 15.813,
-          "gap": 7.78,
-          "gap_opt": 6.96,
-          "noise": 0.0026046090255364925
+          "ms": 17.69,
+          "ms_opt": 15.853,
+          "gap": 7.79,
+          "gap_opt": 6.98,
+          "noise": 0.002374222724703222
         },
         {
           "name": "oximedia-cv",
-          "ms": 22.285,
-          "ms_opt": 19.769,
-          "gap": 9.81,
-          "gap_opt": 8.7,
-          "noise": 0.0033206192506170067
+          "ms": 22.319,
+          "ms_opt": 19.814,
+          "gap": 9.83,
+          "gap_opt": 8.73,
+          "noise": 0.005645414221067253
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 1.769,
-          "ms_opt": 1.672,
-          "gap": 0.78,
-          "gap_opt": 0.74,
-          "noise": 0.013566986998304128
+          "ms": 1.806,
+          "ms_opt": 1.703,
+          "gap": 0.8,
+          "gap_opt": 0.75,
+          "noise": 0.02547065337763012
         }
       ],
       "status": "fix-proposed",
@@ -1119,35 +1119,35 @@
       "id": "hough_lines",
       "tutorial": "tutorial_hough_lines",
       "operation": "Canny + standard Hough lines",
-      "opencv_ms": 6.508,
+      "opencv_ms": 6.573,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 0.9,
-      "ms_lost": -0.65,
+      "ms_lost": -0.668,
       "parity": "ok",
       "backends": [
         {
           "name": "image/imageproc",
-          "ms": 22.765,
-          "ms_opt": 20.876,
-          "gap": 3.5,
-          "gap_opt": 3.21,
-          "noise": 0.0038655831320008782
+          "ms": 22.799,
+          "ms_opt": 20.923,
+          "gap": 3.47,
+          "gap_opt": 3.18,
+          "noise": 0.00421071099609632
         },
         {
           "name": "oximedia-cv",
-          "ms": 42.776,
-          "ms_opt": 39.023,
-          "gap": 6.57,
-          "gap_opt": 6.0,
-          "noise": 0.004441743033476716
+          "ms": 42.304,
+          "ms_opt": 39.013,
+          "gap": 6.44,
+          "gap_opt": 5.94,
+          "noise": 0.01040090771558245
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 6.034,
-          "ms_opt": 5.858,
-          "gap": 0.93,
+          "ms": 5.994,
+          "ms_opt": 5.905,
+          "gap": 0.91,
           "gap_opt": 0.9,
-          "noise": 0.014252568776930725
+          "noise": 0.019352686019352687
         }
       ],
       "status": "fix-proposed",
@@ -1163,27 +1163,27 @@
       "id": "hough_circle",
       "tutorial": "tutorial_hough_circle",
       "operation": "Canny + circle Hough (r=15..40)",
-      "opencv_ms": 3.939,
+      "opencv_ms": 3.946,
       "best_crate": "oxipix (imgproc)",
       "best_gap": 0.22,
-      "ms_lost": -3.069,
+      "ms_lost": -3.062,
       "parity": "n/a",
       "backends": [
         {
           "name": "oximedia-cv",
-          "ms": 63.274,
-          "ms_opt": 62.756,
-          "gap": 16.06,
-          "gap_opt": 15.93,
-          "noise": 0.0014539937415051995
+          "ms": 63.262,
+          "ms_opt": 63.151,
+          "gap": 16.03,
+          "gap_opt": 16.0,
+          "noise": 0.0009168221048970947
         },
         {
           "name": "oxipix (imgproc)",
-          "ms": 0.899,
-          "ms_opt": 0.87,
+          "ms": 0.911,
+          "ms_opt": 0.884,
           "gap": 0.23,
           "gap_opt": 0.22,
-          "noise": 0.002224694104560623
+          "noise": 0.0021953896816684962
         }
       ],
       "status": "fix-proposed",

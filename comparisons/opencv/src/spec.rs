@@ -1,6 +1,6 @@
 //! Benchmark specification, assets fixture, timing loop, and JSON output schema.
 
-use crate::measure::{Digest, Stats, combine_parity, parity, round3, time_stats};
+use crate::measure::{Digest, Stats, combine_parity, parity, round3, time_ms, time_stats};
 use cvg_snippets::common::{gray_sample, ink_mask, invoice_quad, sample};
 use image::{GrayImage, RgbImage, imageops};
 use serde::Serialize;
@@ -22,6 +22,10 @@ pub struct Environment {
     pub builds: Vec<String>,
     /// HAL / SIMD / threading lines from `cv::getBuildInformation()`.
     pub opencv_build: Vec<String>,
+    /// Threads OpenCV uses by default on this machine (the single-thread rows pin it to 1).
+    pub opencv_threads: usize,
+    /// Whether OpenCV found an OpenCL device it could use.
+    pub opencv_opencl: bool,
 }
 
 /// One measured comparison row across OpenCV, pure Rust, and `oximedia-cv`/`oxipix`.
@@ -42,6 +46,8 @@ pub struct BenchRow {
     pub oxipix_ticket: Option<String>,
     pub warning_note: Option<String>,
     pub opencv_fresh_ms: Option<f64>,
+    /// OpenCV with its default number of threads (the single-thread `opencv_ms` is the algorithm comparison).
+    pub opencv_mt_ms: Option<f64>,
     pub rust_opt_ms: Option<f64>,
     pub oximedia_opt_ms: Option<f64>,
     pub rust_stats: Option<Stats>,
@@ -55,6 +61,8 @@ pub struct BenchRow {
     pub oxipix_next_stats: Option<Stats>,
     pub oxipix_next_digest: Option<Digest>,
     pub oxipix_next_vs_opencv: Option<f64>,
+    /// The `oxipix` imgproc kernels on all threads (`parallel` feature above its size threshold).
+    pub oxipix_next_mt_ms: Option<f64>,
     /// `ok`, `mismatch`, or `n/a` when a side has no comparable image output.
     pub parity: String,
 }
@@ -68,6 +76,8 @@ pub struct BenchmarkCatalog {
     /// Probe-overhead floor: empty closure and allocate-and-drop per input size, in milliseconds.
     pub calibration: BTreeMap<String, f64>,
     pub benchmarks: Vec<BenchRow>,
+    /// Small, medium and big pictures for the kernels where size and threads matter.
+    pub size_sweep: Vec<BenchRow>,
 }
 
 /// Pre-decoded inputs shared across benchmark runs so decode cost is excluded.
@@ -149,6 +159,8 @@ pub struct BenchSpec<'a> {
     pub rust_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
     pub oxi_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
     pub next_op: Option<Box<dyn FnMut() + 'a>>,
+    /// The same `oxipix` call timed on all threads (the plain `next_op` runs on one).
+    pub next_mt_op: Option<Box<dyn FnMut() + 'a>>,
     pub next_digest: Option<Box<dyn FnMut() -> Option<Digest> + 'a>>,
 }
 
@@ -159,6 +171,12 @@ pub type Ops<'a> = (
 );
 
 impl<'a> BenchSpec<'a> {
+    /// Adds the all-threads timing of the `oxipix` imgproc backend.
+    pub fn with_next_mt(mut self, op: Option<Box<dyn FnMut() + 'a>>) -> Self {
+        self.next_mt_op = op;
+        self
+    }
+
     /// Adds the `oxipix` imgproc backend.
     pub fn with_next(mut self, (op, digest): Ops<'a>) -> Self {
         self.next_op = op;
@@ -239,6 +257,7 @@ macro_rules! bench_spec {
             rust_digest,
             oxi_digest,
             next_op: None,
+            next_mt_op: None,
             next_digest: None,
         }
     }};
@@ -266,6 +285,11 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         .get(&format!("{}__fresh", spec.id))
         .copied()
         .map(round3);
+    let opencv_mt_ms = ocv
+        .results
+        .get(&format!("{}__mt", spec.id))
+        .copied()
+        .map(round3);
     let opencv_digest = ocv.digests.get(spec.id).copied();
     let rust_digest = spec.rust_digest.and_then(|mut d| d());
     let oximedia_digest = spec.oxi_digest.and_then(|mut d| d());
@@ -274,6 +298,7 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
     let oximedia_stats = spec.oxi_op.map(|op| time_stats(spec.iters, op));
     let next_stats = spec.next_op.map(|op| time_stats(spec.iters, op));
     let next_ms = next_stats.map(|s| s.median);
+    let next_mt_ms = spec.next_mt_op.map(|op| time_ms(spec.iters, op));
     let rust_ms = rust_stats.map(|s| s.median);
     let oximedia_ms = oximedia_stats.map(|s| s.median);
     let parity = combine_parity([
@@ -297,6 +322,7 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         oxipix_ticket: spec.oxipix_ticket.map(str::to_string),
         warning_note: None,
         opencv_fresh_ms,
+        opencv_mt_ms,
         rust_opt_ms: None,
         oximedia_opt_ms: None,
         rust_stats,
@@ -309,6 +335,7 @@ pub fn evaluate(spec: BenchSpec<'_>, ocv: &OpenCvData<'_>) -> BenchRow {
         oxipix_next_stats: next_stats,
         oxipix_next_digest: next_digest,
         oxipix_next_vs_opencv: ratio(next_ms, opencv_ms),
+        oxipix_next_mt_ms: next_mt_ms,
         parity: parity.into(),
     }
 }

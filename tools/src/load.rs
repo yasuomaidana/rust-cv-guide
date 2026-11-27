@@ -112,12 +112,28 @@ pub fn sources(root: &Path) -> Result<Sources, String> {
     let tests = grouped(&root.join("snippets/tests"), "rs")?;
     let live = read_all(files(&root.join("live/src"), "rs")?, stem)?;
     let live = live.into_values().collect::<Vec<_>>().join("\n");
+    let native = native_sources(root)?;
     Ok(Sources {
         bodies,
         snippets,
         tests,
         live,
+        native,
     })
+}
+
+/// The manifest and the tests of `snippets-opencv`, joined; empty when the crate is absent.
+fn native_sources(root: &Path) -> Result<String, String> {
+    let crate_dir = root.join("snippets-opencv");
+    let manifest = crate_dir.join("Cargo.toml");
+    let mut parts = Vec::new();
+    if manifest.is_file() {
+        parts.push(fs::read_to_string(&manifest).map_err(at(&manifest))?);
+    }
+    for path in files(&crate_dir.join("tests"), "rs")? {
+        parts.push(fs::read_to_string(&path).map_err(at(&path))?);
+    }
+    Ok(parts.join("\n"))
 }
 
 #[cfg(test)]
@@ -129,6 +145,15 @@ mod tests {
         let path = root.join(relative);
         fs::create_dir_all(path.parent().unwrap()).unwrap();
         fs::write(path, text).unwrap();
+    }
+
+    #[test]
+    fn the_native_crate_is_read_when_present_and_empty_otherwise() {
+        let dir = tempfile::tempdir().unwrap();
+        assert_eq!(native_sources(dir.path()).unwrap(), "");
+        write(dir.path(), "snippets-opencv/Cargo.toml", "[package]");
+        write(dir.path(), "snippets-opencv/tests/parity.rs", "mod x;");
+        assert_eq!(native_sources(dir.path()).unwrap(), "[package]\nmod x;");
     }
 
     #[test]

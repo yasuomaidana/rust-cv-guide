@@ -107,6 +107,8 @@ pub struct Sources {
     pub tests: BTreeMap<String, String>,
     /// All the source of the `cvg-live` crate, which carries the wasm exports and the `#[path]` includes of the examples.
     pub live: String,
+    /// `snippets-opencv/Cargo.toml` and its tests: the standalone crate that compiles the native-only `opencv_*` examples.
+    pub native: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -159,6 +161,7 @@ pub(crate) mod fixtures {
             )]),
             live: "#[path = \"../../snippets/examples/core/blend.rs\"]\npub fn blend() {}\n"
                 .to_string(),
+            native: String::new(),
         }
     }
 

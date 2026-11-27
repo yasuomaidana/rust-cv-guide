@@ -17,6 +17,8 @@ oxipix = "0.1"
 # Switch to a crates.io version once oxipix publishes them.
 oxipix_next = { package = "oxipix", git = "https://github.com/yasuomaidana/oxipix", branch = "OXI-97-imgproc-parallel-feature-rayon-row-bands/main", default-features = false, features = ["imgproc", "parallel"] }
 rayon = "1"
+opencv = { version = "0.102", default-features = false, features = ["imgproc", "geometry"] }
+cvg-opencv = { path = "../../snippets-opencv" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

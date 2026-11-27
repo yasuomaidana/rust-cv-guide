@@ -2,6 +2,9 @@
 title: "Template Matching"
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 **Status:** partial
 
 **Reason:** Four of OpenCV's six methods (with mask support); the zero-mean (CCOEFF) methods are missing
@@ -12,6 +15,7 @@ OpenCV tutorial: [source at 5.1.0](https://github.com/opencv/opencv/blob/5.1.0/d
 
 - [image](https://crates.io/crates/image)
 - [imageproc](https://crates.io/crates/imageproc)
+- [opencv](https://crates.io/crates/opencv)
 
 ## Goal
 
@@ -33,6 +37,9 @@ decides which position is best:
 :::note oximedia / oxipix status
 Neither `oximedia-cv` 0.2.1 nor `oxipix` 0.1.0 currently implements template matching. An **oxipix** feature ticket (`OXI-92`) has been opened to expose `match_template` covering `SqDiff`, `CCorr`, and `CCoeff` (including normalised variants).
 :::
+
+<Tabs groupId="implementation">
+<TabItem value="image + imageproc" label="image + imageproc" default>
 
 ```rust
 //! OpenCV tutorial `tutorial_template_matching` in pure Rust: find a small patch inside a picture.
@@ -172,6 +179,56 @@ pub fn main() {
 }
 ```
 
+</TabItem>
+<TabItem value="opencv" label="opencv">
+
+```rust
+//! OpenCV tutorial `tutorial_template_matching` with the `opencv` crate (calls native OpenCV).
+//! Run with `cargo run --example template_matching` inside `snippets-opencv`.
+
+use cvg_opencv::gray_mat;
+use image::GrayImage;
+use opencv::core::{self, Mat, Point};
+use opencv::imgproc;
+
+/// Where `template` matches `search` best by the sum of squared differences (`cv::TM_SQDIFF`): the top-left corner.
+pub fn best_match(search: &GrayImage, template: &GrayImage) -> (u32, u32) {
+    let (image, patch) = (
+        gray_mat(search).expect("mat"),
+        gray_mat(template).expect("mat"),
+    );
+    let mut scores = Mat::default();
+    imgproc::match_template(
+        &image,
+        &patch,
+        &mut scores,
+        imgproc::TM_SQDIFF,
+        &core::no_array(),
+    )
+    .expect("match");
+    let mut corner = Point::default();
+    core::min_max_loc(
+        &scores,
+        None,
+        None,
+        Some(&mut corner),
+        None,
+        &core::no_array(),
+    )
+    .expect("min");
+    (corner.x as u32, corner.y as u32)
+}
+
+pub fn main() {
+    let photo = cvg_snippets::common::gray_sample("chelsea.png");
+    let patch = image::imageops::crop_imm(&photo, 100, 80, 40, 40).to_image();
+    println!("found at {:?}", best_match(&photo, &patch));
+}
+```
+
+</TabItem>
+</Tabs>
+
 ## Explanation
 
 1. `crop_template` (and `cut_template` for the default 40×40 patch) crops a patch from the photo and remembers its top-left corner (drawn in green in the live view).
@@ -210,7 +267,7 @@ ccorr_normed_masked = (204, 100)
 
 | Operation | Input | OpenCV | Pure Rust | oximedia / oxipix | oxi / Rust |
 |---|---|---|---|---|---|
-| Template match (TM_SQDIFF) | 451x300 vs 40x40 grey | 1.605 ms | 120.012 ms | — (OXI-92) | — |
+| Template match (TM_SQDIFF) | 451x300 vs 40x40 grey | 1.612 ms | 120.053 ms | — (OXI-92) | — |
 
 :::warning Performance difference
 

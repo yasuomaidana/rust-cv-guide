@@ -38,34 +38,47 @@ pub fn pictures(assets: &Assets) -> Vec<Picture> {
         .collect()
 }
 
-/// A kernel: the `imageproc` and the `oxipix` call on a picture.
+/// A kernel: the `imageproc`, `oxipix` and `opencv` crate call on a picture.
 struct Kernel {
     name: &'static str,
     label: &'static str,
     imageproc: for<'a> fn(&'a Picture) -> Ops<'a>,
     oxipix: for<'a> fn(&'a Picture) -> Ops<'a>,
+    opencv: for<'a> fn(&'a Picture) -> Ops<'a>,
 }
 
-/// Defines the two adapter functions of a kernel and its table entry.
+/// Defines the three adapter functions of a kernel and its table entry.
 macro_rules! kernels {
-    ($($name:literal, $label:literal, $ip:ident, $ox:ident, |$p:ident| $a:expr, $b:expr;)*) => {
-        $( fn $ip<'a>($p: &'a Picture) -> Ops<'a> { op_closures!($a) } fn $ox<'a>($p: &'a Picture) -> Ops<'a> { op_closures!($b) } )*
-        const KERNELS: &[Kernel] = &[ $( Kernel { name: $name, label: $label, imageproc: $ip, oxipix: $ox }, )* ];
+    ($($name:literal, $label:literal, $ip:ident, $ox:ident, $oc:ident, |$p:ident| $a:expr, $b:expr, $c:expr;)*) => {
+        $(
+            fn $ip<'a>($p: &'a Picture) -> Ops<'a> { op_closures!($a) }
+            fn $ox<'a>($p: &'a Picture) -> Ops<'a> { op_closures!($b) }
+            fn $oc<'a>($p: &'a Picture) -> Ops<'a> { op_closures!($c) }
+        )*
+        const KERNELS: &[Kernel] = &[ $( Kernel { name: $name, label: $label, imageproc: $ip, oxipix: $ox, opencv: $oc }, )* ];
     };
 }
 
 kernels! {
-    "gaussian", "Gaussian blur (sigma=1.1, RGB)", gaussian_ip, gaussian_ox, |p| gaussian_blur_f32(&p.rgb, 1.1), blur::gaussian_blur(&p.rgb, 1.1);
-    "sobel", "Sobel x (grey)", sobel_ip, sobel_ox, |p| imageproc::gradients::horizontal_sobel(&p.gray), gradient::scale_abs(&gradient::sobel_x(&p.gray));
-    "canny", "Canny 50/150 (grey)", canny_ip, canny_ox, |p| imageproc::edges::canny(&p.gray, 50.0, 150.0), canny::canny(&p.gray, 50.0, 150.0);
-    "median", "Median 5x5 (RGB)", median_ip, median_ox, |p| median_filter(&p.rgb, 2, 2), median::median_blur(&p.rgb, 2);
-    "erode", "Erode 5x5 (grey)", erode_ip, erode_ox, |p| grayscale_erode(&p.gray, &Mask::square(2)), morph::erode(&p.gray, 2, 2);
-    "bilateral", "Bilateral r=2 (RGB)", bilateral_ip, bilateral_ox,
+    "gaussian", "Gaussian blur (sigma=1.1, RGB)", gaussian_ip, gaussian_ox, gaussian_oc, |p| gaussian_blur_f32(&p.rgb, 1.1),
+        blur::gaussian_blur(&p.rgb, 1.1), crate::ocv_smoothing::gaussian(&p.rgb, 1.1);
+    "sobel", "Sobel x (grey)", sobel_ip, sobel_ox, sobel_oc, |p| imageproc::gradients::horizontal_sobel(&p.gray),
+        gradient::scale_abs(&gradient::sobel_x(&p.gray)), crate::ocv_sobel::grad_x(&p.gray);
+    "canny", "Canny 50/150 (grey)", canny_ip, canny_ox, canny_oc, |p| imageproc::edges::canny(&p.gray, 50.0, 150.0),
+        canny::canny(&p.gray, 50.0, 150.0), crate::ocv_canny::detect_edges(&p.gray, 50.0, 150.0);
+    "median", "Median 5x5 (RGB)", median_ip, median_ox, median_oc, |p| median_filter(&p.rgb, 2, 2),
+        median::median_blur(&p.rgb, 2), crate::ocv_smoothing::median(&p.rgb, 2);
+    "erode", "Erode 5x5 (grey)", erode_ip, erode_ox, erode_oc, |p| grayscale_erode(&p.gray, &Mask::square(2)),
+        morph::erode(&p.gray, 2, 2), crate::ocv_erosion::shrink(&p.gray, 2);
+    "bilateral", "Bilateral r=2 (RGB)", bilateral_ip, bilateral_ox, bilateral_oc,
         |p| bilateral_filter(&p.rgb, 2, 2.0, GaussianEuclideanColorDistance::new(30.0)),
-        bilateral::bilateral_filter(&p.rgb, 2, 30.0, 2.0);
-    "warp_affine", "Rotate 30 deg, scale 0.6 (RGB)", warp_ip, warp_ox, |p| crate::warp_affine::rotate_scale(&p.rgb, 30.0, 0.6),
-        warp::warp_affine(&p.rgb, &rotation_map(p.rgb.dimensions(), 30.0, 0.6), p.rgb.dimensions());
-    "pyr_down", "pyrDown (RGB)", pyr_ip, pyr_ox, |p| crate::pyramids::pyr_down(&p.rgb), pyramid::pyr_down(&p.rgb);
+        bilateral::bilateral_filter(&p.rgb, 2, 30.0, 2.0), crate::ocv_smoothing::bilateral(&p.rgb, 2, 30.0);
+    "warp_affine", "Rotate 30 deg, scale 0.6 (RGB)", warp_ip, warp_ox, warp_oc,
+        |p| crate::warp_affine::rotate_scale(&p.rgb, 30.0, 0.6),
+        warp::warp_affine(&p.rgb, &rotation_map(p.rgb.dimensions(), 30.0, 0.6), p.rgb.dimensions()),
+        crate::ocv_warp::rotate_scale(&p.rgb, 30.0, 0.6);
+    "pyr_down", "pyrDown (RGB)", pyr_ip, pyr_ox, pyr_oc, |p| crate::pyramids::pyr_down(&p.rgb),
+        pyramid::pyr_down(&p.rgb), crate::ocv_pyramids::pyramid(&p.rgb, 1, false);
 }
 
 /// Leaks a string so benchmark identifiers can be `&'static str` (a few dozen short strings per run).
@@ -95,6 +108,18 @@ pub fn collect(pictures: &[Picture]) -> Vec<BenchSpec<'_>> {
                 let (op, digest) = (k.oxipix)(p);
                 spec.with_next((next::on_threads(next::Threads::One, op), digest))
                     .with_next_mt(next::on_threads(next::Threads::All, (k.oxipix)(p).0))
+                    .with_ocv(
+                        crate::ocv::on_threads(
+                            Some(1),
+                            (k.opencv)(p).0.expect("an opencv crate closure"),
+                        )
+                        .into(),
+                        crate::ocv::on_threads(
+                            None,
+                            (k.opencv)(p).0.expect("an opencv crate closure"),
+                        )
+                        .into(),
+                    )
             })
         })
         .collect()

@@ -4,6 +4,7 @@ mod cases_basic;
 mod cases_imgproc;
 mod measure;
 mod next;
+mod ocv;
 mod spec;
 mod sweep;
 
@@ -135,6 +136,43 @@ pub mod threshold;
 pub mod warp_affine;
 
 use measure::{Digest, calibration};
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_core/adding_images.rs"]
+pub mod ocv_adding;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_filters/canny.rs"]
+pub mod ocv_canny;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_color/equalize.rs"]
+pub mod ocv_equalize;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_morph/erosion.rs"]
+pub mod ocv_erosion;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_filters/laplace.rs"]
+pub mod ocv_laplace;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_core/basic_linear_transform.rs"]
+pub mod ocv_linear;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_geom/pyramids.rs"]
+pub mod ocv_pyramids;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_filters/smoothing.rs"]
+pub mod ocv_smoothing;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_filters/sobel.rs"]
+pub mod ocv_sobel;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_geom/template_matching.rs"]
+pub mod ocv_template;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_color/threshold.rs"]
+pub mod ocv_threshold;
+#[allow(dead_code)]
+#[path = "../../../snippets/examples/opencv_geom/warp_affine.rs"]
+pub mod ocv_warp;
+
 use serde::Deserialize;
 use spec::{Assets, BenchRow, BenchmarkCatalog, Environment, OpenCvData, evaluate};
 use std::collections::BTreeMap;
@@ -230,6 +268,8 @@ fn measure_rows(
             let spec = spec
                 .with_next((next::on_threads(next::Threads::One, op), digest))
                 .with_next_mt(multi);
+            let (one, all) = ocv_closures(spec.id, assets);
+            let spec = spec.with_ocv(one, all);
             let mut row = evaluate(spec, data);
             let optimised = opt.get(&row.id);
             row.rust_opt_ms = optimised.and_then(|o| o.rust_ms);
@@ -239,6 +279,12 @@ fn measure_rows(
             row
         })
         .collect()
+}
+
+/// The `opencv` crate closures of a row on one thread and on all threads.
+fn ocv_closures<'a>(id: &str, assets: &'a Assets) -> (spec::TimedOp<'a>, spec::TimedOp<'a>) {
+    let wrap = |threads| ocv::lookup(id, assets).map(|op| ocv::on_threads(threads, op));
+    (wrap(Some(1)), wrap(None))
 }
 
 /// Measures the small, medium and big pictures.

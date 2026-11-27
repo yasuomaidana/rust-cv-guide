@@ -70,7 +70,7 @@ fn table_row(row: &BenchRow) -> String {
     )
 }
 
-const INTRO: &str = "OpenCV runs on all the threads it finds by default, while the algorithm tables on the other benchmark pages pin it to one thread so that algorithms are compared, not core counts. This page puts the two side by side on small (640x480), medium (1920x1080) and big (3840x2160) pictures. `imageproc` is single-threaded; `oxipix` is shown on one thread and, with its `parallel` feature, on all threads. The last two columns say how far the best single-threaded Rust backend is from OpenCV on one thread, and how far the best Rust result on any number of threads is from OpenCV on all threads.\n";
+const INTRO: &str = "OpenCV runs on all the threads it finds by default, while the algorithm tables on the other benchmark pages pin it to one thread so that algorithms are compared, not core counts. This page puts the two side by side on small (640x480), medium (1920x1080) and big (3840x2160) pictures. `imageproc` is single-threaded; `oxipix` is shown on one thread and, with its `parallel` feature, on all threads. The last two columns say how far the best single-threaded Rust backend is from OpenCV on one thread, and how far the best Rust result on any number of threads is from OpenCV on all threads. For the GPU, see [Does the GPU help?](gpu.md).\n";
 
 /// The page, or `None` when the catalog has no size sweep.
 #[must_use]

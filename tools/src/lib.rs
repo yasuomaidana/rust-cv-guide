@@ -5,6 +5,7 @@ pub mod check;
 pub mod generate;
 pub mod load;
 pub mod model;
+pub mod perf_queue;
 pub mod proof;
 pub mod roadmap;
 
@@ -18,10 +19,11 @@ use std::path::Path;
 pub fn run(args: &[String], root: &Path) -> Result<String, String> {
     match args.first().map(String::as_str) {
         Some("check") => {
-            verified(root).map(|_| "catalog, coverage and crates are consistent".into())
+            checked(root).map(|_| "catalog, coverage and crates are consistent".into())
         }
         Some("generate") => generate(root),
-        _ => Err("usage: cvg-tools <check|generate>".into()),
+        Some("perf-queue") => perf_queue_files(root),
+        _ => Err("usage: cvg-tools <check|generate|perf-queue>".into()),
     }
 }
 
@@ -30,6 +32,56 @@ struct Inputs {
     coverage: Coverage,
     sources: Sources,
     benchmarks: Benchmarks,
+    queue: perf_queue::QueueMeta,
+}
+
+/// Writes `content` to `base/relative`, creating the directories it needs.
+fn write_file(base: &Path, relative: &str, content: &str) -> Result<(), String> {
+    let path = base.join(relative);
+    fs::create_dir_all(path.parent().unwrap_or(base)).map_err(at(&path))?;
+    fs::write(&path, content).map_err(at(&path))
+}
+
+/// Writes the queue files from the benchmarks without enforcing issue links; says which items lack one.
+fn perf_queue_files(root: &Path) -> Result<String, String> {
+    let benchmarks = load::benchmarks(root)?;
+    let meta = load::queue_meta(root)?;
+    let queue = perf_queue::build(&benchmarks, &meta);
+    for (path, content) in perf_queue::outputs(&queue) {
+        write_file(root, &path, &content)?;
+    }
+    let missing = perf_queue::problems(&benchmarks, &meta);
+    Ok(format!(
+        "queue of {} items written; {} problems still to fix\n{}",
+        queue.queue.len(),
+        missing.len(),
+        missing.join("\n")
+    ))
+}
+
+/// `verified`, plus a check that the committed queue files are what `generate` would write.
+fn checked(root: &Path) -> Result<Inputs, String> {
+    let inputs = verified(root)?;
+    let stale: Vec<String> = queue_outputs(&inputs)
+        .into_iter()
+        .filter(|(path, content)| {
+            fs::read_to_string(root.join(path)).ok().as_ref() != Some(content)
+        })
+        .map(|(path, _)| format!("{path} is out of date: run `cargo run -p cvg-tools -- generate`"))
+        .collect();
+    if stale.is_empty() {
+        Ok(inputs)
+    } else {
+        Err(stale.join("\n"))
+    }
+}
+
+/// The queue files for the loaded benchmarks; none while there are no benchmarks.
+fn queue_outputs(inputs: &Inputs) -> Vec<(String, String)> {
+    if inputs.benchmarks.benchmarks.is_empty() {
+        return Vec::new();
+    }
+    perf_queue::outputs(&perf_queue::build(&inputs.benchmarks, &inputs.queue))
 }
 
 fn verified(root: &Path) -> Result<Inputs, String> {
@@ -38,13 +90,16 @@ fn verified(root: &Path) -> Result<Inputs, String> {
     let coverage = load::coverage(root)?;
     let sources = load::sources(root)?;
     let benchmarks = load::benchmarks(root)?;
-    let problems = check::problems(&catalog, &coverage, &crates, &sources, &benchmarks);
+    let queue = load::queue_meta(root)?;
+    let mut problems = check::problems(&catalog, &coverage, &crates, &sources, &benchmarks);
+    problems.extend(perf_queue::problems(&benchmarks, &queue));
     if problems.is_empty() {
         Ok(Inputs {
             catalog,
             coverage,
             sources,
             benchmarks,
+            queue,
         })
     } else {
         Err(problems.join("\n"))
@@ -65,11 +120,17 @@ fn generate(root: &Path) -> Result<String, String> {
         &inputs.benchmarks,
     );
     for page in &pages {
-        let path = site.join(&page.path);
-        fs::create_dir_all(path.parent().unwrap_or(&site)).map_err(at(&path))?;
-        fs::write(&path, &page.content).map_err(at(&path))?;
+        write_file(&site, &page.path, &page.content)?;
     }
-    Ok(format!("wrote {} pages", pages.len()))
+    let extra = queue_outputs(&inputs);
+    for (path, content) in &extra {
+        write_file(root, path, content)?;
+    }
+    Ok(format!(
+        "wrote {} pages and {} queue files",
+        pages.len(),
+        extra.len()
+    ))
 }
 
 #[cfg(test)]
@@ -103,6 +164,57 @@ mod tests {
 
     fn call(arg: &str, root: &Path) -> Result<String, String> {
         run(&[arg.to_string()], root)
+    }
+
+    const BENCH: &str = r#"{"benchmarks":[{"id":"m","tutorial":"tutorial_mat","section":"core","operation":"op","input":"4x4","opencv_ms":0.1,"opencv_fresh_ms":0.1,"rust_ms":0.5,"oximedia_ms":0.5,"oximedia_crate":"ndarray","oxipix_ticket":"OXI-1","parity":"ok"}]}"#;
+    const QUEUE_META: &str =
+        "items:\n  m: {plane: RUSTCVGUID-1, issue: \"https://github.com/o/r/issues/1\"}\n";
+
+    /// The consistent repo plus one benchmark that is slower than OpenCV, with or without queue metadata.
+    fn queue_repo(meta: Option<&str>) -> TempDir {
+        let dir = repo_with(OK_COVERAGE);
+        fs::write(dir.path().join("catalog/benchmarks.json"), BENCH).unwrap();
+        if let Some(text) = meta {
+            fs::write(dir.path().join("catalog/perf_queue.yaml"), text).unwrap();
+        }
+        dir
+    }
+
+    #[rstest]
+    #[case(None, "queue of 1 items written; 2 problems still to fix")]
+    #[case(Some(QUEUE_META), "queue of 1 items written; 0 problems still to fix")]
+    fn perf_queue_command_writes_the_files(#[case] meta: Option<&str>, #[case] expected: &str) {
+        let dir = queue_repo(meta);
+        assert!(call("perf-queue", dir.path()).unwrap().contains(expected));
+        assert!(dir.path().join("PERF_QUEUE.md").is_file());
+        assert!(dir.path().join("catalog/perf_queue.json").is_file());
+    }
+
+    #[test]
+    fn check_needs_current_queue_files_and_generate_writes_them() {
+        let dir = queue_repo(Some(QUEUE_META));
+        let stale = call("check", dir.path()).unwrap_err();
+        assert!(stale.contains("PERF_QUEUE.md is out of date"), "{stale}");
+        assert!(
+            call("generate", dir.path())
+                .unwrap()
+                .contains("3 queue files")
+        );
+        assert!(call("check", dir.path()).is_ok());
+        fs::write(dir.path().join("PERF_QUEUE.md"), "edited").unwrap();
+        assert!(call("check", dir.path()).is_err());
+    }
+
+    #[test]
+    fn check_rejects_queue_items_without_an_issue() {
+        let err = call("check", queue_repo(None).path()).unwrap_err();
+        assert!(err.contains("no GitHub issue link"), "{err}");
+    }
+
+    #[test]
+    fn unknown_commands_print_usage() {
+        let err = call("bogus", repo_with(OK_COVERAGE).path()).unwrap_err();
+        assert!(err.contains("usage: cvg-tools"), "{err}");
     }
 
     #[rstest]
@@ -139,7 +251,10 @@ mod tests {
         let stale = dir.path().join("website/docs/opencv/old/gone.md");
         fs::create_dir_all(stale.parent().unwrap()).unwrap();
         fs::write(&stale, "x").unwrap();
-        assert_eq!(call("generate", dir.path()).unwrap(), "wrote 2 pages");
+        assert_eq!(
+            call("generate", dir.path()).unwrap(),
+            "wrote 2 pages and 0 queue files"
+        );
         assert!(!stale.exists());
         assert!(dir.path().join("website/docs/roadmap.md").exists());
         assert!(dir.path().join("website/docs/benchmarks.md").exists());

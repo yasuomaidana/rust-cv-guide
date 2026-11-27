@@ -7,6 +7,7 @@ description = "Checks the OpenCV 5.1 catalog against coverage and generates the 
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 serde_yaml_ng = "0.10"
 
 [dev-dependencies]

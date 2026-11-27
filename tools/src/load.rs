@@ -27,6 +27,15 @@ pub fn benchmarks(root: &Path) -> Result<Benchmarks, String> {
     yaml(&path)
 }
 
+/// Loads `catalog/perf_queue.yaml`, returning an empty set of notes if the file does not exist yet.
+pub fn queue_meta(root: &Path) -> Result<crate::perf_queue::QueueMeta, String> {
+    let path = root.join("catalog/perf_queue.yaml");
+    if !path.is_file() {
+        return Ok(Default::default());
+    }
+    yaml(&path)
+}
+
 /// Files in `dir` with the given extension, sorted; a missing directory has none.
 fn files(dir: &Path, extension: &str) -> Result<Vec<PathBuf>, String> {
     if !dir.is_dir() {

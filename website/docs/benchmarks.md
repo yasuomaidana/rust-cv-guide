@@ -39,3 +39,38 @@ Incremental performance reference comparing native **OpenCV**, pure Rust (`image
 | [Image Pyramids](opencv/imgproc/tutorial_pyramids.mdx) | 3-level pyrDown | 451x300 RGB | 0.045 ms | 1.823 ms | 0.881 ms | 0.48x | Pure Rust imageops::resize(Gaussian) is 40.5x slower than OpenCV pyrDown (and 2.1x slower than oximedia-cv pyr_down) because it runs a full variable-radius Gaussian resampler rather than a fixed 5-tap separable pyramid downsample. |
 | [Affine Transformations](opencv/imgproc/tutorial_warp_affine.mdx) | Rotate 30 deg + scale 0.6 | 512x512 RGB | 0.264 ms | 2.767 ms | 1.857 ms | 0.67x | — |
 | [Template Matching](opencv/imgproc/tutorial_template_matching.mdx) | Template match (TM_SQDIFF) | 451x300 vs 40x40 grey | 1.650 ms | 120.516 ms | — (OXI-92) | — | imageproc template matching is 74.4x slower than OpenCV because it evaluates naive spatial O(W*H*w*h) sliding sums instead of FFT cross-correlation (oxipix support tracked in OXI-92). |
+
+## Summary by crate
+
+Every operation with each crate's median time and gap to OpenCV (fresh output buffer). `opt` is the fat-LTO, native-CPU build. The ranked work list is the [performance queue](perf-queue.md).
+
+| Operation | OpenCV | image/imageproc | oximedia-cv / oxipix | Best gap |
+|---|---|---|---|---|
+| Template match (TM_SQDIFF) | 1.628 ms | 120.5 ms, 74.0x (76.0x opt) | — | 74.0x |
+| Median filter (5x5, r=2) | 0.435 ms | 18.7 ms, 43.0x (42.4x opt) | 39.1 ms, 89.9x (116.5x opt) | 42.4x |
+| Erode (5x5 square, r=2) | 0.010 ms | 0.3 ms, 27.6x (29.3x opt) | 3.3 ms, 333.7x (278.1x opt) | 27.6x |
+| 3-level pyrDown | 0.045 ms | 1.8 ms, 40.5x (40.9x opt) | 0.9 ms, 19.6x (18.8x opt) | 18.8x |
+| Canny + circle Hough (r=15..40) | 4.017 ms | — | 64.3 ms, 16.0x (15.8x opt) | 15.8x |
+| Top-hat morphology (7x7, r=3) | 0.028 ms | 0.4 ms, 14.9x (40.5x opt) | 14.3 ms, 509.6x (386.0x opt) | 14.9x |
+| Bilateral filter (d=5, r=2, sc=30) | 0.807 ms | 9.2 ms, 11.4x (10.2x opt) | 33.0 ms, 41.0x (43.9x opt) | 10.2x |
+| Gaussian blur (sigma=1.1) | 0.198 ms | 1.7 ms, 8.8x (9.1x opt) | 4.8 ms, 24.0x (24.1x opt) | 8.8x |
+| Gaussian blur + Canny (50/150) | 2.586 ms | 20.5 ms, 7.9x (7.4x opt) | 22.3 ms, 8.6x (8.3x opt) | 7.4x |
+| Perspective unwarp (4-point quad) | 0.587 ms | 4.2 ms, 7.2x (7.0x opt) | 7.1 ms, 12.2x (10.7x opt) | 7.0x |
+| Rotate 30 deg + scale 0.6 | 0.275 ms | 2.8 ms, 10.1x (9.3x opt) | 1.9 ms, 6.8x (6.0x opt) | 6.0x |
+| addWeighted (0.5 / 0.5) | 0.038 ms | 0.3 ms, 6.7x (5.7x opt) | 0.5 ms, 13.4x (12.2x opt) | 5.7x |
+| Box blur (5x5, r=2) | 0.239 ms | 1.4 ms, 5.7x (5.7x opt) | 1.5 ms, 6.4x (6.5x opt) | 5.7x |
+| Sobel X derivative | 0.142 ms | 3.8 ms, 27.1x (27.4x opt) | 0.8 ms, 5.6x (5.4x opt) | 5.4x |
+| Contrast + brightness (a=1.3, b=40) | 0.064 ms | 0.5 ms, 7.1x (5.3x opt) | — | 5.3x |
+| Gaussian blur + Laplacian edge | 0.682 ms | 3.5 ms, 5.1x (5.4x opt) | 5.7 ms, 8.4x (9.6x opt) | 5.1x |
+| 2D convolution (5x5 box kernel) | 0.662 ms | 3.4 ms, 5.1x (4.1x opt) | 8.4 ms, 12.6x (14.5x opt) | 4.1x |
+| FAST-9 keypoints (t=30, max=250) | 0.574 ms | 2.4 ms, 4.2x (3.9x opt) | 7.2 ms, 12.5x (12.2x opt) | 3.9x |
+| Distance transform (L2) | 0.248 ms | 0.8 ms, 3.3x (3.8x opt) | — | 3.3x |
+| PSNR | 0.147 ms | 0.4 ms, 2.7x (2.6x opt) | 0.4 ms, 2.8x (2.7x opt) | 2.6x |
+| SSIM (11x11 Gaussian) | 3.121 ms | 6.6 ms, 2.1x (2.0x opt) | 102.6 ms, 32.9x (28.4x opt) | 2.0x |
+| Canny + standard Hough lines | 12.016 ms | 22.2 ms, 1.9x (1.7x opt) | 42.8 ms, 3.6x (3.3x opt) | 1.7x |
+| Find contours + approxPolyDP | 0.157 ms | 0.5 ms, 3.3x (3.0x opt) | 0.3 ms, 1.7x (1.6x opt) | 1.6x |
+| Otsu binary threshold | 0.030 ms | 0.0 ms, 1.5x (1.5x opt) | 0.2 ms, 5.3x (4.6x opt) | 1.5x |
+| HSV red range mask | 0.125 ms | 0.2 ms, 1.5x (1.4x opt) | 0.4 ms, 3.6x (2.9x opt) | 1.4x |
+| Histogram equalisation | 0.254 ms | 0.4 ms, 1.4x (1.4x opt) | 0.3 ms, 1.2x (1.2x opt) | 1.2x |
+| ORB keypoints (t=30, max=250) | 6.695 ms | 2.3 ms, 0.3x (0.3x opt) | 4.0 ms, 0.6x (0.5x opt) | 0.3x |
+| Binary feature matching (250 kp) | 4.333 ms | 4.1 ms, 0.9x (0.9x opt) | 2.8 ms, 0.6x (0.5x opt) | 0.5x |

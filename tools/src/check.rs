@@ -156,6 +156,7 @@ mod tests {
                 oximedia_vs_opencv: Some(2.0),
                 oxipix_ticket: Some("OXI-1".into()),
                 warning_note: None,
+                ..BenchRow::default()
             }],
             ..Benchmarks::default()
         }

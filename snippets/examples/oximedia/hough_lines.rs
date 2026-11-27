@@ -6,9 +6,8 @@ use image::GrayImage;
 use imageproc::edges::canny;
 use oximedia_cv::hough_transform::{HoughAccumulator, HoughLineConfig};
 
-/// Whether `(t_idx, r_idx)` has no strictly stronger neighbour in a `17 x 17` accumulator window (wrapping across `theta = PI`).
-fn is_peak(acc: &HoughAccumulator, t_idx: usize, r_idx: usize, votes: u32) -> bool {
-    let radius = 8isize;
+/// Whether `(t_idx, r_idx)` has no strictly stronger neighbour in a `(2 * radius + 1)` square accumulator window (wrapping across `theta = PI`).
+fn is_peak(acc: &HoughAccumulator, t_idx: usize, r_idx: usize, votes: u32, radius: isize) -> bool {
     let n_theta = (acc.num_theta - 1) as isize;
     for dt in -radius..=radius {
         let nt_raw = t_idx as isize + dt;
@@ -27,9 +26,17 @@ fn is_peak(acc: &HoughAccumulator, t_idx: usize, r_idx: usize, votes: u32) -> bo
     true
 }
 
+/// Neighbourhood radius (in accumulator buckets) the page starts with: a 17 x 17 window.
+pub const SUPPRESSION: u32 = 8;
+
 /// Lines that at least `votes` Canny edge pixels lie on, using `HoughAccumulator` with 17x17 local-maximum suppression
 /// and antipodal wrap-around (excluding the duplicate `theta = PI` row).
 pub fn lines(input: &GrayImage, votes: u32) -> Lines {
+    lines_with(input, votes, SUPPRESSION)
+}
+
+/// [`lines`] with a `(2 * radius + 1)` square suppression window; radius 1 is what `cv::HoughLines` does.
+pub fn lines_with(input: &GrayImage, votes: u32, radius: u32) -> Lines {
     let config = HoughLineConfig {
         vote_threshold: votes,
         ..HoughLineConfig::default()
@@ -42,7 +49,7 @@ pub fn lines(input: &GrayImage, votes: u32) -> Lines {
     for t_idx in 0..acc.num_theta.saturating_sub(1) {
         for r_idx in 0..acc.num_rho {
             let count = acc.data[t_idx * acc.num_rho + r_idx];
-            if count >= votes && is_peak(&acc, t_idx, r_idx, count) {
+            if count >= votes && is_peak(&acc, t_idx, r_idx, count, radius as isize) {
                 let rho = (r_idx as f64 * acc.rho_resolution - acc.rho_offset) as f32;
                 let theta = (t_idx as f64 * acc.theta_resolution) as f32;
                 peaks.push((count, rho, theta));
@@ -54,7 +61,7 @@ pub fn lines(input: &GrayImage, votes: u32) -> Lines {
         .into_iter()
         .map(|(_, rho, theta)| (rho, theta))
         .collect();
-    suppress_lines(&sorted, 8.0, 8.0_f32.to_radians())
+    suppress_lines(&sorted, radius as f32, (radius as f32).to_radians())
 }
 
 /// Votes the page starts with.

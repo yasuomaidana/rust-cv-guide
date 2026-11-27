@@ -20,7 +20,7 @@ type Matcher = fn(&GrayImage, &GrayImage, u8, usize, u32) -> ConsensusResult;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "building: shift=(12, 7) inliers=99/103\nastronaut: shift=(12, 7) inliers=235/242\nchelsea: shift=(12, 7) inliers=89/226\ncoins: shift=(12, 7) inliers=236/236"
+        "building: shift=(12, 7) inliers=227/231\nastronaut: shift=(12, 7) inliers=250/250\nchelsea: shift=(12, 7) inliers=236/236\ncoins: shift=(12, 7) inliers=241/242"
     );
 }
 
@@ -30,7 +30,7 @@ fn main_prints_the_report() {
 }
 
 /// Evaluates translation recovery across five natural photographs for both `imageproc` (FAST-9 + 31x31 BRIEF)
-/// and `oximedia-cv` (OrbExtractor).
+/// and `oximedia-cv` (FastDetector + the same BRIEF).
 #[rstest]
 #[case("building.jpg", 20)]
 #[case("astronaut.png", 20)]
@@ -50,31 +50,23 @@ fn both_matchers_recover_translation_on_natural_photos(
     assert!(inliers >= min_inliers, "file={file} inliers={inliers}");
 }
 
-/// Local contrast-based FAST + 31x31 BRIEF also survives repetitive text (`invoice.png`) and a +20 brightness shift,
-/// whereas `oximedia-cv`'s `OrbExtractor` ranks keypoints by raw intensity (which clips at 255) and loses consensus.
+/// Both pipelines run FAST-9 + the same 31x31 BRIEF, so both survive repetitive text (`invoice.png`) and a +20 brightness shift.
 #[rstest]
 #[case("invoice.png", 0, 10)]
 #[case("building.jpg", 20, 20)]
 #[case("astronaut.png", 20, 20)]
-fn imageproc_brief_survives_text_and_brightness_where_raw_luminance_orb_fails(
+fn both_matchers_survive_text_and_brightness(
     #[case] file: &str,
     #[case] brighten: i32,
     #[case] min_inliers: usize,
+    #[values(imageproc_version::match_two, example::match_two)] matcher: Matcher,
 ) {
     let img = gray_sample(file);
     let view = shifted_view(&img, 12, 7, brighten);
-
-    let (fast_best, _) = imageproc_version::match_two(&img, &view, 20, 250, 32);
-    let (shift, inliers) = fast_best.expect("FAST+BRIEF should recover shift");
+    let (best, _) = matcher(&img, &view, 20, 250, 32);
+    let (shift, inliers) = best.expect("FAST+BRIEF should recover shift");
     assert_eq!(shift, (12, 7), "file={file} brighten={brighten}");
     assert!(inliers >= min_inliers, "file={file} inliers={inliers}");
-
-    let (oxi_best, _) = example::match_two(&img, &view, 20, 250, 32);
-    let oxi_ok = oxi_best.is_some_and(|(s, c)| s == (12, 7) && c >= min_inliers);
-    assert!(
-        !oxi_ok,
-        "expected oximedia-cv to struggle on {file} brighten={brighten}"
-    );
 }
 
 /// Evaluates real cross-view pairs (`box.png` inside rotated/scaled `box_in_scene.png`, and `invoice.png` vs

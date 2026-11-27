@@ -16,18 +16,19 @@ fn feature_spec<'a>(
     op: &'static str,
     iters: usize,
     alg: FeatureAlgorithm,
+    max: usize,
 ) -> BenchSpec<'a> {
     bench_pair!(
         id,
         "tutorial_feature_detection",
         "features",
         op,
-        "640x480 grey",
+        "868x600 grey",
         iters,
         "oximedia-cv",
         None,
-        fast::detect(&a.building, alg, 30, 250),
-        oxi_orb::detect(&a.building, alg, 30, 250)
+        fast::detect(&a.building, alg, 30, max),
+        oxi_orb::detect(&a.building, alg, 30, max)
     )
 }
 
@@ -78,28 +79,30 @@ pub fn collect(a: &Assets) -> Vec<BenchSpec<'_>> {
         feature_spec(
             a,
             "feature_detection_fast",
-            "FAST-9 keypoints (t=30, max=250)",
+            "FAST-9 corners (t=30, 3x3 non-max suppression, uncapped)",
             20,
             FeatureAlgorithm::Fast,
+            usize::MAX,
         ),
         feature_spec(
             a,
             "feature_detection_orb",
-            "ORB keypoints (t=30, max=250)",
+            "Oriented keypoints (t=30, max=250)",
             10,
             FeatureAlgorithm::Orb,
+            250,
         ),
         bench_pair!(
             "feature_description",
             "tutorial_feature_description",
             "features",
-            "Binary feature matching (250 kp)",
-            "324x223 vs 512x384 grey",
+            "FAST + BRIEF matching (t=20, 250 kp, up to 32 bits)",
+            "868x600 vs 856x593 grey",
             10,
             "oximedia-cv",
             None,
-            brief_match::match_two(&a.box_img, &a.box_in_scene, 20, 250, 32),
-            oxi_orb_match::match_two(&a.box_img, &a.box_in_scene, 20, 250, 24)
+            brief_match::match_two(&a.building, &a.building_shift, 20, 250, 32),
+            oxi_orb_match::match_two(&a.building, &a.building_shift, 20, 250, 32)
         ),
         bench_pair!(
             "homography",

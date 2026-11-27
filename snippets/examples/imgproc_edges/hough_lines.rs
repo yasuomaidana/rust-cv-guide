@@ -8,11 +8,20 @@ use imageproc::{
     hough::{LineDetectionOptions, detect_lines},
 };
 
+/// Neighbourhood radius (in accumulator buckets) the page starts with: only the strongest line in each 17 x 17 window is kept.
+pub const SUPPRESSION: u32 = 8;
+
 /// Lines that at least `votes` edge pixels lie on; only the strongest in each 17 x 17 bucket neighbourhood are kept.
 pub fn lines(input: &GrayImage, votes: u32) -> Lines {
+    lines_with(input, votes, SUPPRESSION)
+}
+
+/// [`lines`] keeping the strongest line in each `(2 * radius + 1)` square of buckets. Radius 1 is what
+/// `cv::HoughLines` does, so it returns every local peak of the accumulator.
+pub fn lines_with(input: &GrayImage, votes: u32, radius: u32) -> Lines {
     let options = LineDetectionOptions {
         vote_threshold: votes,
-        suppression_radius: 8,
+        suppression_radius: radius,
     };
     let found = detect_lines(&canny(input, 50.0, 150.0), options);
     found

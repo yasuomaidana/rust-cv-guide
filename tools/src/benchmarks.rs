@@ -231,8 +231,9 @@ fn oxi_cell(r: &BenchRow) -> String {
     }
 }
 
-fn clean(text: &str) -> String {
-    text.replace('|', "\\|")
+/// Makes `text` safe inside a Markdown/MDX table cell: `|` would end the cell and a bare `<` would start a JSX tag.
+pub(crate) fn clean(text: &str) -> String {
+    text.replace('|', "\\|").replace('<', "&lt;")
 }
 
 /// Renders the tutorial's per-page performance table and automatic divergence warning, if any.
@@ -330,6 +331,14 @@ mod tests {
     use super::*;
     use crate::model::fixtures::{catalog, coverage};
     use rstest::rstest;
+
+    #[rstest]
+    #[case("a | b", "a \\| b")]
+    #[case("<= 32 bits", "&lt;= 32 bits")]
+    #[case("plain", "plain")]
+    fn table_cells_are_escaped(#[case] text: &str, #[case] want: &str) {
+        assert_eq!(clean(text), want);
+    }
 
     #[rstest]
     #[case(0.0, 1.0, 0.0)]

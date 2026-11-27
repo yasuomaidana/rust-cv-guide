@@ -354,3 +354,11 @@ path = "examples/oxipix/threshold.rs"
 [[test]]
 name = "oxipix_threshold"
 path = "tests/oxipix/threshold.rs"
+
+[[test]]
+name = "shared_brief"
+path = "tests/brief.rs"
+
+[[test]]
+name = "oxi_features"
+path = "tests/oxi_features.rs"

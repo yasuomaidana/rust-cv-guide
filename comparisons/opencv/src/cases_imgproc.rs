@@ -116,8 +116,8 @@ pub fn collect(a: &Assets) -> Vec<BenchSpec<'_>> {
             10,
             "oximedia-cv",
             None,
-            hough_lines::lines(&a.building, hough_lines::VOTES),
-            oxi_hough_lines::lines(&a.building, oxi_hough_lines::VOTES)
+            hough_lines::lines_with(&a.building, hough_lines::VOTES, 1),
+            oxi_hough_lines::lines_with(&a.building, oxi_hough_lines::VOTES, 1)
         ),
         bench_one!(
             oxi: "hough_circle", "tutorial_hough_circle", "imgproc",

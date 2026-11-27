@@ -20,9 +20,13 @@ items:
   erosion:
     plane: "RUSTCVGUID-160"
     issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/41"
+  feature_description:
+    plane: "RUSTCVGUID-185"
+    issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/66"
   feature_detection_fast:
     plane: "RUSTCVGUID-175"
     issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/56"
+    known_difference: "oximedia-cv FastDetector counts the 9 contiguous ring pixels linearly over indices 0 to 15 and never detects an arc that wraps around the ring, so it returns 1424 corners where FAST-9 (OpenCV, imageproc) returns 2091 and 2204. The oximedia column is therefore not a full FAST-9; upstream issue pending."
   filter_2d:
     plane: "RUSTCVGUID-174"
     issue: "https://github.com/yasuomaidana/rust-cv-guide/issues/55"

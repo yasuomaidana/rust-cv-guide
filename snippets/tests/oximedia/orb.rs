@@ -1,4 +1,4 @@
-//! Tests for `examples/oximedia/orb.rs`: FAST-9 and ORB-style parity with `imageproc`.
+//! Tests for `examples/oximedia/orb.rs`: FAST-9 and descriptor-ready keypoints beside `imageproc`.
 
 #![allow(dead_code)]
 
@@ -15,22 +15,13 @@ use rstest::rstest;
 fn prints_the_numbers_shown_on_the_page() {
     assert_eq!(
         example::report(),
-        "fast = 300\nkeypoints = 300\nshift = Some(((12, 7), 127))"
+        "corners = 2779\nkept = 300\ndescribed = 300"
     );
 }
 
 #[test]
 fn main_prints_the_report() {
     example::main();
-}
-
-/// Matching descriptors between the picture and a cropped copy recovers the crop offset.
-#[test]
-fn matching_finds_the_shift_between_two_views() {
-    let (shift, votes) =
-        example::recovered_shift(&gray_sample("building.jpg"), 20, 5, 300).unwrap();
-    assert_eq!(shift, (20, 5));
-    assert!(votes >= 50, "{votes}");
 }
 
 type Detector = fn(&GrayImage) -> Vec<(f32, f32)>;
